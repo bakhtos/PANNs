@@ -27,9 +27,9 @@ def audio_tagging(args):
     model_type = args.model_type
     checkpoint_path = args.checkpoint_path
     audio_path = args.audio_path
+    classes_num = args.classes_num
     device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
     
-    classes_num = config.classes_num
     labels = config.labels
 
     # Model
@@ -93,8 +93,7 @@ def sound_event_detection(args):
     checkpoint_path = args.checkpoint_path
     audio_path = args.audio_path
     device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
-
-    classes_num = config.classes_num
+    classes_num = args.classes_num
     labels = config.labels
     frames_per_second = sample_rate // hop_size
 
@@ -182,6 +181,7 @@ if __name__ == '__main__':
     parser_at.add_argument('--checkpoint_path', type=str, required=True)
     parser_at.add_argument('--audio_path', type=str, required=True)
     parser_at.add_argument('--cuda', action='store_true', default=False)
+    parser_at.add_argument('--classes_num', type=int, default=110)
 
     parser_sed = subparsers.add_parser('sound_event_detection')
     parser_sed.add_argument('--sample_rate', type=int, default=32000)
@@ -194,6 +194,7 @@ if __name__ == '__main__':
     parser_sed.add_argument('--checkpoint_path', type=str, required=True)
     parser_sed.add_argument('--audio_path', type=str, required=True)
     parser_sed.add_argument('--cuda', action='store_true', default=False)
+    parser_sed.add_argument('--classes_num', type=int, default=110)
     
     args = parser.parse_args()
 

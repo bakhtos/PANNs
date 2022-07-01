@@ -19,7 +19,6 @@ import torch.utils.data
  
 from utilities import get_filename
 from models import *
-import config
 
 
 class Transfer_Cnn14(nn.Module):
@@ -76,7 +75,7 @@ def train(args):
     freeze_base = args.freeze_base
     device = 'cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu'
 
-    classes_num = config.classes_num
+    classes_num = args.classes_num
     pretrain = True if pretrained_checkpoint_path else False
     
     # Model
@@ -115,6 +114,7 @@ if __name__ == '__main__':
     parser_train.add_argument('--pretrained_checkpoint_path', type=str)
     parser_train.add_argument('--freeze_base', action='store_true', default=False)
     parser_train.add_argument('--cuda', action='store_true', default=False)
+    parser_train.add_argument('--classes_num', type=int, default=110)
 
     # Parse arguments
     args = parser.parse_args()

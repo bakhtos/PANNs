@@ -10,7 +10,6 @@ import h5py
 import librosa
 
 from utilities import create_folder, get_sub_filepaths
-import config
 
 
 def create_indexes(args):
@@ -46,8 +45,7 @@ def combine_full_indexes(args):
     # Arguments & parameters
     indexes_hdf5s_dir = args.indexes_hdf5s_dir
     full_indexes_hdf5_path = args.full_indexes_hdf5_path
-
-    classes_num = config.classes_num
+    classes_num = args.classes_num
 
     # Paths
     paths = get_sub_filepaths(indexes_hdf5s_dir)
@@ -113,6 +111,7 @@ if __name__ == '__main__':
     parser_combine_full_indexes = subparsers.add_parser('combine_full_indexes')
     parser_combine_full_indexes.add_argument('--indexes_hdf5s_dir', type=str, required=True, help='Directory containing indexes hdf5s to be combined.')
     parser_combine_full_indexes.add_argument('--full_indexes_hdf5_path', type=str, required=True, help='Path to write out full indexes hdf5 file.')
+    parser_combine_full_indexes.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset.')
 
     args = parser.parse_args()
     

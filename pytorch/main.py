@@ -25,7 +25,6 @@ from pytorch_utils import (move_data_to_device, count_parameters, count_flops,
 from data_generator import (AudioSetDataset, TrainSampler, BalancedTrainSampler, 
     AlternateTrainSampler, EvaluateSampler, collate_fn)
 from evaluate import Evaluator
-import config
 from losses import get_loss_func
 
 
@@ -70,10 +69,10 @@ def train(args):
     early_stop = args.early_stop
     device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
     filename = args.filename
+    classes_num = args.classes_num
 
     num_workers = 8
-    clip_samples = config.clip_samples
-    classes_num = config.classes_num
+    clip_samples = sample_rate*10
     loss_func = get_loss_func(loss_type)
 
     # Paths
@@ -335,6 +334,7 @@ if __name__ == '__main__':
     parser_train.add_argument('--resume_iteration', type=int, default=0)
     parser_train.add_argument('--early_stop', type=int, default=1000000)
     parser_train.add_argument('--cuda', action='store_true', default=False)
+    parser_train.add_argument('--classes_num', type=int, default=110)
     
     args = parser.parse_args()
     args.filename = get_filename(__file__)

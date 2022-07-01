@@ -24,10 +24,10 @@ def pack_waveforms_to_hdf5(args):
     csv_path = args.csv_path
     waveforms_hdf5_path = args.waveforms_hdf5_path
     mini_data = args.mini_data
+    sample_rate = args.sample_rate
+    classes_num = args.classes_num
+    clip_samples = sample_rate*10
 
-    clip_samples = config.clip_samples
-    classes_num = config.classes_num
-    sample_rate = config.sample_rate
     id_to_ix = config.id_to_ix
 
     # Paths
@@ -85,10 +85,12 @@ def pack_waveforms_to_hdf5(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--csv_path', type=str, required=True, help='Path of csv file containing audio info to be downloaded.')
+    parser.add_argument('--csv_path', type=str, required=True, help='Path of csv file containing audio info.')
     parser.add_argument('--audios_dir', type=str, required=True, help='Directory to save out downloaded audio.')
     parser.add_argument('--waveforms_hdf5_path', type=str, required=True, help='Path to save out packed hdf5.')
     parser.add_argument('--mini_data', action='store_true', default=False, help='Set true to only download 10 audios for debugging.')
+    parser.add_argument('--sample_rate', type=int, default=44100, help='Sample rate of the used audios')
+    parser.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset')
 
     args = parser.parse_args()
     pack_waveforms_to_hdf5(args)
