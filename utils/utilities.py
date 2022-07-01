@@ -8,6 +8,7 @@ import pandas as pd
 from scipy import stats 
 import datetime
 import pickle
+import copy
 
 
 def get_labels_metadata():
@@ -102,29 +103,29 @@ def read_metadata(csv_path, classes_num, id_to_ix):
       meta_dict: {'audio_name': (audios_num,), 'target': (audios_num, classes_num)}
     """
 
-    with open(csv_path, 'r') as fr:
-        lines = fr.readlines()
-        lines = lines[3:]   # Remove heads
-
-    audios_num = len(lines)
-    targets = np.zeros((audios_num, classes_num), dtype=np.bool)
+    zero_vector = [0]*classes_num
+    targets = []
     audio_names = []
- 
-    for n, line in enumerate(lines):
-        items = line.split(', ')
-        """items: ['--4gqARaEJE', '0.000', '10.000', '"/m/068hy,/m/07q6cd_,/m/0bt9lr,/m/0jbk"\n']"""
+    count = 0  
+    video_id_to_ix = dict()
+    file = open(csv_path, 'r')
+    for line in file:
+        video_id, label = line.split('\t')
 
-        audio_name = 'Y{}.wav'.format(items[0])   # Audios are started with an extra 'Y' when downloading
-        label_ids = items[3].split('"')[1].split(',')
+        if video_id not in video_id_to_ix:
+            video_id_to_ix[video_id] = count
+            count +=1
+            targets.append(copy.deepcopy(zero_vector))
+            audio_name = video_id+'.wav'
+            audio_names.append(audio_name)
 
-        audio_names.append(audio_name)
+        video_ix = video_id_to_ix[video_id]
+        class_ix = id_to_ix[label]
+        
+        targets[video_ix, class_ix] = 1
+    file.close()
 
-        # Target
-        for id in label_ids:
-            ix = id_to_ix[id]
-            targets[n, ix] = 1
-    
-    meta_dict = {'audio_name': np.array(audio_names), 'target': targets}
+    meta_dict = {'audio_name': np.array(audio_names), 'target': np.array(targets)}
     return meta_dict
 
 
