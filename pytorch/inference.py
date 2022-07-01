@@ -10,7 +10,6 @@ import torch
 from utilities import create_folder, get_filename
 from models import *
 from pytorch_utils import move_data_to_device
-import config
 
 
 def audio_tagging(args):
@@ -30,7 +29,7 @@ def audio_tagging(args):
     classes_num = args.classes_num
     device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
     
-    labels = config.labels
+    _,labels,_,_,_,_ = get_labels_metadata()
 
     # Model
     Model = eval(model_type)
@@ -94,7 +93,7 @@ def sound_event_detection(args):
     audio_path = args.audio_path
     device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
     classes_num = args.classes_num
-    labels = config.labels
+    _,labels,_,_,_,_ = get_labels_metadata()
     frames_per_second = sample_rate // hop_size
 
     # Paths

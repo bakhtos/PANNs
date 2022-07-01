@@ -9,9 +9,8 @@ import logging
 import h5py
 import librosa
 
-from utilities import (create_folder, get_filename, create_logging, 
+from utilities import (get_labels_metadata, create_folder, get_filename, create_logging, 
     float32_to_int16, pad_or_truncate, read_metadata)
-import config
 
 
 def pack_waveforms_to_hdf5(args):
@@ -28,7 +27,7 @@ def pack_waveforms_to_hdf5(args):
     classes_num = args.classes_num
     clip_samples = sample_rate*10
 
-    id_to_ix = config.id_to_ix
+    _,_,_,_,id_to_ix,_ = get_labels_metadata()
 
     # Paths
     if mini_data:
