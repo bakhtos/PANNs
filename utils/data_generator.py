@@ -10,11 +10,11 @@ from utilities import int16_to_float32
 def read_black_list(black_list_csv):
     """Read audio names from black list. 
     """
-    with open(black_list_csv, 'r') as fr:
-        reader = csv.reader(fr)
-        lines = list(reader)
+    black_list_names = []
+    fr = open(black_list_csv, 'r')
+    for line in fr:
+        black_list_name.append(line[:-1]+'.wav')
 
-    black_list_names = ['Y{}.wav'.format(line[0]) for line in lines]
     return black_list_names
 
 
