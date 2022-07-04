@@ -13,18 +13,12 @@ from utilities import (get_labels_metadata, create_folder, get_filename, create_
     float32_to_int16, pad_or_truncate, read_metadata)
 
 
-def pack_waveforms_to_hdf5(args):
+def pack_waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, mini_data,
+                           sample_rate, classes_num):
     """Pack waveform and target of several audio clips to a single hdf5 file. 
     This can speed up loading and training.
     """
 
-    # Arguments & parameters
-    audios_dir = args.audios_dir
-    csv_path = args.csv_path
-    waveforms_hdf5_path = args.waveforms_hdf5_path
-    mini_data = args.mini_data
-    sample_rate = args.sample_rate
-    classes_num = args.classes_num
     clip_samples = sample_rate*10
 
     _,_,_,_,id_to_ix,_ = get_labels_metadata()
@@ -84,12 +78,15 @@ def pack_waveforms_to_hdf5(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--csv_path', type=str, required=True, help='Path of csv file containing audio info.')
     parser.add_argument('--audios_dir', type=str, required=True, help='Directory to save out downloaded audio.')
+    parser.add_argument('--csv_path', type=str, required=True, help='Path of csv file containing audio info.')
     parser.add_argument('--waveforms_hdf5_path', type=str, required=True, help='Path to save out packed hdf5.')
     parser.add_argument('--mini_data', action='store_true', default=False, help='Set true to only download 10 audios for debugging.')
     parser.add_argument('--sample_rate', type=int, default=44100, help='Sample rate of the used audios')
     parser.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset')
 
     args = parser.parse_args()
-    pack_waveforms_to_hdf5(args)
+    pack_waveforms_to_hdf5(audios_dir=args.audios_dir, csv_path=args.csv_path,
+                           waveforms_hdf5_path=args.waveforms_hdf5_path,
+                           mini_data=args.mini_data, sample_rate=args.sample_rate,
+                           classes_num=args.classes_num)

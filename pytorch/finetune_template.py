@@ -61,21 +61,11 @@ class Transfer_Cnn14(nn.Module):
         return output_dict
 
 
-def train(args):
+def train(sample_rate, window_size, hop_size, mel_bins, fmin, fmax, model_type,
+          pretrained_checkpoint_path, freeze_base, cuda, classes_num):
 
     # Arugments & parameters
-    sample_rate = args.sample_rate
-    window_size = args.window_size
-    hop_size = args.hop_size
-    mel_bins = args.mel_bins
-    fmin = args.fmin
-    fmax = args.fmax
-    model_type = args.model_type
-    pretrained_checkpoint_path = args.pretrained_checkpoint_path
-    freeze_base = args.freeze_base
-    device = 'cuda' if (args.cuda and torch.cuda.is_available()) else 'cpu'
-
-    classes_num = args.classes_num
+    device = 'cuda' if (cuda and torch.cuda.is_available()) else 'cpu'
     pretrain = True if pretrained_checkpoint_path else False
     
     # Model
@@ -121,7 +111,11 @@ if __name__ == '__main__':
     args.filename = get_filename(__file__)
 
     if args.mode == 'train':
-        train(args)
+        train(sample_rate=args.sample_rate, window_size=args.window_size,
+              hop_size=args.hop_size, mel_bins=args.mel_bins, fmin=args.fmin,
+              model_type=args.model_type, freeze_base=args.freeze_base, fmax=args.fmax
+              pretrained_checkpoint_path=args.pretrained_checkpoint_path,
+              cuda=args.cuda, classes_num=args.classes_num)
 
     else:
         raise Exception('Error argument!')

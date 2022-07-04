@@ -12,15 +12,11 @@ import librosa
 from utilities import create_folder, get_sub_filepaths
 
 
-def create_indexes(args):
+def create_indexes(waveforms_hdf5_path, indexes_hdf5_path):
     """Create indexes a for dataloader to read for training. When users have 
     a new task and their own data, they need to create similar indexes. The 
     indexes contain meta information of "where to find the data for training".
     """
-
-    # Arguments & parameters
-    waveforms_hdf5_path = args.waveforms_hdf5_path
-    indexes_hdf5_path = args.indexes_hdf5_path
 
     # Paths
     create_folder(os.path.dirname(indexes_hdf5_path))
@@ -36,16 +32,11 @@ def create_indexes(args):
     print('Write to {}'.format(indexes_hdf5_path))
           
 
-def combine_full_indexes(args):
+def combine_full_indexes(indexes_hdf5s_dir, full_indexes_hdf5_path, classes_num):
     """Combine all balanced and unbalanced indexes hdf5s to a single hdf5. This 
     combined indexes hdf5 is used for training with full data (~20k balanced 
     audio clips + ~1.9m unbalanced audio clips).
     """
-
-    # Arguments & parameters
-    indexes_hdf5s_dir = args.indexes_hdf5s_dir
-    full_indexes_hdf5_path = args.full_indexes_hdf5_path
-    classes_num = args.classes_num
 
     # Paths
     paths = get_sub_filepaths(indexes_hdf5s_dir)
@@ -116,10 +107,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.mode == 'create_indexes':
-        create_indexes(args)
+        create_indexes(waveforms_hdf5_path=args.waveform_hdf5_path,
+                       indexes_hdf5_path=args.indexes_hdf5_path)
 
     elif args.mode == 'combine_full_indexes':
-        combine_full_indexes(args)
+        combine_full_indexes(indexes_hdf5s_dir=args.indexes_hdf5s_dir,
+                             full_indexes_hdf5_path=args.full_indexes_hdf5_path,
+                             classes_num=args.classes_num)
 
     else:
         raise Exception('Incorrect arguments!')

@@ -12,22 +12,13 @@ from models import *
 from pytorch_utils import move_data_to_device
 
 
-def audio_tagging(args):
+def audio_tagging(sample_rate, window_size, hop_size, mel_bins, fmin, fmax,
+                  model_type, checkpoint_path, audio_path, classes_num, device):
     """Inference audio tagging result of an audio clip.
     """
 
     # Arugments & parameters
-    sample_rate = args.sample_rate
-    window_size = args.window_size
-    hop_size = args.hop_size
-    mel_bins = args.mel_bins
-    fmin = args.fmin
-    fmax = args.fmax
-    model_type = args.model_type
-    checkpoint_path = args.checkpoint_path
-    audio_path = args.audio_path
-    classes_num = args.classes_num
-    device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
+    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
     
     _,labels,_,_,_,_ = get_labels_metadata()
 
@@ -77,22 +68,13 @@ def audio_tagging(args):
     return clipwise_output, labels
 
 
-def sound_event_detection(args):
+def sound_event_detection(sample_rate, window_size, hop_size, mel_bins, fmin,
+                          fmax, model_type, checkpoint_path, audio_path,
+                          device, classes_num):
     """Inference sound event detection result of an audio clip.
     """
 
-    # Arugments & parameters
-    sample_rate = args.sample_rate
-    window_size = args.window_size
-    hop_size = args.hop_size
-    mel_bins = args.mel_bins
-    fmin = args.fmin
-    fmax = args.fmax
-    model_type = args.model_type
-    checkpoint_path = args.checkpoint_path
-    audio_path = args.audio_path
-    device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
-    classes_num = args.classes_num
+    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
     _,labels,_,_,_,_ = get_labels_metadata()
     frames_per_second = sample_rate // hop_size
 
@@ -166,42 +148,31 @@ def sound_event_detection(args):
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Example of parser. ')
-    subparsers = parser.add_subparsers(dest='mode')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--sed', action='store_true', default=False)
+    parser.add_argument('--sample_rate', type=int, default=32000)
+    parser.add_argument('--window_size', type=int, default=1024)
+    parser.add_argument('--hop_size', type=int, default=320)
+    parser.add_argument('--mel_bins', type=int, default=64)
+    parser.add_argument('--fmin', type=int, default=50)
+    parser.add_argument('--fmax', type=int, default=14000) 
+    parser.add_argument('--model_type', type=str, required=True)
+    parser.add_argument('--checkpoint_path', type=str, required=True)
+    parser.add_argument('--audio_path', type=str, required=True)
+    parser.add_argument('--cuda', action='store_true', default=False)
+    parser.add_argument('--classes_num', type=int, default=110)
 
-    parser_at = subparsers.add_parser('audio_tagging')
-    parser_at.add_argument('--sample_rate', type=int, default=32000)
-    parser_at.add_argument('--window_size', type=int, default=1024)
-    parser_at.add_argument('--hop_size', type=int, default=320)
-    parser_at.add_argument('--mel_bins', type=int, default=64)
-    parser_at.add_argument('--fmin', type=int, default=50)
-    parser_at.add_argument('--fmax', type=int, default=14000) 
-    parser_at.add_argument('--model_type', type=str, required=True)
-    parser_at.add_argument('--checkpoint_path', type=str, required=True)
-    parser_at.add_argument('--audio_path', type=str, required=True)
-    parser_at.add_argument('--cuda', action='store_true', default=False)
-    parser_at.add_argument('--classes_num', type=int, default=110)
-
-    parser_sed = subparsers.add_parser('sound_event_detection')
-    parser_sed.add_argument('--sample_rate', type=int, default=32000)
-    parser_sed.add_argument('--window_size', type=int, default=1024)
-    parser_sed.add_argument('--hop_size', type=int, default=320)
-    parser_sed.add_argument('--mel_bins', type=int, default=64)
-    parser_sed.add_argument('--fmin', type=int, default=50)
-    parser_sed.add_argument('--fmax', type=int, default=14000) 
-    parser_sed.add_argument('--model_type', type=str, required=True)
-    parser_sed.add_argument('--checkpoint_path', type=str, required=True)
-    parser_sed.add_argument('--audio_path', type=str, required=True)
-    parser_sed.add_argument('--cuda', action='store_true', default=False)
-    parser_sed.add_argument('--classes_num', type=int, default=110)
-    
     args = parser.parse_args()
 
-    if args.mode == 'audio_tagging':
-        audio_tagging(args)
-
-    elif args.mode == 'sound_event_detection':
-        sound_event_detection(args)
-
+    if args.sed:
+        sound_event_detection(sample_rate=args.sample_rate, window_size=args.window_size,
+                              hop_size=args.hop_size, mel_bins=args.mel_bins, 
+                              fmin=args.fmin, fmax=args.fmax, model_type=args.model_type,
+                              checkpoint_path=args.checkpoint_path, cuda=args.cuda,
+                              classes_num=args.classes_num)
     else:
-        raise Exception('Error argument!')
+        audio_tagging(sample_rate=args.sample_rate, window_size=args.window_size,
+                      hop_size=args.hop_size, mel_bins=args.mel_bins, 
+                      fmin=args.fmin, fmax=args.fmax, model_type=args.model_type,
+                      checkpoint_path=args.checkpoint_path, cuda=args.cuda,
+                      classes_num=args.classes_num)

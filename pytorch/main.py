@@ -28,7 +28,10 @@ from evaluate import Evaluator
 from losses import get_loss_func
 
 
-def train(args):
+def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
+          fmin, fmax, mel_bins, model_type, loss_type, balanced, augmentation,
+          batch_size, learning_rate, resume_iteration, early_stop,
+          accumulation_steps, cuda, filename, classes_num):
     """Train AudioSet tagging model. 
 
     Args:
@@ -50,26 +53,7 @@ def train(args):
       cuda: bool
     """
 
-    # Arugments & parameters
-    workspace = args.workspace
-    data_type = args.data_type
-    sample_rate = args.sample_rate
-    window_size = args.window_size
-    hop_size = args.hop_size
-    mel_bins = args.mel_bins
-    fmin = args.fmin
-    fmax = args.fmax
-    model_type = args.model_type
-    loss_type = args.loss_type
-    balanced = args.balanced
-    augmentation = args.augmentation
-    batch_size = args.batch_size
-    learning_rate = args.learning_rate
-    resume_iteration = args.resume_iteration
-    early_stop = args.early_stop
-    device = torch.device('cuda') if args.cuda and torch.cuda.is_available() else torch.device('cpu')
-    filename = args.filename
-    classes_num = args.classes_num
+    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
 
     num_workers = 8
     clip_samples = sample_rate*10
@@ -314,33 +298,32 @@ def train(args):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Example of parser. ')
-    subparsers = parser.add_subparsers(dest='mode')
-
-    parser_train = subparsers.add_parser('train') 
-    parser_train.add_argument('--workspace', type=str, required=True)
-    parser_train.add_argument('--data_type', type=str, default='full_train', choices=['balanced_train', 'full_train'])
-    parser_train.add_argument('--sample_rate', type=int, default=32000)
-    parser_train.add_argument('--window_size', type=int, default=1024)
-    parser_train.add_argument('--hop_size', type=int, default=320)
-    parser_train.add_argument('--mel_bins', type=int, default=64)
-    parser_train.add_argument('--fmin', type=int, default=50)
-    parser_train.add_argument('--fmax', type=int, default=14000) 
-    parser_train.add_argument('--model_type', type=str, required=True)
-    parser_train.add_argument('--loss_type', type=str, default='clip_bce', choices=['clip_bce'])
-    parser_train.add_argument('--balanced', type=str, default='balanced', choices=['none', 'balanced', 'alternate'])
-    parser_train.add_argument('--augmentation', type=str, default='mixup', choices=['none', 'mixup'])
-    parser_train.add_argument('--batch_size', type=int, default=32)
-    parser_train.add_argument('--learning_rate', type=float, default=1e-3)
-    parser_train.add_argument('--resume_iteration', type=int, default=0)
-    parser_train.add_argument('--early_stop', type=int, default=1000000)
-    parser_train.add_argument('--cuda', action='store_true', default=False)
-    parser_train.add_argument('--classes_num', type=int, default=110)
+    parser.add_argument('--workspace', type=str, required=True)
+    parser.add_argument('--data_type', type=str, default='full_train', choices=['balanced_train', 'full_train'])
+    parser.add_argument('--sample_rate', type=int, default=32000)
+    parser.add_argument('--window_size', type=int, default=1024)
+    parser.add_argument('--hop_size', type=int, default=320)
+    parser.add_argument('--mel_bins', type=int, default=64)
+    parser.add_argument('--fmin', type=int, default=50)
+    parser.add_argument('--fmax', type=int, default=14000) 
+    parser.add_argument('--model_type', type=str, required=True)
+    parser.add_argument('--loss_type', type=str, default='clip_bce', choices=['clip_bce'])
+    parser.add_argument('--balanced', type=str, default='balanced', choices=['none', 'balanced', 'alternate'])
+    parser.add_argument('--augmentation', type=str, default='mixup', choices=['none', 'mixup'])
+    parser.add_argument('--batch_size', type=int, default=32)
+    parser.add_argument('--learning_rate', type=float, default=1e-3)
+    parser.add_argument('--resume_iteration', type=int, default=0)
+    parser.add_argument('--early_stop', type=int, default=1000000)
+    parser.add_argument('--cuda', action='store_true', default=False)
+    parser.add_argument('--classes_num', type=int, default=110)
     
     args = parser.parse_args()
-    args.filename = get_filename(__file__)
+    filename = get_filename(__file__)
 
-    if args.mode == 'train':
-        train(args)
-
-    else:
-        raise Exception('Error argument!')
+    train(workspace=args.workspace, data_type=args.data_type, fmin=args.fmin,
+          fmax=args.fmax, sample_rate=args.sample_rate, window_size=args.window_size,
+          hop_size=args.hop_size, mel_bins=args.mel_bins, model_type=args.model_type,
+          loss_type=args.loss_type, balanced=args.balanced, augmentation=args.augmentation,
+          batch_size=args.batch_size, learning_rate=args.learning_rate, cuda=args.cuda,
+          resume_iteration=args.resume_iteration, early_stop=args.early_stop,
+          classes_num=args.classes_num, filename=filename)
