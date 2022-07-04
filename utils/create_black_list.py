@@ -16,7 +16,7 @@ def create_blacklist():
     for line in file:
         line = line.split('\t')
         if line[0] == 'segment_id': continue
-        ids_set.add(line[0][0 : 11])
+        ids_set.add(line[0])
     file.close()
         
     
