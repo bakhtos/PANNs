@@ -60,7 +60,6 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
     loss_func = get_loss_func(loss_type)
 
     # Paths
-    black_list_csv = None
     
     train_indexes_hdf5_path = os.path.join(workspace, 'hdf5s', 'indexes', 
         '{}.h5'.format(data_type))
@@ -130,8 +129,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
      
     train_sampler = Sampler(
         indexes_hdf5_path=train_indexes_hdf5_path, 
-        batch_size=batch_size * 2 if 'mixup' in augmentation else batch_size,
-        black_list_csv=black_list_csv)
+        batch_size=batch_size * 2 if 'mixup' in augmentation else batch_size)
     
     # Evaluate sampler
     eval_bal_sampler = EvaluateSampler(

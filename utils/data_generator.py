@@ -6,18 +6,6 @@ import logging
 
 from utilities import int16_to_float32
 
-
-def read_black_list(black_list_csv):
-    """Read audio names from black list. 
-    """
-    black_list_names = []
-    fr = open(black_list_csv, 'r')
-    for line in fr:
-        black_list_name.append(line[:-1]+'.wav')
-
-    return black_list_names
-
-
 class AudioSetDataset(object):
     def __init__(self, sample_rate=32000):
         """This class takes the meta of an audio clip as input, and return 
@@ -73,25 +61,16 @@ class AudioSetDataset(object):
 
 
 class Base(object):
-    def __init__(self, indexes_hdf5_path, batch_size, black_list_csv, random_seed):
+    def __init__(self, indexes_hdf5_path, batch_size, random_seed):
         """Base class of train sampler.
         
         Args:
           indexes_hdf5_path: string
           batch_size: int
-          black_list_csv: string
           random_seed: int
         """
         self.batch_size = batch_size
         self.random_state = np.random.RandomState(random_seed)
-
-        # Black list
-        if black_list_csv:
-            self.black_list_names = read_black_list(black_list_csv)
-        else:
-            self.black_list_names = []
-
-        logging.info('Black list samples: {}'.format(len(self.black_list_names)))
 
         # Load target
         load_time = time.time()
@@ -108,18 +87,15 @@ class Base(object):
 
 
 class TrainSampler(Base):
-    def __init__(self, indexes_hdf5_path, batch_size, black_list_csv=None, 
-        random_seed=1234):
+    def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
         """Balanced sampler. Generate batch meta for training.
         
         Args:
           indexes_hdf5_path: string
           batch_size: int
-          black_list_csv: string
           random_seed: int
         """
-        super(TrainSampler, self).__init__(indexes_hdf5_path, batch_size, 
-            black_list_csv, random_seed)
+        super(TrainSampler, self).__init__(indexes_hdf5_path, batch_size, random_seed)
         
         self.indexes = np.arange(self.audios_num)
             
@@ -150,14 +126,10 @@ class TrainSampler(Base):
                     self.pointer = 0
                     self.random_state.shuffle(self.indexes)
                 
-                # If audio in black list then continue
-                if self.audio_names[index] in self.black_list_names:
-                    continue
-                else:
-                    batch_meta.append({
-                        'hdf5_path': self.hdf5_paths[index], 
-                        'index_in_hdf5': self.indexes_in_hdf5[index]})
-                    i += 1
+                batch_meta.append({
+                    'hdf5_path': self.hdf5_paths[index], 
+                    'index_in_hdf5': self.indexes_in_hdf5[index]})
+                i += 1
 
             yield batch_meta
 
@@ -173,19 +145,17 @@ class TrainSampler(Base):
 
 
 class BalancedTrainSampler(Base):
-    def __init__(self, indexes_hdf5_path, batch_size, black_list_csv=None, 
-        random_seed=1234):
+    def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
         """Balanced sampler. Generate batch meta for training. Data are equally 
         sampled from different sound classes.
         
         Args:
           indexes_hdf5_path: string
           batch_size: int
-          black_list_csv: string
           random_seed: int
         """
         super(BalancedTrainSampler, self).__init__(indexes_hdf5_path, 
-            batch_size, black_list_csv, random_seed)
+            batch_size, random_seed)
         
         self.samples_num_per_class = np.sum(self.targets, axis=0)
         logging.info('samples_num_per_class: {}'.format(
@@ -239,14 +209,10 @@ class BalancedTrainSampler(Base):
                     self.pointers_of_classes[class_id] = 0
                     self.random_state.shuffle(self.indexes_per_class[class_id])
 
-                # If audio in black list then continue
-                if self.audio_names[index] in self.black_list_names:
-                    continue
-                else:
-                    batch_meta.append({
-                        'hdf5_path': self.hdf5_paths[index], 
-                        'index_in_hdf5': self.indexes_in_hdf5[index]})
-                    i += 1
+                batch_meta.append({
+                    'hdf5_path': self.hdf5_paths[index], 
+                    'index_in_hdf5': self.indexes_in_hdf5[index]})
+                i += 1
 
             yield batch_meta
 
@@ -264,22 +230,18 @@ class BalancedTrainSampler(Base):
 
 
 class AlternateTrainSampler(Base):
-    def __init__(self, indexes_hdf5_path, batch_size, black_list_csv=None,
-        random_seed=1234):
+    def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
         """AlternateSampler is a combination of Sampler and Balanced Sampler. 
         AlternateSampler alternately sample data from Sampler and Blanced Sampler.
         
         Args:
           indexes_hdf5_path: string          
           batch_size: int
-          black_list_csv: string
           random_seed: int
         """
-        self.sampler1 = TrainSampler(indexes_hdf5_path, batch_size, 
-            black_list_csv, random_seed)
+        self.sampler1 = TrainSampler(indexes_hdf5_path, batch_size, random_seed)
 
-        self.sampler2 = BalancedTrainSampler(indexes_hdf5_path, batch_size, 
-            black_list_csv, random_seed)
+        self.sampler2 = BalancedTrainSampler(indexes_hdf5_path, batch_size, random_seed)
 
         self.batch_size = batch_size
         self.count = 0
@@ -309,14 +271,10 @@ class AlternateTrainSampler(Base):
                         self.sampler1.pointer = 0
                         self.sampler1.random_state.shuffle(self.sampler1.indexes)
                     
-                    # If audio in black list then continue
-                    if self.sampler1.audio_names[index] in self.sampler1.black_list_names:
-                        continue
-                    else:
-                        batch_meta.append({
-                            'hdf5_path': self.sampler1.hdf5_paths[index], 
-                            'index_in_hdf5': self.sampler1.indexes_in_hdf5[index]})
-                        i += 1
+                    batch_meta.append({
+                        'hdf5_path': self.sampler1.hdf5_paths[index], 
+                        'index_in_hdf5': self.sampler1.indexes_in_hdf5[index]})
+                    i += 1
 
             elif self.count % 2 == 1:
                 batch_meta = []
@@ -335,14 +293,10 @@ class AlternateTrainSampler(Base):
                         self.sampler2.pointers_of_classes[class_id] = 0
                         self.sampler2.random_state.shuffle(self.sampler2.indexes_per_class[class_id])
 
-                    # If audio in black list then continue
-                    if self.sampler2.audio_names[index] in self.sampler2.black_list_names:
-                        continue
-                    else:
-                        batch_meta.append({
-                            'hdf5_path': self.sampler2.hdf5_paths[index], 
-                            'index_in_hdf5': self.sampler2.indexes_in_hdf5[index]})
-                        i += 1
+                    batch_meta.append({
+                        'hdf5_path': self.sampler2.hdf5_paths[index], 
+                        'index_in_hdf5': self.sampler2.indexes_in_hdf5[index]})
+                    i += 1
 
             yield batch_meta
 
