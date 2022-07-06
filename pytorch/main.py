@@ -12,8 +12,10 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from utilities import (create_folder, get_filename, create_logging, Mixup, 
-    StatisticsContainer)
+from utils.file_utils import create_folder, get_filename
+from utils.logger import create_logging
+from utils.mixup import Mixup
+from utils.stat_container import StatisticsContainer
 from models import (Cnn14, Cnn14_no_specaug, Cnn14_no_dropout, 
     Cnn6, Cnn10, ResNet22, ResNet38, ResNet54, Cnn14_emb512, Cnn14_emb128, 
     Cnn14_emb32, MobileNetV1, MobileNetV2, LeeNet11, LeeNet24, DaiNet19, 

@@ -9,7 +9,7 @@ import logging
 import h5py
 import librosa
 
-from utilities import create_folder, get_sub_filepaths
+from utils.file_utils import create_folder, get_sub_filepaths
 
 
 def create_indexes(waveforms_hdf5_path, indexes_hdf5_path):

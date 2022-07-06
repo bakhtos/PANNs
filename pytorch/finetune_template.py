@@ -17,7 +17,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from utilities import get_filename
+from utils.file_utils import get_filename
 from models import *
 
 
