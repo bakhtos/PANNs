@@ -25,8 +25,8 @@ def get_labels_metadata():
     labels = []
     ids = []    # Each label has a unique id such as "/m/068hy"
     for line in file_mid:
-        code, labels = line.split('\t')
-        if id in selected_classes:
+        code, label = line.split('\t')
+        if code in selected_classes:
             ids.append(code)
             labels.append(label)
     file_mid.close()
@@ -116,7 +116,7 @@ def read_metadata(csv_path, classes_num, id_to_ix):
             video_id_to_ix[video_id] = count
             count +=1
             targets.append(copy.deepcopy(zero_vector))
-            audio_name = video_id+'.wav'
+            audio_name = 'Y'+video_id+'.wav'
             audio_names.append(audio_name)
 
         video_ix = video_id_to_ix[video_id]
