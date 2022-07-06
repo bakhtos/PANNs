@@ -111,6 +111,7 @@ def read_metadata(csv_path, classes_num, id_to_ix):
     file = open(csv_path, 'r')
     for line in file:
         video_id, label = line.split('\t')
+        label=label[:-1]
 
         if video_id not in video_id_to_ix:
             video_id_to_ix[video_id] = count
@@ -122,7 +123,7 @@ def read_metadata(csv_path, classes_num, id_to_ix):
         video_ix = video_id_to_ix[video_id]
         class_ix = id_to_ix[label]
         
-        targets[video_ix, class_ix] = 1
+        targets[video_ix][class_ix] = 1
     file.close()
 
     meta_dict = {'audio_name': np.array(audio_names), 'target': np.array(targets)}
