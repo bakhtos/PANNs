@@ -126,8 +126,7 @@ def read_metadata(csv_path, classes_num, id_to_ix):
         targets[video_ix][class_ix] = 1
     file.close()
 
-    meta_dict = {'audio_name': np.array(audio_names), 'target': np.array(targets)}
-    return meta_dict
+    return np.array(audio_names), np.array(targets)
 
 
 def float32_to_int16(x):

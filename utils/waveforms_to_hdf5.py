@@ -38,14 +38,14 @@ def pack_waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, mini_data,
     logging.info('Write logs to {}'.format(logs_dir))
     
     # Read csv file
-    meta_dict = read_metadata(csv_path, classes_num, id_to_ix)
+    audio_names, targets = read_metadata(csv_path, classes_num, id_to_ix)
 
     if mini_data:
         mini_num = 10
-        for key in meta_dict.keys():
-            meta_dict[key] = meta_dict[key][0 : mini_num]
+        audio_names = audio_names[0:10]
+        tagrets = targets[0:10]
 
-    audios_num = len(meta_dict['audio_name'])
+    audios_num = len(audio_names)
 
     # Pack waveform to hdf5
     total_time = time.time()
@@ -58,16 +58,16 @@ def pack_waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, mini_data,
 
         # Pack waveform & target of several audio clips to a single hdf5 file
         for n in range(audios_num):
-            audio_path = os.path.join(audios_dir, meta_dict['audio_name'][n])
+            audio_path = os.path.join(audios_dir, audio_names[n])
 
             if os.path.isfile(audio_path):
                 logging.info('{} {}'.format(n, audio_path))
                 (audio, _) = librosa.core.load(audio_path, sr=sample_rate, mono=True)
                 audio = pad_or_truncate(audio, clip_samples)
 
-                hf['audio_name'][n] = meta_dict['audio_name'][n].encode()
+                hf['audio_name'][n] = audio_names[n].encode()
                 hf['waveform'][n] = float32_to_int16(audio)
-                hf['target'][n] = meta_dict['target'][n]
+                hf['target'][n] = targets[n]
             else:
                 logging.info('{} File does not exist! {}'.format(n, audio_path))
 
