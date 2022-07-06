@@ -1,6 +1,5 @@
 import numpy as np
 import argparse
-import csv
 import os
 import glob
 import datetime
