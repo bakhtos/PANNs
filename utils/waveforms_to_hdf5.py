@@ -8,10 +8,10 @@ import logging
 import h5py
 import librosa
 
-from utils.metadata_utils import get_labels_metadata, read_metadata
-from utils.file_utils import create_folder, get_filename
-from utils.logger import create_logging 
-from utils.array_utils import float32_to_int16, pad_or_truncate
+from metadata_utils import get_labels_metadata, read_metadata
+from file_utils import create_folder, get_filename
+from logger import create_logging 
+from array_utils import float32_to_int16, pad_or_truncate
 
 
 def pack_waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, mini_data,
