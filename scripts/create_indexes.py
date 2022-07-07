@@ -107,7 +107,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.mode == 'create_indexes':
-        create_indexes(waveforms_hdf5_path=args.waveform_hdf5_path,
+        create_indexes(waveforms_hdf5_path=args.waveforms_hdf5_path,
                        indexes_hdf5_path=args.indexes_hdf5_path)
 
     elif args.mode == 'combine_full_indexes':
