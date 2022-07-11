@@ -26,7 +26,7 @@ with Weak Labels dataset)
 
 The codes here assume that all files are the audio segments which are to be studied
 (and not full recordings from which segments are to be extracted) and
- are named according to the pattern "Y*.wav", 
+ are named according to the pattern `Y*.wav`, 
 i.e. begin with 'Y', followed by arbitrary symbols and having the extension '.wav.'
 
 The files should be stored in two separate directories, **train** and **eval**, for the
@@ -36,6 +36,7 @@ Metadata files storing class labels should be provided as tab-separated files,
 storing the informationg in following formats:
 - For weak labels: `FILE_ID\tCLASS_ID`, one class per line
 - For strong labels: `FILE_ID\tSTART_TIME\tEND_TIME\tCLASS_ID`, one class per line
+
 ***NOTE:*** FILE_ID should not contain the prefix "Y" or the extension ".wav", these
 are added by the scripts.
 
