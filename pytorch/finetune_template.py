@@ -18,7 +18,7 @@ import torch.optim as optim
 import torch.utils.data
  
 from utils.file_utils import get_filename
-from models import *
+from models import MODELS, Cnn14
 
 
 class Transfer_Cnn14(nn.Module):
@@ -69,7 +69,7 @@ def train(sample_rate, window_size, hop_size, mel_bins, fmin, fmax, model_type,
     pretrain = True if pretrained_checkpoint_path else False
     
     # Model
-    Model = eval(model_type)
+    Model = MODELS[model_type]
     model = Model(sample_rate, window_size, hop_size, mel_bins, fmin, fmax, 
         classes_num, freeze_base)
 

@@ -16,12 +16,7 @@ from utils.file_utils import create_folder, get_filename
 from utils.logger import create_logging
 from utils.mixup import Mixup
 from utils.stat_container import StatisticsContainer
-from models import (Cnn14, Cnn14_no_specaug, Cnn14_no_dropout, 
-    Cnn6, Cnn10, ResNet22, ResNet38, ResNet54, Cnn14_emb512, Cnn14_emb128, 
-    Cnn14_emb32, MobileNetV1, MobileNetV2, LeeNet11, LeeNet24, DaiNet19, 
-    Res1dNet31, Res1dNet51, Wavegram_Cnn14, Wavegram_Logmel_Cnn14, 
-    Wavegram_Logmel128_Cnn14, Cnn14_16k, Cnn14_8k, Cnn14_mel32, Cnn14_mel128, 
-    Cnn14_mixup_time_domain, Cnn14_DecisionLevelMax, Cnn14_DecisionLevelAtt)
+from models import MODELS
 from pytorch_utils import (move_data_to_device, count_parameters, count_flops, 
     do_mixup)
 from data_generator import AudioSetDataset, SAMPLERS, collate_fn)
@@ -106,7 +101,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         device = 'cpu'
     
     # Model
-    Model = eval(model_type)
+    Model = MODELS[model_type]
     model = Model(sample_rate=sample_rate, window_size=window_size, 
         hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
         classes_num=classes_num)
