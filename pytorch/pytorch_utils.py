@@ -2,6 +2,7 @@ import numpy as np
 import time
 import torch
 import torch.nn as nn
+from sklearn import metrics
 
 
 def move_data_to_device(x, device):
@@ -98,6 +99,36 @@ def forward(model, generator, return_input=False,
         output_dict[key] = np.concatenate(output_dict[key], axis=0)
 
     return output_dict
+
+
+def evaluate(model, data_loader):
+    """Forward evaluation data and calculate statistics.
+
+    Args:
+      data_loader: object
+
+    Returns:
+      statistics: dict, 
+          {'average_precision': (classes_num,), 'auc': (classes_num,)}
+    """
+
+    # Forward
+    output_dict = forward(
+        model=model, 
+        generator=data_loader, 
+        return_target=True)
+
+    clipwise_output = output_dict['clipwise_output']    # (audios_num, classes_num)
+    target = output_dict['target']    # (audios_num, classes_num)
+
+    average_precision = metrics.average_precision_score(
+        target, clipwise_output, average=None)
+
+    auc = metrics.roc_auc_score(target, clipwise_output, average=None)
+    
+    statistics = {'average_precision': average_precision, 'auc': auc}
+
+    return statistics
 
 
 def interpolate(x, ratio):

@@ -17,10 +17,9 @@ from utils.logger import create_logging
 from utils.mixup import Mixup
 from utils.stat_container import StatisticsContainer
 from models import MODELS
-from pytorch_utils import (move_data_to_device, count_parameters, count_flops, 
-    do_mixup)
-from data_generator import AudioSetDataset, SAMPLERS, collate_fn)
-from evaluate import Evaluator
+from pytorch_utils import move_data_to_device, count_parameters, count_flops, 
+    do_mixup, evaluate
+from data_generator import AudioSetDataset, SAMPLERS, collate_fn
 from losses import LOSS_FUNCS
 
 
@@ -145,9 +144,6 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
     if 'mixup' in augmentation:
         mixup_augmenter = Mixup(mixup_alpha=1.)
 
-    # Evaluator
-    evaluator = Evaluator(model=model)
-        
     # Statistics
     statistics_container = StatisticsContainer(statistics_path)
     
@@ -198,8 +194,8 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         if (iteration % 2000 == 0 and iteration > resume_iteration) or (iteration == 0):
             train_fin_time = time.time()
 
-            bal_statistics = evaluator.evaluate(eval_bal_loader)
-            test_statistics = evaluator.evaluate(eval_test_loader)
+            bal_statistics = evaluate(model, eval_bal_loader)
+            test_statistics = evaluate(model,eval_test_loader)
                             
             logging.info('Validate bal mAP: {:.3f}'.format(
                 np.mean(bal_statistics['average_precision'])))
