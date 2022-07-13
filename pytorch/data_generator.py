@@ -6,6 +6,11 @@ import logging
 
 from utils.array_utils import int16_to_float32
 
+SAMPLERS = {'TrainSampler': TrainSampler,
+            'BalancedTrainSampler': BalancedTrainSampler,
+            'AlternateTrainSampler': AlternateTrainSampler,
+            'EvaluateSampler': EvaluateSampler}
+
 class AudioSetDataset(object):
     def __init__(self, sample_rate=32000):
         """This class takes the meta of an audio clip as input, and return 
