@@ -27,11 +27,11 @@ from pytorch_utils import (move_data_to_device, count_parameters, count_flops,
 from data_generator import (AudioSetDataset, TrainSampler, BalancedTrainSampler, 
     AlternateTrainSampler, EvaluateSampler, collate_fn)
 from evaluate import Evaluator
-from losses import get_loss_func
+from losses import LOSS_FUNCS
 
 
 def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
-          fmin, fmax, mel_bins, model_type, loss_type, balanced, augmentation,
+          fmin, fmax, mel_bins, model_type, loss, balanced, augmentation,
           batch_size, learning_rate, resume_iteration, early_stop,
           accumulation_steps, cuda, filename, classes_num):
     """Train AudioSet tagging model. 
@@ -44,7 +44,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
       hop_size: int
       mel_bins: int
       model_type: str
-      loss_type: 'clip_bce'
+      loss: 'clip_bce'
       balanced: 'none' | 'balanced' | 'alternate'
       augmentation: 'none' | 'mixup'
       batch_size: int
@@ -59,7 +59,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
 
     num_workers = 8
     clip_samples = sample_rate*10
-    loss_func = get_loss_func(loss_type)
+    loss_func = LOSS_FUNCS[loss]
 
     # Paths
     
@@ -76,7 +76,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
         sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
         'data_type={}'.format(data_type), model_type, 
-        'loss_type={}'.format(loss_type), 'balanced={}'.format(balanced), 
+        'loss_type={}'.format(loss), 'balanced={}'.format(balanced), 
         'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size))
     create_folder(checkpoints_dir)
     
@@ -84,7 +84,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
         sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
         'data_type={}'.format(data_type), model_type, 
-        'loss_type={}'.format(loss_type), 'balanced={}'.format(balanced), 
+        'loss_type={}'.format(loss), 'balanced={}'.format(balanced), 
         'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size), 
         'statistics.pkl')
     create_folder(os.path.dirname(statistics_path))
@@ -93,7 +93,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
         sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
         'data_type={}'.format(data_type), model_type, 
-        'loss_type={}'.format(loss_type), 'balanced={}'.format(balanced), 
+        'loss_type={}'.format(loss), 'balanced={}'.format(balanced), 
         'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size))
 
     create_logging(logs_dir, filemode='w')
@@ -174,7 +174,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
             'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
             sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
             'data_type={}'.format(data_type), model_type, 
-            'loss_type={}'.format(loss_type), 'balanced={}'.format(balanced), 
+            'loss_type={}'.format(loss), 'balanced={}'.format(balanced), 
             'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size), 
             '{}_iterations.pth'.format(resume_iteration))
 
@@ -307,7 +307,7 @@ if __name__ == '__main__':
     parser.add_argument('--fmin', type=int, default=50)
     parser.add_argument('--fmax', type=int, default=14000) 
     parser.add_argument('--model_type', type=str, required=True)
-    parser.add_argument('--loss_type', type=str, default='clip_bce', choices=['clip_bce'])
+    parser.add_argument('--loss', type=str, default='clip_bce', choices=['clip_bce'])
     parser.add_argument('--balanced', type=str, default='balanced', choices=['none', 'balanced', 'alternate'])
     parser.add_argument('--augmentation', type=str, default='mixup', choices=['none', 'mixup'])
     parser.add_argument('--batch_size', type=int, default=32)
@@ -323,7 +323,7 @@ if __name__ == '__main__':
     train(workspace=args.workspace, data_type=args.data_type, fmin=args.fmin,
           fmax=args.fmax, sample_rate=args.sample_rate, window_size=args.window_size,
           hop_size=args.hop_size, mel_bins=args.mel_bins, model_type=args.model_type,
-          loss_type=args.loss_type, balanced=args.balanced, augmentation=args.augmentation,
+          loss=args.loss, balanced=args.balanced, augmentation=args.augmentation,
           batch_size=args.batch_size, learning_rate=args.learning_rate, cuda=args.cuda,
           resume_iteration=args.resume_iteration, early_stop=args.early_stop,
           classes_num=args.classes_num, filename=filename)
