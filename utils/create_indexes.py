@@ -13,9 +13,14 @@ from file_utils import create_folder, get_sub_filepaths
 
 
 def create_indexes(waveforms_hdf5_path, indexes_hdf5_path):
-    """Create indexes a for dataloader to read for training. When users have 
-    a new task and their own data, they need to create similar indexes. The 
-    indexes contain meta information of "where to find the data for training".
+    """.. py:function:: create_indexes(waveforms_hdf5_path, indexes_hdf5_path)
+
+        Create indexes of hdf5-packed files for dataloader to read when training.
+
+        :param str waveforms_hdf5_path: Path of the hdf5-packed audios
+        :param str indexes_hdf5_path: Path to save indexes of the packed audios
+        :return: None
+        :rtype: None
     """
 
     # Paths
@@ -32,10 +37,16 @@ def create_indexes(waveforms_hdf5_path, indexes_hdf5_path):
     print('Write to {}'.format(indexes_hdf5_path))
           
 
-def combine_full_indexes(indexes_hdf5s_dir, full_indexes_hdf5_path, classes_num):
-    """Combine all balanced and unbalanced indexes hdf5s to a single hdf5. This 
-    combined indexes hdf5 is used for training with full data (~20k balanced 
-    audio clips + ~1.9m unbalanced audio clips).
+def combine_indexes(indexes_hdf5s_dir, full_indexes_hdf5_path, classes_num):
+    """.. py:function:: combine_indexes(indexes_hdf5s_dir, full_indexes_hdf5_path, classes_num)
+
+        Combine several hdf5 indexes to a single hdf5.
+
+        :param str indexes_hdf5_dir: Path to a directory with all indexes to be combined
+        :param str full_indexes_hdf5_path: Path to save the combined index
+        :param int classes_num: Amount of classes used in the dataset
+        :return: None
+        :rtype: None
     """
 
     # Paths
@@ -99,7 +110,7 @@ if __name__ == '__main__':
     parser_create_indexes.add_argument('--waveforms_hdf5_path', type=str, required=True, help='Path of packed waveforms hdf5.')
     parser_create_indexes.add_argument('--indexes_hdf5_path', type=str, required=True, help='Path to write out indexes hdf5.')
 
-    parser_combine_full_indexes = subparsers.add_parser('combine_full_indexes')
+    parser_combine_full_indexes = subparsers.add_parser('combine_indexes')
     parser_combine_full_indexes.add_argument('--indexes_hdf5s_dir', type=str, required=True, help='Directory containing indexes hdf5s to be combined.')
     parser_combine_full_indexes.add_argument('--full_indexes_hdf5_path', type=str, required=True, help='Path to write out full indexes hdf5 file.')
     parser_combine_full_indexes.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset.')
@@ -110,8 +121,8 @@ if __name__ == '__main__':
         create_indexes(waveforms_hdf5_path=args.waveforms_hdf5_path,
                        indexes_hdf5_path=args.indexes_hdf5_path)
 
-    elif args.mode == 'combine_full_indexes':
-        combine_full_indexes(indexes_hdf5s_dir=args.indexes_hdf5s_dir,
+    elif args.mode == 'combine_indexes':
+        combine_indexes(indexes_hdf5s_dir=args.indexes_hdf5s_dir,
                              full_indexes_hdf5_path=args.full_indexes_hdf5_path,
                              classes_num=args.classes_num)
 
