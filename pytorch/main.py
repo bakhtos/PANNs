@@ -23,23 +23,22 @@ from data_generator import AudioSetDataset, SAMPLERS, collate_fn
 from losses import LOSS_FUNCS
 
 
-def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
+def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
+          logs_dirs=None, checkpoints_dir=None, statistics_path=None,
+          window_size, hop_size, sample_rate,
           fmin, fmax, mel_bins, model_type, loss, sampler, augmentation,
           batch_size, learning_rate, resume_iteration, early_stop,
           accumulation_steps, cuda, filename, classes_num):
     """Train AudioSet tagging model. 
 
     Args:
-      dataset_dir: str
-      workspace: str
-      data_type: 'balanced_train' | 'full_train'
       window_size: int
       hop_size: int
       mel_bins: int
       model_type: str
       loss: 'clip_bce'
       sampler: Name of the Sampler Class
-      augmentation: 'none' | 'mixup'
+      augmentation: True or False
       batch_size: int
       learning_rate: float
       resume_iteration: int
@@ -55,17 +54,10 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
     loss_func = LOSS_FUNCS[loss]
 
     # Paths
-    
-    train_indexes_hdf5_path = os.path.join(workspace, 'hdf5s', 'indexes', 
-        '{}.h5'.format(data_type))
 
-    eval_bal_indexes_hdf5_path = os.path.join(workspace, 
-        'hdf5s', 'indexes', 'balanced_train.h5')
-
-    eval_test_indexes_hdf5_path = os.path.join(workspace, 'hdf5s', 'indexes', 
-        'eval.h5')
-
-    checkpoints_dir = os.path.join(workspace, 'checkpoints', filename, 
+    workspace = os.getcwd()
+    if checkpoints_dir is None:
+        checkpoints_dir = os.path.join(workspace, 'checkpoints', filename, 
         'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
         sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
         'data_type={}'.format(data_type), model_type, 
@@ -73,7 +65,8 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size))
     create_folder(checkpoints_dir)
     
-    statistics_path = os.path.join(workspace, 'statistics', filename, 
+    if statistics_path is None:
+        statistics_path = os.path.join(workspace, 'statistics', filename, 
         'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
         sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
         'data_type={}'.format(data_type), model_type, 
@@ -82,15 +75,14 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         'statistics.pkl')
     create_folder(os.path.dirname(statistics_path))
 
-    logs_dir = os.path.join(workspace, 'logs', filename, 
+    if logs_dir is None:
+        logs_dir = os.path.join(workspace, 'logs', filename, 
         'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
         sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
         'data_type={}'.format(data_type), model_type, 
         'loss_type={}'.format(loss), 'sampler={}'.format(sampler), 
         'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size))
-
     create_logging(logs_dir, filemode='w')
-    logging.info(args)
     
     if 'cuda' in str(device):
         logging.info('Using GPU.')
@@ -119,7 +111,7 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
      
     train_sampler = Sampler(
         indexes_hdf5_path=train_indexes_hdf5_path, 
-        batch_size=batch_size * 2 if 'mixup' in augmentation else batch_size)
+        batch_size=batch_size * 2 if augmentation else batch_size)
     
     # Evaluate sampler
     eval_sampler = EvaluateSampler(
@@ -134,11 +126,8 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         batch_sampler=eval_test_sampler, collate_fn=collate_fn, 
         num_workers=num_workers, pin_memory=True)
 
-    if 'mixup' in augmentation:
+    if augmentation:
         mixup_augmenter = Mixup(mixup_alpha=1.)
-
-    # Statistics
-    statistics_container = StatisticsContainer(statistics_path)
     
     # Optimizer
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, 
@@ -217,37 +206,34 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
                 checkpoints_dir, '{}_iterations.pth'.format(iteration))
                 
             torch.save(checkpoint, checkpoint_path)
+            pickle.dump(statistics, open(statistics_path, 'wb')
             logging.info('Model saved to {}'.format(checkpoint_path))
         
         # Mixup lambda
-        if 'mixup' in augmentation:
+        if augmentation:
             batch_data_dict['mixup_lambda'] = mixup_augmenter.get_lambda(
                 batch_size=len(batch_data_dict['waveform']))
+        else: 
+            batch_data_dict['mixup_lambda'] = None
 
         # Move data to device
         for key in batch_data_dict.keys():
             batch_data_dict[key] = move_data_to_device(batch_data_dict[key], device)
         
         # Forward
-        model.train()
+        model.train(True)
 
-        if 'mixup' in augmentation:
-            batch_output_dict = model(batch_data_dict['waveform'], 
-                batch_data_dict['mixup_lambda'])
-            """{'clipwise_output': (batch_size, classes_num), ...}"""
+        batch_output_dict = model(batch_data_dict['waveform'], 
+             batch_data_dict['mixup_lambda'])
+        """{'clipwise_output': (batch_size, classes_num), ...}"""
 
-            batch_target_dict = {'target': do_mixup(batch_data_dict['target'], 
-                batch_data_dict['mixup_lambda'])}
-            """{'target': (batch_size, classes_num)}"""
+        if augmentation:
+            target = do_mixup(batch_data_dict['target'], batch_data_dict['mixup_lambda'])
         else:
-            batch_output_dict = model(batch_data_dict['waveform'], None)
-            """{'clipwise_output': (batch_size, classes_num), ...}"""
-
-            batch_target_dict = {'target': batch_data_dict['target']}
-            """{'target': (batch_size, classes_num)}"""
+            target = batch_data_dict['target']
 
         # Loss
-        loss = loss_func(batch_output_dict, batch_target_dict)
+        loss = loss_func(batch_output_dict,target)
 
         # Backward
         loss.backward()
@@ -270,9 +256,12 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Example of parser. ')
-    parser.add_argument('--workspace', type=str, required=True)
-    parser.add_argument('--data_type', type=str, default='full_train', choices=['balanced_train', 'full_train'])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train_indexes_hdf5_path", type=str, required=True)
+    parser.add_argument('--eval_indexes_hdf5_path", type=str, required=True)
+    parser.add_argument('--logs_dir', type=str)
+    parser.add_argument('--checkpoints_dir', type=str)
+    parser.add_argument('--statistics_path', type=str)
     parser.add_argument('--sample_rate', type=int, default=32000)
     parser.add_argument('--window_size', type=int, default=1024)
     parser.add_argument('--hop_size', type=int, default=320)
@@ -282,7 +271,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_type', type=str, required=True)
     parser.add_argument('--loss', type=str, default='clip_bce', choices=['clip_bce'])
     parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'])
-    parser.add_argument('--augmentation', type=str, default='mixup', choices=['none', 'mixup'])
+    parser.add_argument('--augmentation', action='store_true', default=False)
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--resume_iteration', type=int, default=0)
