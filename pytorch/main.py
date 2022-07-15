@@ -1,5 +1,6 @@
 import os
 import sys
+import pickle
 sys.path.insert(1, os.path.join(sys.path[0], '../utils'))
 import numpy as np
 import argparse
@@ -144,7 +145,8 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
         checkpoint = torch.load(resume_checkpoint_path)
         model.load_state_dict(checkpoint['model'])
         train_sampler.load_state_dict(checkpoint['sampler'])
-        statistics_container.load_state_dict(resume_iteration)
+        statistics = pickle.load(open(statistics_path, 'rb'))
+        statistics = statistics[0:resume_iteration+1]
         iteration = checkpoint['iteration']
 
     else:
@@ -168,27 +170,28 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
         """
         
         # Evaluate
-        if (iteration % 2000 == 0 and iteration > resume_iteration) or (iteration == 0):
-            train_fin_time = time.time()
 
-            eval_average_precision, eval_auc = evaluate(model, eval_loader)
+        model.train(False)
+
+        train_fin_time = time.time()
+
+        eval_average_precision, eval_auc = evaluate(model, eval_loader)
                             
-            logging.info('Validate test mAP: {:.3f}'.format(
-                np.mean(eval_average_precision)))
+        logging.info('Validate test mAP: {:.3f}'.format(
+            np.mean(eval_average_precision)))
 
-            statistics_container.append(iteration, bal_statistics, data_type='bal')
-            statistics_container.dump()
+        statistics.append((eval_average_precision, eval_auc))
 
-            train_time = train_fin_time - train_bgn_time
-            validate_time = time.time() - train_fin_time
+        train_time = train_fin_time - train_bgn_time
+        validate_time = time.time() - train_fin_time
 
-            logging.info(
-                'iteration: {}, train time: {:.3f} s, validate time: {:.3f} s'
-                    ''.format(iteration, train_time, validate_time))
+        logging.info(
+            'iteration: {}, train time: {:.3f} s, validate time: {:.3f} s'
+                ''.format(iteration, train_time, validate_time))
 
-            logging.info('------------------------------------')
+        logging.info('------------------------------------')
 
-            train_bgn_time = time.time()
+        train_bgn_time = time.time()
         
         # Save model
         if iteration % 100000 == 0:
