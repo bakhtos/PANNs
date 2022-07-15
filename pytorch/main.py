@@ -20,13 +20,12 @@ from models import MODELS
 from pytorch_utils import move_data_to_device, count_parameters, count_flops, 
     do_mixup, evaluate
 from data_generator import AudioSetDataset, SAMPLERS, collate_fn
-from losses import LOSS_FUNCS
 
 
 def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
           logs_dirs=None, checkpoints_dir=None, statistics_path=None,
           window_size, hop_size, sample_rate,
-          fmin, fmax, mel_bins, model_type, loss, sampler, augmentation,
+          fmin, fmax, mel_bins, model_type, sampler, augmentation,
           batch_size, learning_rate, resume_iteration, early_stop,
           accumulation_steps, cuda, filename, classes_num):
     """Train AudioSet tagging model. 
@@ -36,7 +35,6 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
       hop_size: int
       mel_bins: int
       model_type: str
-      loss: 'clip_bce'
       sampler: Name of the Sampler Class
       augmentation: True or False
       batch_size: int
@@ -51,7 +49,6 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
 
     num_workers = 8
     clip_samples = sample_rate*10
-    loss_func = LOSS_FUNCS[loss]
 
     # Paths
 
@@ -195,7 +192,8 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         # Forward
         model.train(True)
 
-        batch_output_dict = model(batch_data_dict['waveform'], 
+        # 'embedding' is either embedding or framewise output, depends on model
+        clipwise_output, embedding = model(batch_data_dict['waveform'], 
              batch_data_dict['mixup_lambda'])
         """{'clipwise_output': (batch_size, classes_num), ...}"""
 
@@ -205,7 +203,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             target = batch_data_dict['target']
 
         # Loss
-        loss = loss_func(batch_output_dict,target)
+        loss = F.binary_crossentropy(clipwise_output, target)
 
         # Backward
         loss.backward()
@@ -254,7 +252,6 @@ if __name__ == '__main__':
     parser.add_argument('--fmin', type=int, default=50)
     parser.add_argument('--fmax', type=int, default=14000) 
     parser.add_argument('--model_type', type=str, required=True)
-    parser.add_argument('--loss', type=str, default='clip_bce', choices=['clip_bce'])
     parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'])
     parser.add_argument('--augmentation', action='store_true', default=False)
     parser.add_argument('--batch_size', type=int, default=32)

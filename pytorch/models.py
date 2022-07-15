@@ -253,9 +253,7 @@ class Cnn14(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_no_specaug(nn.Module):
@@ -337,9 +335,7 @@ class Cnn14_no_specaug(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_no_dropout(nn.Module):
@@ -422,9 +418,7 @@ class Cnn14_no_dropout(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn6(nn.Module):
@@ -507,9 +501,7 @@ class Cnn6(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn10(nn.Module):
@@ -592,9 +584,7 @@ class Cnn10(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 def _resnet_conv3x3(in_planes, out_planes):
@@ -881,9 +871,7 @@ class ResNet22(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class ResNet38(nn.Module):
@@ -968,9 +956,7 @@ class ResNet38(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class ResNet54(nn.Module):
@@ -1055,9 +1041,7 @@ class ResNet54(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_emb512(nn.Module):
@@ -1146,9 +1130,7 @@ class Cnn14_emb512(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_emb128(nn.Module):
@@ -1237,9 +1219,7 @@ class Cnn14_emb128(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_emb32(nn.Module):
@@ -1328,9 +1308,7 @@ class Cnn14_emb32(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class MobileNetV1(nn.Module):
@@ -1446,9 +1424,7 @@ class MobileNetV1(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class InvertedResidual(nn.Module):
@@ -1628,9 +1604,7 @@ class MobileNetV2(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class LeeNetConvBlock(nn.Module):
@@ -1719,9 +1693,7 @@ class LeeNet11(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class LeeNetConvBlock2(nn.Module):
@@ -1826,9 +1798,7 @@ class LeeNet24(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class DaiNetResBlock(nn.Module):
@@ -1955,9 +1925,7 @@ class DaiNet19(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 def _resnet_conv3x1_wav1d(in_planes, out_planes, dilation):
@@ -2157,9 +2125,7 @@ class Res1dNet31(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Res1dNet51(nn.Module):
@@ -2212,9 +2178,7 @@ class Res1dNet51(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class ConvPreWavBlock(nn.Module):
@@ -2337,9 +2301,7 @@ class Wavegram_Cnn14(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Wavegram_Logmel_Cnn14(nn.Module):
@@ -2451,9 +2413,7 @@ class Wavegram_Logmel_Cnn14(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Wavegram_Logmel128_Cnn14(nn.Module):
@@ -2565,9 +2525,7 @@ class Wavegram_Logmel128_Cnn14(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_16k(nn.Module):
@@ -2662,9 +2620,7 @@ class Cnn14_16k(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_8k(nn.Module):
@@ -2759,9 +2715,7 @@ class Cnn14_8k(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_mixup_time_domain(nn.Module):
@@ -2852,9 +2806,7 @@ class Cnn14_mixup_time_domain(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_mel32(nn.Module):
@@ -2943,9 +2895,7 @@ class Cnn14_mel32(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 class Cnn14_mel128(nn.Module):
@@ -3034,9 +2984,7 @@ class Cnn14_mel128(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
         
-        output_dict = {'clipwise_output': clipwise_output, 'embedding': embedding}
-
-        return output_dict
+        return clipwise_output, embedding
 
 
 ############
@@ -3135,10 +3083,7 @@ class Cnn14_DecisionLevelMax(nn.Module):
         framewise_output = interpolate(segmentwise_output, self.interpolate_ratio)
         framewise_output = pad_framewise_output(framewise_output, frames_num)
 
-        output_dict = {'framewise_output': framewise_output, 
-            'clipwise_output': clipwise_output}
-
-        return output_dict
+        return clipwise_output, framewise_output
 
 
 class Cnn14_DecisionLevelAvg(nn.Module):
@@ -3240,10 +3185,7 @@ class Cnn14_DecisionLevelAvg(nn.Module):
         framewise_output = interpolate(segmentwise_output, self.interpolate_ratio)
         framewise_output = pad_framewise_output(framewise_output, frames_num)
 
-        output_dict = {'framewise_output': framewise_output, 
-            'clipwise_output': clipwise_output}
-
-        return output_dict
+        return clipwise_output, framewise_output
 
 
 class Cnn14_DecisionLevelAtt(nn.Module):
@@ -3341,7 +3283,4 @@ class Cnn14_DecisionLevelAtt(nn.Module):
         framewise_output = interpolate(segmentwise_output, self.interpolate_ratio)
         framewise_output = pad_framewise_output(framewise_output, frames_num)
 
-        output_dict = {'framewise_output': framewise_output, 
-            'clipwise_output': clipwise_output}
-
-        return output_dict
+        return clipwise_output, framewise_output
