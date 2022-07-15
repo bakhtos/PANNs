@@ -97,11 +97,6 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
         hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
         classes_num=classes_num)
      
-    params_num = count_parameters(model)
-    # flops_num = count_flops(model, clip_samples)
-    logging.info('Parameters num: {}'.format(params_num))
-    # logging.info('Flops num: {:.3f} G'.format(flops_num / 1e9))
-    
     # Dataset will be used by DataLoader later. Dataset takes a meta as input 
     # and return a waveform and a target.
     dataset = AudioSetDataset(sample_rate=sample_rate)
