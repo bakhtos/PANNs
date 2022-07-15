@@ -192,19 +192,6 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
 
         train_bgn_time = time.time()
         
-        # Save model
-        if iteration % 100000 == 0:
-            checkpoint = {
-                'iteration': iteration, 
-                'model': model.module.state_dict(), 
-                'sampler': train_sampler.state_dict()}
-
-            checkpoint_path = os.path.join(
-                checkpoints_dir, '{}_iterations.pth'.format(iteration))
-                
-            torch.save(checkpoint, checkpoint_path)
-            pickle.dump(statistics, open(statistics_path, 'wb')
-            logging.info('Model saved to {}'.format(checkpoint_path))
         
         # Mixup lambda
         if augmentation:
@@ -244,10 +231,21 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
                 .format(iteration, time.time() - time1))
             time1 = time.time()
         
-        # Stop learning
-        if iteration == early_stop:
-            break
+        # Save model/Stop learning
+        if iteration % 100000 == 0 or iteration == early_stop:
+            # Save model
+            checkpoint = {
+                'iteration': iteration, 
+                'model': model.module.state_dict(), 
+                'sampler': train_sampler.state_dict()}
 
+            checkpoint_path = os.path.join(
+                checkpoints_dir, '{}_iterations.pth'.format(iteration))
+                
+            torch.save(checkpoint, checkpoint_path)
+            pickle.dump(statistics, open(statistics_path, 'wb')
+            logging.info('Model saved to {}'.format(checkpoint_path))
+            if iteration == early_stop: break # Stop learning
         iteration += 1
         
 
