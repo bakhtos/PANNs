@@ -25,8 +25,8 @@ files are already prepared by the user.
 with Weak Labels dataset)
 
 The codes here assume that all files are the audio segments which are to be studied
-(and not full recordings from which segments are to be extracted) and
- are named according to the pattern `Y*.wav`, 
+(and not full recordings from which segments are to be extracted), that the
+segments are 10 seconds long (or less) and are named according to the pattern `Y*.wav`, 
 i.e. begin with 'Y', followed by arbitrary symbols and having the extension '.wav.'
 
 The files should be stored in two separate directories, **train** and **eval**, for the
