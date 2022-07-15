@@ -55,33 +55,21 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
 
     # Paths
 
+    param_string = f"""sample_rate={sample_rate},window_size={window_size},\
+hop_size={hop_size},mel_bins={mel_bins},fmin={fmin},fmax={fmax},model={model_type}\
+sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
+
     workspace = os.getcwd()
     if checkpoints_dir is None:
-        checkpoints_dir = os.path.join(workspace, 'checkpoints', filename, 
-        'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
-        sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
-        'data_type={}'.format(data_type), model_type, 
-        'loss_type={}'.format(loss), 'sampler={}'.format(sampler), 
-        'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size))
+        checkpoints_dir = os.path.join(workspace, 'checkpoints')
     create_folder(checkpoints_dir)
     
-    if statistics_path is None:
-        statistics_path = os.path.join(workspace, 'statistics', filename, 
-        'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
-        sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
-        'data_type={}'.format(data_type), model_type, 
-        'loss_type={}'.format(loss), 'sampler={}'.format(sampler), 
-        'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size), 
-        'statistics.pkl')
-    create_folder(os.path.dirname(statistics_path))
+    if statistics_dir is None:
+        statistics_dir = os.path.join(workspace, 'statistics')
+    create_folder(os.path.dirname(statistics_dir))
 
     if logs_dir is None:
-        logs_dir = os.path.join(workspace, 'logs', filename, 
-        'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
-        sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
-        'data_type={}'.format(data_type), model_type, 
-        'loss_type={}'.format(loss), 'sampler={}'.format(sampler), 
-        'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size))
+        logs_dir = os.path.join(workspace, 'logs')
     create_logging(logs_dir, filemode='w')
     
     if 'cuda' in str(device):
@@ -135,8 +123,8 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
         resume_checkpoint_path = os.path.join(workspace, 'checkpoints', filename, 
             'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
             sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
-            'data_type={}'.format(data_type), model_type, 
-            'loss_type={}'.format(loss), 'sampler={}'.format(sampler), 
+             model_type, 
+            'sampler={}'.format(sampler), 
             'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size), 
             '{}_iterations.pth'.format(resume_iteration))
 
@@ -239,10 +227,12 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
                 'model': model.module.state_dict(), 
                 'sampler': train_sampler.state_dict()}
 
-            checkpoint_path = os.path.join(
-                checkpoints_dir, '{}_iterations.pth'.format(iteration))
+            checkpoint_name = "checkpoint_"+param_string+f",iteration={iteration}.pth"
+            checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
                 
             torch.save(checkpoint, checkpoint_path)
+            statistics_name = "statistics_"+param_string+f",iteration={iteration}.pth"
+            statistics_path = os.path.join(statistics_dir, statistics_path)
             pickle.dump(statistics, open(statistics_path, 'wb')
             logging.info('Model saved to {}'.format(checkpoint_path))
             if iteration == early_stop: break # Stop learning
@@ -256,7 +246,7 @@ if __name__ == '__main__':
     parser.add_argument('--eval_indexes_hdf5_path", type=str, required=True)
     parser.add_argument('--logs_dir', type=str)
     parser.add_argument('--checkpoints_dir', type=str)
-    parser.add_argument('--statistics_path', type=str)
+    parser.add_argument('--statistics_dir', type=str)
     parser.add_argument('--sample_rate', type=int, default=32000)
     parser.add_argument('--window_size', type=int, default=1024)
     parser.add_argument('--hop_size', type=int, default=320)
@@ -275,12 +265,14 @@ if __name__ == '__main__':
     parser.add_argument('--classes_num', type=int, default=110)
     
     args = parser.parse_args()
-    filename = get_filename(__file__)
 
-    train(workspace=args.workspace, data_type=args.data_type, fmin=args.fmin,
+    train(train_indexes_hdf5_path=args.train_indexes_hdf5_path,
+          eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
+          logs_dir=args.logs_dir,statistics_dir=args_statistics_dir,
+          checkpoints_dir=args.checkpoints_dir, fmin=args.fmin,
           fmax=args.fmax, sample_rate=args.sample_rate, window_size=args.window_size,
           hop_size=args.hop_size, mel_bins=args.mel_bins, model_type=args.model_type,
-          loss=args.loss, sampler=args.sampler, augmentation=args.augmentation,
+          sampler=args.sampler, augmentation=args.augmentation,
           batch_size=args.batch_size, learning_rate=args.learning_rate, cuda=args.cuda,
           resume_iteration=args.resume_iteration, early_stop=args.early_stop,
-          classes_num=args.classes_num, filename=filename)
+          classes_num=args.classes_num)
