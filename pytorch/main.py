@@ -122,22 +122,15 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         batch_size=batch_size * 2 if 'mixup' in augmentation else batch_size)
     
     # Evaluate sampler
-    eval_bal_sampler = EvaluateSampler(
-        indexes_hdf5_path=eval_bal_indexes_hdf5_path, batch_size=batch_size)
-
-    eval_test_sampler = EvaluateSampler(
-        indexes_hdf5_path=eval_test_indexes_hdf5_path, batch_size=batch_size)
+    eval_sampler = EvaluateSampler(
+        indexes_hdf5_path=eval_indexes_hdf5_path, batch_size=batch_size)
 
     # Data loader
     train_loader = torch.utils.data.DataLoader(dataset=dataset, 
         batch_sampler=train_sampler, collate_fn=collate_fn, 
         num_workers=num_workers, pin_memory=True)
     
-    eval_bal_loader = torch.utils.data.DataLoader(dataset=dataset, 
-        batch_sampler=eval_bal_sampler, collate_fn=collate_fn, 
-        num_workers=num_workers, pin_memory=True)
-
-    eval_test_loader = torch.utils.data.DataLoader(dataset=dataset, 
+    eval_loader = torch.utils.data.DataLoader(dataset=dataset, 
         batch_sampler=eval_test_sampler, collate_fn=collate_fn, 
         num_workers=num_workers, pin_memory=True)
 
@@ -194,17 +187,12 @@ def train(workspace, data_type, dataset_dir, window_size, hop_size, sample_rate,
         if (iteration % 2000 == 0 and iteration > resume_iteration) or (iteration == 0):
             train_fin_time = time.time()
 
-            bal_statistics = evaluate(model, eval_bal_loader)
-            test_statistics = evaluate(model,eval_test_loader)
+            eval_average_precision, eval_auc = evaluate(model, eval_loader)
                             
-            logging.info('Validate bal mAP: {:.3f}'.format(
-                np.mean(bal_statistics['average_precision'])))
-
             logging.info('Validate test mAP: {:.3f}'.format(
-                np.mean(test_statistics['average_precision'])))
+                np.mean(eval_average_precision)))
 
             statistics_container.append(iteration, bal_statistics, data_type='bal')
-            statistics_container.append(iteration, test_statistics, data_type='test')
             statistics_container.dump()
 
             train_time = train_fin_time - train_bgn_time

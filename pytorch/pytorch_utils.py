@@ -126,9 +126,7 @@ def evaluate(model, data_loader):
 
     auc = metrics.roc_auc_score(target, clipwise_output, average=None)
     
-    statistics = {'average_precision': average_precision, 'auc': auc}
-
-    return statistics
+    return average_precision, auc
 
 
 def interpolate(x, ratio):
