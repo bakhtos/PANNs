@@ -16,7 +16,6 @@ import torch.utils.data
 from utils.file_utils import create_folder, get_filename
 from utils.logger import create_logging
 from utils.mixup import Mixup
-from utils.stat_container import StatisticsContainer
 from models import MODELS
 from pytorch_utils import move_data_to_device, count_parameters, count_flops, 
     do_mixup, evaluate
