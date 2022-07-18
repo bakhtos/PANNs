@@ -148,6 +148,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
     else:
         iteration = 0
+        statistics = []
     
     # Parallel
     print('GPU number: {}'.format(torch.cuda.device_count()))
