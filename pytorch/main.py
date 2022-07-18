@@ -31,11 +31,11 @@ def train(*, train_indexes_hdf5_path,
           window_size=1024, hop_size=320, sample_rate=32000,
           fmin=50, fmax=14000, mel_bins=64,
           sampler='BalancedTrainSampler',
-          augmentation=False,
+          augmentation=False, mixup_alpha=1.0,
           batch_size=32, learning_rate=1e-3, resume_iteration=0,
           resume_checkpoint_path=None, iter_max=1000000,
           cuda=False, classes_num=110):
-    """.. py:function:: train(train_indexes_hdf5_path, eval_indexes_hdf5_path, model_path, [logs_dir=None, checkpoints_dir=None, statistics_dir=None, window_size=1024, hop_size=320, sample_rate=32000, fmin=50, fmax=14000, mel_bins=64, sampler='BalancedTrainSampler', augmentation=False, batch_size=32, learning_rate=1e-3, resume_iteration=0, resume_checkpoint_path=None, iter_max=1000000, cuda=False, classes_num=110])
+    """.. py:function:: train(train_indexes_hdf5_path, eval_indexes_hdf5_path, model_path, [logs_dir=None, checkpoints_dir=None, statistics_dir=None, window_size=1024, hop_size=320, sample_rate=32000, fmin=50, fmax=14000, mel_bins=64, sampler='BalancedTrainSampler', augmentation=False, mixup_alpha=1.0, batch_size=32, learning_rate=1e-3, resume_iteration=0, resume_checkpoint_path=None, iter_max=1000000, cuda=False, classes_num=110])
 
     Train AudioSet tagging model. 
 
@@ -53,6 +53,7 @@ def train(*, train_indexes_hdf5_path,
     :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
     :param str sampler: The sampler for the dataset to use for training ('TrainSampler' (default)|'BalancedTrainSampler'|'AlternateTrainSampler')
     :param bool augmentation: If True, use Mixup with alpha=1.0 for data augmentation (default False)
+    :param float mixup_alpha: If using augmentation, use this as alpha parameter for Mixup (default 1.0)
     :param int batch_size: Batch size to use for training/evaluation (default 32)
     :param float learning_rate: Learning rate to use in traning (default 1e-3)
     :param int resume_iteration: If greater than 0, load a checkpoint and resume traning from this iteration (defulat 0)
@@ -127,7 +128,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         num_workers=num_workers, pin_memory=True)
 
     if augmentation:
-        mixup_augmenter = Mixup(mixup_alpha=1.)
+        mixup_augmenter = Mixup(mixup_alpha=mixup_alpha)
     
     # Optimizer
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, 
@@ -266,6 +267,7 @@ if __name__ == '__main__':
     parser.add_argument('--mel_bins', type=int, default=64)
     parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'])
     parser.add_argument('--augmentation', action='store_true', default=False)
+    parser.add_argument('--mixup_alpha', type=float, default=1.0)
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--resume_iteration', type=int, default=0)
@@ -290,6 +292,7 @@ if __name__ == '__main__':
           mel_bins=args.mel_bins,
           sampler=args.sampler,
           augmentation=args.augmentation,
+          mixup_alpha=args.mixup_alpha,
           batch_size=args.batch_size,
           learning_rate=args.learning_rate,
           resume_iteration=args.resume_iteration,
