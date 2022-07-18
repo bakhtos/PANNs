@@ -32,9 +32,10 @@ def train(*, train_indexes_hdf5_path,
           fmin=50, fmax=14000, mel_bins=64,
           sampler='BalancedTrainSampler',
           augmentation=False,
-          batch_size=32, learning_rate=1e-3, resume_iteration=0, iter_max=1000000,
+          batch_size=32, learning_rate=1e-3, resume_iteration=0,
+          resume_checkpoint_path=None, iter_max=1000000,
           cuda=False, classes_num=110):
-    """.. py:function:: train(train_indexes_hdf5_path, eval_indexes_hdf5_path, model_path, [logs_dir=None, checkpoints_dir=None, statistics_dir=None, window_size=1024, hop_size=320, sample_rate=32000, fmin=50, fmax=14000, mel_bins=64, sampler='BalancedTrainSampler', augmentation=False, batch_size=32, learning_rate=1e-3, resume_iteration=0, iter_max=1000000, cuda=False, classes_num=110])
+    """.. py:function:: train(train_indexes_hdf5_path, eval_indexes_hdf5_path, model_path, [logs_dir=None, checkpoints_dir=None, statistics_dir=None, window_size=1024, hop_size=320, sample_rate=32000, fmin=50, fmax=14000, mel_bins=64, sampler='BalancedTrainSampler', augmentation=False, batch_size=32, learning_rate=1e-3, resume_iteration=0, resume_checkpoint_path=None, iter_max=1000000, cuda=False, classes_num=110])
 
     Train AudioSet tagging model. 
 
@@ -51,10 +52,11 @@ def train(*, train_indexes_hdf5_path,
     :param int fmax: Maximum frequency to be used when creating Logmel filterbank (default 14000)
     :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
     :param str sampler: The sampler for the dataset to use for training ('TrainSampler' (default)|'BalancedTrainSampler'|'AlternateTrainSampler')
-    :param bool augmentation: If True, use Mixup with lambda=1.0 for data augmentation (default False)
+    :param bool augmentation: If True, use Mixup with alpha=1.0 for data augmentation (default False)
     :param int batch_size: Batch size to use for training/evaluation (default 32)
     :param float learning_rate: Learning rate to use in traning (default 1e-3)
     :param int resume_iteration: If greater than 0, load a checkpoint and resume traning from this iteration (defulat 0)
+    :param str resume_checkpoint_path: If :py:data:resume_iteration is greater than 0, read a checkpoint to be resumed from this path (default None, will cause a :py:exc:ValueError if :py:data:resume_iteration is greater than 0)
     :param int iter_max: Train until this iteration (default 1000000) 
     :param bool cuda: If True, try to use GPU for traning (default False)
     :param int classes_num: Amount of classes used in the dataset (default 110)
@@ -64,6 +66,9 @@ def train(*, train_indexes_hdf5_path,
 
     num_workers = 8
     clip_samples = sample_rate*10
+    
+    if resume_iteration > 0 and resume_checkpoint_path is None:
+        raise ValueError("resume_iteration is greater than 0, but no resume_checkpoint_path was given.")
 
     # Paths
 
@@ -132,14 +137,6 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     
     # Resume training
     if resume_iteration > 0:
-        resume_checkpoint_path = os.path.join(workspace, 'checkpoints', filename, 
-            'sample_rate={},window_size={},hop_size={},mel_bins={},fmin={},fmax={}'.format(
-            sample_rate, window_size, hop_size, mel_bins, fmin, fmax), 
-             model_type, 
-            'sampler={}'.format(sampler), 
-            'augmentation={}'.format(augmentation), 'batch_size={}'.format(batch_size), 
-            '{}_iterations.pth'.format(resume_iteration))
-
         logging.info('Loading checkpoint {}'.format(resume_checkpoint_path))
         checkpoint = torch.load(resume_checkpoint_path)
         model.load_state_dict(checkpoint['model'])
@@ -272,6 +269,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--resume_iteration', type=int, default=0)
+    parser.add_argument('--resume_checkpoint_path', type=str, default=None)
     parser.add_argument('--iter_max', type=int, default=1000000)
     parser.add_argument('--cuda', action='store_true', default=False)
     parser.add_argument('--classes_num', type=int, default=110)
@@ -295,6 +293,7 @@ if __name__ == '__main__':
           batch_size=args.batch_size,
           learning_rate=args.learning_rate,
           resume_iteration=args.resume_iteration,
+          resume_checkpoint_path=args.resume_checkpoint_path
           iter_max=args.iter_max)
           cuda=args.cuda,
           classes_num=args.classes_num)
