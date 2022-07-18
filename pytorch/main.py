@@ -23,11 +23,11 @@ from data_generator import AudioSetDataset, SAMPLERS, collate_fn
 
 
 def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
-          logs_dirs=None, checkpoints_dir=None, statistics_path=None,
+          logs_dir=None, checkpoints_dir=None, statistics_dir=None,
           window_size, hop_size, sample_rate,
           fmin, fmax, mel_bins, model_type, sampler, augmentation,
-          batch_size, learning_rate, resume_iteration, early_stop,
-          accumulation_steps, cuda, filename, classes_num):
+          batch_size, learning_rate, resume_iteration, iter_max,
+          cuda, classes_num):
     """Train AudioSet tagging model. 
 
     Args:
@@ -40,8 +40,7 @@ def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
       batch_size: int
       learning_rate: float
       resume_iteration: int
-      early_stop: int
-      accumulation_steps: int
+      iter_max: int
       cuda: bool
     """
 
@@ -245,19 +244,19 @@ if __name__ == '__main__':
     parser.add_argument('--logs_dir', type=str)
     parser.add_argument('--checkpoints_dir', type=str)
     parser.add_argument('--statistics_dir', type=str)
-    parser.add_argument('--sample_rate', type=int, default=32000)
     parser.add_argument('--window_size', type=int, default=1024)
     parser.add_argument('--hop_size', type=int, default=320)
-    parser.add_argument('--mel_bins', type=int, default=64)
+    parser.add_argument('--sample_rate', type=int, default=32000)
     parser.add_argument('--fmin', type=int, default=50)
     parser.add_argument('--fmax', type=int, default=14000) 
+    parser.add_argument('--mel_bins', type=int, default=64)
     parser.add_argument('--model_type', type=str, required=True)
     parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'])
     parser.add_argument('--augmentation', action='store_true', default=False)
     parser.add_argument('--batch_size', type=int, default=32)
     parser.add_argument('--learning_rate', type=float, default=1e-3)
     parser.add_argument('--resume_iteration', type=int, default=0)
-    parser.add_argument('--early_stop', type=int, default=1000000)
+    parser.add_argument('--iter_max', type=int, default=1000000)
     parser.add_argument('--cuda', action='store_true', default=False)
     parser.add_argument('--classes_num', type=int, default=110)
     
@@ -265,11 +264,21 @@ if __name__ == '__main__':
 
     train(train_indexes_hdf5_path=args.train_indexes_hdf5_path,
           eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
-          logs_dir=args.logs_dir,statistics_dir=args_statistics_dir,
-          checkpoints_dir=args.checkpoints_dir, fmin=args.fmin,
-          fmax=args.fmax, sample_rate=args.sample_rate, window_size=args.window_size,
-          hop_size=args.hop_size, mel_bins=args.mel_bins, model_type=args.model_type,
-          sampler=args.sampler, augmentation=args.augmentation,
-          batch_size=args.batch_size, learning_rate=args.learning_rate, cuda=args.cuda,
-          resume_iteration=args.resume_iteration, early_stop=args.early_stop,
+          logs_dir=args.logs_dir,
+          checkpoints_dir=args.checkpoints_dir,
+          statistics_dir=args.statistics_dir,
+          window_size=args.window_size,
+          hop_size=args.hop_size,
+          sample_rate=args.sample_rate,
+          fmin=args.fmin,
+          fmax=args.fmax,
+          mel_bins=args.mel_bins,
+          model_type=args.model_type,
+          sampler=args.sampler,
+          augmentation=args.augmentation,
+          batch_size=args.batch_size,
+          learning_rate=args.learning_rate,
+          resume_iteration=args.resume_iteration,
+          iter_max=args.iter_max)
+          cuda=args.cuda,
           classes_num=args.classes_num)
