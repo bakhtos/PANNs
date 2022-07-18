@@ -41,10 +41,10 @@ def train(*, train_indexes_hdf5_path,
 
     Models are saved to and loaded from 'checkpoints' using torch.save/torch.load respectively.
     A checkpoint is a dictionary containng following keys:
-        - iteration: counter of the iteration correponding to the checkpoint
-        - model: state_dict of the model
-        - sampler: state_dict of the sampler
-        - statistics: list of statistics (average_precision and auc) for evaluation set at each iteration
+        * iteration: counter of the iteration correponding to the checkpoint
+        * model: state_dict of the model
+        * sampler: state_dict of the sampler
+        * statistics: list of statistics (average_precision and auc) for evaluation set at each iteration
 
     :param str train_indexes_hdf5_path: Path to hdf5 index of the train set
     :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
