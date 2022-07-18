@@ -22,26 +22,42 @@ from pytorch_utils import move_data_to_device, count_parameters, count_flops,
 from data_generator import AudioSetDataset, SAMPLERS, collate_fn
 
 
-def train(train_indexes_hdf5_path, eval_indexes_hdf5_path,
-          logs_dir=None, checkpoints_dir=None, statistics_dir=None,
-          window_size, hop_size, sample_rate,
-          fmin, fmax, mel_bins, model_type, sampler, augmentation,
-          batch_size, learning_rate, resume_iteration, iter_max,
-          cuda, classes_num):
-    """Train AudioSet tagging model. 
+def train(*, train_indexes_hdf5_path,
+          eval_indexes_hdf5_path,
+          model_type,
+          logs_dir=None,
+          checkpoints_dir=None,
+          statistics_dir=None,
+          window_size=1024, hop_size=320, sample_rate=32000,
+          fmin=50, fmax=14000, mel_bins=64,
+          sampler='BalancedTrainSampler',
+          augmentation=False,
+          batch_size=32, learning_rate=1e-3, resume_iteration=0, iter_max=1000000,
+          cuda=False, classes_num=110):
+    """.. py:function:: train(train_indexes_hdf5_path, eval_indexes_hdf5_path, model_path, [logs_dir=None, checkpoints_dir=None, statistics_dir=None, window_size=1024, hop_size=320, sample_rate=32000, fmin=50, fmax=14000, mel_bins=64, sampler='BalancedTrainSampler', augmentation=False, batch_size=32, learning_rate=1e-3, resume_iteration=0, iter_max=1000000, cuda=False, classes_num=110])
 
-    Args:
-      window_size: int
-      hop_size: int
-      mel_bins: int
-      model_type: str
-      sampler: Name of the Sampler Class
-      augmentation: True or False
-      batch_size: int
-      learning_rate: float
-      resume_iteration: int
-      iter_max: int
-      cuda: bool
+    Train AudioSet tagging model. 
+
+    :param str train_indexes_hdf5_path: Path to hdf5 index of the train set
+    :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
+    :param str model_type: Name of model to train (one of the model classes defined in models.py
+    :param str logs_dir: Directory to save the logs into (will be created if doesn't exist already), if None a directory 'logs' will be created in CWD  (default None)
+    :param str checkpoints_dir: Directory to save neural net's checkpoints into (will be created if doesn't exist already), if None a directory 'checkpoints' will be created in CWD (default None)
+    :param str statistics_dir: Directory to save evaluation statistics into (will be created if doesn't exist already), if None a directory 'statistics' will be created in CWD (default None)
+    :param int window_size: Window size of filter to be used in training (default 1024)
+    :param int hop_size: Hop size of filter to be used in traning (default 320)
+    :param int sample_rate: Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)
+    :param int fmin: Minimum frequency to be used when creating Logmel filterbank (default 50)
+    :param int fmax: Maximum frequency to be used when creating Logmel filterbank (default 14000)
+    :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
+    :param str sampler: The sampler for the dataset to use for training ('TrainSampler' (default)|'BalancedTrainSampler'|'AlternateTrainSampler')
+    :param bool augmentation: If True, use Mixup with lambda=1.0 for data augmentation (default False)
+    :param int batch_size: Batch size to use for training/evaluation (default 32)
+    :param float learning_rate: Learning rate to use in traning (default 1e-3)
+    :param int resume_iteration: If greater than 0, load a checkpoint and resume traning from this iteration (defulat 0)
+    :param int iter_max: Train until this iteration (default 1000000) 
+    :param bool cuda: If True, try to use GPU for traning (default False)
+    :param int classes_num: Amount of classes used in the dataset (default 110)
     """
 
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
@@ -241,6 +257,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_indexes_hdf5_path", type=str, required=True)
     parser.add_argument('--eval_indexes_hdf5_path", type=str, required=True)
+    parser.add_argument('--model_type', type=str, required=True)
     parser.add_argument('--logs_dir', type=str)
     parser.add_argument('--checkpoints_dir', type=str)
     parser.add_argument('--statistics_dir', type=str)
@@ -250,7 +267,6 @@ if __name__ == '__main__':
     parser.add_argument('--fmin', type=int, default=50)
     parser.add_argument('--fmax', type=int, default=14000) 
     parser.add_argument('--mel_bins', type=int, default=64)
-    parser.add_argument('--model_type', type=str, required=True)
     parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'])
     parser.add_argument('--augmentation', action='store_true', default=False)
     parser.add_argument('--batch_size', type=int, default=32)
@@ -264,6 +280,7 @@ if __name__ == '__main__':
 
     train(train_indexes_hdf5_path=args.train_indexes_hdf5_path,
           eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
+          model_type=args.model_type,
           logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
@@ -273,7 +290,6 @@ if __name__ == '__main__':
           fmin=args.fmin,
           fmax=args.fmax,
           mel_bins=args.mel_bins,
-          model_type=args.model_type,
           sampler=args.sampler,
           augmentation=args.augmentation,
           batch_size=args.batch_size,
