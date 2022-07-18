@@ -39,12 +39,19 @@ def train(*, train_indexes_hdf5_path,
 
     Train AudioSet tagging model. 
 
+    Models are saved to and loaded from 'checkpoints' using torch.save/torch.load respectively.
+    A checkpoint is a dictionary containng following keys:
+        - iteration: counter of the iteration correponding to the checkpoint
+        - model: state_dict of the model
+        - sampler: state_dict of the sampler
+        - statistics: list of statistics (average_precision and auc) for evaluation set at each iteration
+
     :param str train_indexes_hdf5_path: Path to hdf5 index of the train set
     :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
     :param str model_type: Name of model to train (one of the model classes defined in models.py
     :param str logs_dir: Directory to save the logs into (will be created if doesn't exist already), if None a directory 'logs' will be created in CWD  (default None)
     :param str checkpoints_dir: Directory to save neural net's checkpoints into (will be created if doesn't exist already), if None a directory 'checkpoints' will be created in CWD (default None)
-    :param str statistics_dir: Directory to save evaluation statistics into (will be created if doesn't exist already), if None a directory 'statistics' will be created in CWD (default None)
+    :param str statistics_dir: Directory to save evaluation statistics into (will be created if doesn't exist already), if None a directory 'statistics' will be created in CWD (default None) NOTE: statistics are also saved into checkpoints
     :param int window_size: Window size of filter to be used in training (default 1024)
     :param int hop_size: Hop size of filter to be used in traning (default 320)
     :param int sample_rate: Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)
@@ -142,7 +149,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         checkpoint = torch.load(resume_checkpoint_path)
         model.load_state_dict(checkpoint['model'])
         train_sampler.load_state_dict(checkpoint['sampler'])
-        statistics = pickle.load(open(statistics_path, 'rb'))
+        statistics = checkpoint['statistics']
         statistics = statistics[0:resume_iteration+1]
         iteration = checkpoint['iteration']
 
@@ -237,7 +244,8 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             checkpoint = {
                 'iteration': iteration, 
                 'model': model.module.state_dict(), 
-                'sampler': train_sampler.state_dict()}
+                'sampler': train_sampler.state_dict(),
+                'statistics': statistics}
 
             checkpoint_name = "checkpoint_"+param_string+f",iteration={iteration}.pth"
             checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
