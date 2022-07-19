@@ -48,7 +48,7 @@ def train(*, train_indexes_hdf5_path,
 
     :param str train_indexes_hdf5_path: Path to hdf5 index of the train set
     :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
-    :param str model_type: Name of model to train (one of the model classes defined in models.py
+    :param str model_type: Name of model to train (one of the model classes defined in models.py)
     :param str logs_dir: Directory to save the logs into (will be created if doesn't exist already), if None a directory 'logs' will be created in CWD  (default None)
     :param str checkpoints_dir: Directory to save neural net's checkpoints into (will be created if doesn't exist already), if None a directory 'checkpoints' will be created in CWD (default None)
     :param str statistics_dir: Directory to save evaluation statistics into (will be created if doesn't exist already), if None a directory 'statistics' will be created in CWD (default None) NOTE: statistics are also saved into checkpoints
@@ -59,11 +59,11 @@ def train(*, train_indexes_hdf5_path,
     :param int fmax: Maximum frequency to be used when creating Logmel filterbank (default 14000)
     :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
     :param str sampler: The sampler for the dataset to use for training ('TrainSampler' (default)|'BalancedTrainSampler'|'AlternateTrainSampler')
-    :param bool augmentation: If True, use Mixup with alpha=1.0 for data augmentation (default False)
+    :param bool augmentation: If True, use Mixup for data augmentation (default False)
     :param float mixup_alpha: If using augmentation, use this as alpha parameter for Mixup (default 1.0)
     :param int batch_size: Batch size to use for training/evaluation (default 32)
-    :param float learning_rate: Learning rate to use in traning (default 1e-3)
-    :param int resume_iteration: If greater than 0, load a checkpoint and resume traning from this iteration (defulat 0)
+    :param float learning_rate: Learning rate to use in training (default 1e-3)
+    :param int resume_iteration: If greater than 0, load a checkpoint and resume traning from this iteration (default 0)
     :param str resume_checkpoint_path: If :py:data:resume_iteration is greater than 0, read a checkpoint to be resumed from this path (default None, will cause a :py:exc:ValueError if :py:data:resume_iteration is greater than 0)
     :param int iter_max: Train until this iteration (default 1000000) 
     :param bool cuda: If True, try to use GPU for traning (default False)
@@ -262,28 +262,48 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_indexes_hdf5_path", type=str, required=True)
-    parser.add_argument('--eval_indexes_hdf5_path", type=str, required=True)
-    parser.add_argument('--model_type', type=str, required=True)
-    parser.add_argument('--logs_dir', type=str)
-    parser.add_argument('--checkpoints_dir', type=str)
-    parser.add_argument('--statistics_dir', type=str)
-    parser.add_argument('--window_size', type=int, default=1024)
-    parser.add_argument('--hop_size', type=int, default=320)
-    parser.add_argument('--sample_rate', type=int, default=32000)
-    parser.add_argument('--fmin', type=int, default=50)
-    parser.add_argument('--fmax', type=int, default=14000) 
-    parser.add_argument('--mel_bins', type=int, default=64)
-    parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'])
-    parser.add_argument('--augmentation', action='store_true', default=False)
-    parser.add_argument('--mixup_alpha', type=float, default=1.0)
-    parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--learning_rate', type=float, default=1e-3)
-    parser.add_argument('--resume_iteration', type=int, default=0)
-    parser.add_argument('--resume_checkpoint_path', type=str, default=None)
-    parser.add_argument('--iter_max', type=int, default=1000000)
-    parser.add_argument('--cuda', action='store_true', default=False)
-    parser.add_argument('--classes_num', type=int, default=110)
+    parser.add_argument('--train_indexes_hdf5_path", type=str, required=True,
+                        help="Path to hdf5 index of the train set")
+    parser.add_argument('--eval_indexes_hdf5_path", type=str, required=True,
+                        help="Path to hdf5 index of the evaluation set")
+    parser.add_argument('--model_type', type=str, required=True,
+                        help="Name of model to train")
+    parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
+    parser.add_argument('--checkpoints_dir', type=str,
+                        help="Directory to save neural net's checkpoints into")
+    parser.add_argument('--statistics_dir', type=str, help="Directory to save evaluation statistics into")
+    parser.add_argument('--window_size', type=int, default=1024,
+                        help="Window size of filter to be used in training (default 1024)")
+    parser.add_argument('--hop_size', type=int, default=320,
+                        help="Hop size of filter to be used in traning (default 320)")
+    parser.add_argument('--sample_rate', type=int, default=32000,
+                        help="Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)")
+    parser.add_argument('--fmin', type=int, default=50,
+                        help="Minimum frequency to be used when creating Logmel filterbank (default 50)")
+    parser.add_argument('--fmax', type=int, default=14000,
+                        help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
+    parser.add_argument('--mel_bins', type=int, default=64,
+                        help="Amount of mel filters to use in the filterbank (default 64)")
+    parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'],
+                        help="The sampler for the dataset to use for training")
+    parser.add_argument('--augmentation', action='store_true', default=False,
+                        help="If set, use Mixup for data augmentation")
+    parser.add_argument('--mixup_alpha', type=float, default=1.0,
+                        help="If using augmentation, use this as alpha parameter for Mixup") 
+    parser.add_argument('--batch_size', type=int, default=32,
+                        help="Batch size to use for training/evaluation")
+    parser.add_argument('--learning_rate', type=float, default=1e-3,
+                        help="Learning rate to use in training")
+    parser.add_argument('--resume_iteration', type=int, default=0,
+                        help="If greater than 0, load a checkpoint and resume traning from this iteration")
+    parser.add_argument('--resume_checkpoint_path', type=str, default=None,
+                        help="If --resume_iteration  is greater than zero, read a checkpoint from this path")
+    parser.add_argument('--iter_max', type=int, default=1000000,
+                        help="Train until this iteration")
+    parser.add_argument('--cuda', action='store_true', default=False,
+                        help="If set, try to use GPU for traning")
+    parser.add_argument('--classes_num', type=int, default=110,
+                        help="Amount of classes used in the dataset")
     
     args = parser.parse_args()
 
