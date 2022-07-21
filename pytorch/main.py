@@ -17,8 +17,7 @@ from file_utils import create_folder, get_filename
 from logger import create_logging
 from mixup import Mixup
 from models import MODELS
-from pytorch_utils import move_data_to_device, count_parameters, count_flops, 
-    do_mixup, evaluate
+from pytorch_utils import move_data_to_device, count_parameters, count_flops, do_mixup, evaluate
 from data_generator import AudioSetDataset, SAMPLERS, collate_fn
 
 
