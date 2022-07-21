@@ -14,7 +14,7 @@ from logger import create_logging
 from array_utils import float32_to_int16, pad_or_truncate
 
 
-def waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, mini_data=False,
+def waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, mini_data,
                            sample_rate, classes_num):
     """.. py:function:: waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, sample_rate, classes_num [, mini_data=False])
     
