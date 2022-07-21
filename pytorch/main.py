@@ -121,7 +121,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         batch_size=batch_size * 2 if augmentation else batch_size)
     
     # Evaluate sampler
-    eval_sampler = EvaluateSampler(
+    eval_sampler = SAMPLERS['EvaluateSampler'](
         indexes_hdf5_path=eval_indexes_hdf5_path, batch_size=batch_size)
 
     # Data loader
