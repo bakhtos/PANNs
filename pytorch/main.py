@@ -13,9 +13,9 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from utils.file_utils import create_folder, get_filename
-from utils.logger import create_logging
-from utils.mixup import Mixup
+from file_utils import create_folder, get_filename
+from logger import create_logging
+from mixup import Mixup
 from models import MODELS
 from pytorch_utils import move_data_to_device, count_parameters, count_flops, 
     do_mixup, evaluate
