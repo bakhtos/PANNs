@@ -324,7 +324,7 @@ if __name__ == '__main__':
           batch_size=args.batch_size,
           learning_rate=args.learning_rate,
           resume_iteration=args.resume_iteration,
-          resume_checkpoint_path=args.resume_checkpoint_path
+          resume_checkpoint_path=args.resume_checkpoint_path,
           iter_max=args.iter_max,
           cuda=args.cuda,
           classes_num=args.classes_num)
