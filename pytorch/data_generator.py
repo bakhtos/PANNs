@@ -1,10 +1,13 @@
+import sys
+import os
+sys.path.insert(1, os.path.join(sys.path[0], '../utils'))
 import numpy as np
 import h5py
 import csv
 import time
 import logging
 
-from utils.array_utils import int16_to_float32
+from array_utils import int16_to_float32
 
 
 class AudioSetDataset(object):
