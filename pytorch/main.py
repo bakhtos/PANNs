@@ -261,9 +261,9 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_indexes_hdf5_path", type=str, required=True,
+    parser.add_argument('--train_indexes_hdf5_path', type=str, required=True,
                         help="Path to hdf5 index of the train set")
-    parser.add_argument('--eval_indexes_hdf5_path", type=str, required=True,
+    parser.add_argument('--eval_indexes_hdf5_path', type=str, required=True,
                         help="Path to hdf5 index of the evaluation set")
     parser.add_argument('--model_type', type=str, required=True,
                         help="Name of model to train")
