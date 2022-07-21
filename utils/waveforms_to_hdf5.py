@@ -36,16 +36,10 @@ def waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, mini_data,
 
     _,_,_,_,id_to_ix,_ = get_labels_metadata()
 
-    # Paths
-    if mini_data:
-        prefix = 'mini_'
-        waveforms_hdf5_path += '.mini'
-    else:
-        prefix = ''
 
     create_folder(os.path.dirname(waveforms_hdf5_path))
 
-    logs_dir = '_logs/pack_waveforms_to_hdf5/{}{}'.format(prefix, get_filename(csv_path))
+    logs_dir = os.path.join('_logs', 'pack_waveforms_to_hdf5',get_filename(csv_path))
     create_folder(logs_dir)
     create_logging(logs_dir, filemode='w')
     logging.info('Write logs to {}'.format(logs_dir))
