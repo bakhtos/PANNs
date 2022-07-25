@@ -3,6 +3,7 @@ import time
 import torch
 import torch.nn as nn
 from sklearn import metrics
+from sklearn.utils.multiclass import type_of_target
 
 
 def move_data_to_device(x, device):
@@ -123,6 +124,7 @@ def evaluate(model, data_loader):
     print(target.shape)
     print(np.sum(target, axis=0))
     print(np.sum(target, axis=1))
+    print(type_of_target(target))
 
     average_precision = metrics.average_precision_score(
         target, clipwise_output, average=None)
