@@ -125,6 +125,7 @@ def evaluate(model, data_loader):
     print(np.sum(target, axis=0))
     print(np.sum(target, axis=1))
     print(type_of_target(target))
+    print(np.unique(target))
 
     average_precision = metrics.average_precision_score(
         target, clipwise_output, average=None)
