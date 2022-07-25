@@ -80,7 +80,7 @@ def train(*, train_indexes_hdf5_path,
     # Paths
 
     param_string = f"""sample_rate={sample_rate},window_size={window_size},\
-hop_size={hop_size},mel_bins={mel_bins},fmin={fmin},fmax={fmax},model={model_type}\
+hop_size={hop_size},mel_bins={mel_bins},fmin={fmin},fmax={fmax},model={model_type},\
 sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
     workspace = os.getcwd()
