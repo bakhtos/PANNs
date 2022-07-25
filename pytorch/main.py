@@ -238,7 +238,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             time1 = time.time()
         
         # Save model/Stop learning
-        if iteration % 100000 == 0 or iteration == early_stop:
+        if iteration % 100000 == 0 or iteration == iter_max:
             # Save model
             checkpoint = {
                 'iteration': iteration, 
@@ -254,7 +254,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             statistics_path = os.path.join(statistics_dir, statistics_path)
             pickle.dump(statistics, open(statistics_path, 'wb'))
             logging.info('Model saved to {}'.format(checkpoint_path))
-            if iteration == early_stop: break # Stop learning
+            if iteration == iter_max: break # Stop learning
         iteration += 1
         
 
