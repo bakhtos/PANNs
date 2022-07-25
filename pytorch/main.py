@@ -253,7 +253,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
                 
             torch.save(checkpoint, checkpoint_path)
             statistics_name = "statistics_"+param_string+f",iteration={iteration}.pth"
-            statistics_path = os.path.join(statistics_dir, statistics_path)
+            statistics_path = os.path.join(statistics_dir, statistics_name)
             pickle.dump(statistics, open(statistics_path, 'wb'))
             logging.info('Model saved to {}'.format(checkpoint_path))
             if iteration == iter_max: break # Stop learning
