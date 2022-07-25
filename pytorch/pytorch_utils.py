@@ -68,20 +68,16 @@ def forward(model, generator, return_input=False,
         
         with torch.no_grad():
             model.eval()
-            batch_output = model(batch_waveform)
+            # Framewise output could also be 'embedding' depending on the model
+            clipwise_output, framewise_output = model(batch_waveform)
 
         append_to_dict(output_dict, 'audio_name', batch_data_dict['audio_name'])
 
         append_to_dict(output_dict, 'clipwise_output', 
-            batch_output['clipwise_output'].data.cpu().numpy())
+            clipwise_output.data.cpu().numpy())
 
-        if 'segmentwise_output' in batch_output.keys():
-            append_to_dict(output_dict, 'segmentwise_output', 
-                batch_output['segmentwise_output'].data.cpu().numpy())
-
-        if 'framewise_output' in batch_output.keys():
-            append_to_dict(output_dict, 'framewise_output', 
-                batch_output['framewise_output'].data.cpu().numpy())
+        append_to_dict(output_dict, 'framewise_output', 
+            framewise_output.data.cpu().numpy())
             
         if return_input:
             append_to_dict(output_dict, 'waveform', batch_data_dict['waveform'])
