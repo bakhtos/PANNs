@@ -225,7 +225,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             target = batch_data_dict['target']
 
         # Loss
-        loss = F.binary_crossentropy(clipwise_output, target)
+        loss = F.binary_cross_entropy(clipwise_output, target)
 
         # Backward
         loss.backward()
