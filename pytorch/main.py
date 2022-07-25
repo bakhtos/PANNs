@@ -29,7 +29,7 @@ def train(*, train_indexes_hdf5_path,
           statistics_dir=None,
           window_size=1024, hop_size=320, sample_rate=32000,
           fmin=50, fmax=14000, mel_bins=64,
-          sampler='BalancedTrainSampler',
+          sampler='TrainSampler',
           augmentation=False, mixup_alpha=1.0,
           batch_size=32, learning_rate=1e-3, resume_iteration=0,
           resume_checkpoint_path=None, iter_max=1000000,
@@ -283,7 +283,7 @@ if __name__ == '__main__':
                         help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
     parser.add_argument('--mel_bins', type=int, default=64,
                         help="Amount of mel filters to use in the filterbank (default 64)")
-    parser.add_argument('--sampler', type=str, default='BalancedTrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'],
+    parser.add_argument('--sampler', type=str, default='TrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'],
                         help="The sampler for the dataset to use for training")
     parser.add_argument('--augmentation', action='store_true', default=False,
                         help="If set, use Mixup for data augmentation")
