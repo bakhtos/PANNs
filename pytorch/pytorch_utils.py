@@ -2,9 +2,7 @@ import numpy as np
 import time
 import torch
 import torch.nn as nn
-import pickle
 from sklearn import metrics
-from sklearn.utils.multiclass import type_of_target
 
 
 def move_data_to_device(x, device):
@@ -120,15 +118,6 @@ def evaluate(model, data_loader):
 
     clipwise_output = output_dict['clipwise_output']    # (audios_num, classes_num)
     target = output_dict['target']    # (audios_num, classes_num)
-    print(target)
-    print(np.count_nonzero(target))
-    print(target.shape)
-    print(np.sum(target, axis=0))
-    print(np.sum(target, axis=1))
-    print(type_of_target(target))
-    print(np.unique(target))
-    pickle.dump(target, open('target.pickle', 'wb'))
-    pickle.dump(clipwise_output, open('clipwise_output.pickle', 'wb'))
 
     average_precision = metrics.average_precision_score(
         target, clipwise_output, average=None)

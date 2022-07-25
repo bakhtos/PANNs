@@ -175,6 +175,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         
         # Evaluate
 
+        '''
         model.train(False)
 
         train_fin_time = time.time()
@@ -195,6 +196,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
         logging.info('------------------------------------')
 
+        '''
         train_bgn_time = time.time()
         
         
