@@ -6,6 +6,8 @@ from sklearn import metrics
 
 
 def move_data_to_device(x, device):
+    if x is None: return x
+
     if 'float' in str(x.dtype):
         x = torch.Tensor(x)
     elif 'int' in str(x.dtype):
