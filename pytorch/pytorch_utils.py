@@ -2,6 +2,7 @@ import numpy as np
 import time
 import torch
 import torch.nn as nn
+import pickle
 from sklearn import metrics
 from sklearn.utils.multiclass import type_of_target
 
@@ -126,6 +127,8 @@ def evaluate(model, data_loader):
     print(np.sum(target, axis=1))
     print(type_of_target(target))
     print(np.unique(target))
+    pickle.dump(target, open('target.pickle', 'wb'))
+    pickle.dump(clipwise_output, open('clipwise_output.pickle', 'wb'))
 
     average_precision = metrics.average_precision_score(
         target, clipwise_output, average=None)
