@@ -179,6 +179,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
         train_fin_time = time.time()
 
+        '''
         eval_average_precision, eval_auc = evaluate(model, eval_loader)
                             
         logging.info('Validate test mAP: {:.3f}'.format(
@@ -192,6 +193,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         logging.info(
             'iteration: {}, train time: {:.3f} s, validate time: {:.3f} s'
                 ''.format(iteration, train_time, validate_time))
+        '''
 
         logging.info('------------------------------------')
 
