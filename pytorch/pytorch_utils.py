@@ -118,6 +118,7 @@ def evaluate(model, data_loader):
 
     clipwise_output = output_dict['clipwise_output']    # (audios_num, classes_num)
     target = output_dict['target']    # (audios_num, classes_num)
+    print(target)
 
     average_precision = metrics.average_precision_score(
         target, clipwise_output, average=None)
