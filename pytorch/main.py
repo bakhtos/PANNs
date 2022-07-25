@@ -90,7 +90,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     
     if statistics_dir is None:
         statistics_dir = os.path.join(workspace, 'statistics')
-    create_folder(os.path.dirname(statistics_dir))
+    create_folder(statistics_dir)
 
     if logs_dir is None:
         logs_dir = os.path.join(workspace, 'logs')
@@ -252,7 +252,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
                 
             torch.save(checkpoint, checkpoint_path)
-            statistics_name = "statistics_"+param_string+f",iteration={iteration}.pth"
+            statistics_name = "statistics_"+param_string+f",iteration={iteration}.pickle"
             statistics_path = os.path.join(statistics_dir, statistics_name)
             pickle.dump(statistics, open(statistics_path, 'wb'))
             logging.info('Model saved to {}'.format(checkpoint_path))
