@@ -185,7 +185,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         
         # Forward
         train_bgn_time = time.time()
-        model.train(True)
+        model.train()
 
         # 'embedding' is either embedding or framewise output, depends on model
         clipwise_output, embedding = model(batch_data_dict['waveform'], 
@@ -211,8 +211,6 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
         if iteration > 0 and iteration % 10 == 0:
             # Evaluate
-
-            model.train(False)
 
             eval_average_precision, eval_auc = evaluate(model, eval_loader)
                             
