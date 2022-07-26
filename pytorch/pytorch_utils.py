@@ -61,11 +61,9 @@ def forward(model, generator, return_input=False,
     """
     output_dict = {}
     device = next(model.parameters()).device
-    time1 = time.time()
 
     # Forward data to a model in mini-batches
     for n, batch_data_dict in enumerate(generator):
-        print(n)
         batch_waveform = move_data_to_device(batch_data_dict['waveform'], device)
         
         with torch.no_grad():
@@ -87,11 +85,6 @@ def forward(model, generator, return_input=False,
         if return_target:
             if 'target' in batch_data_dict.keys():
                 append_to_dict(output_dict, 'target', batch_data_dict['target'])
-
-        if n % 10 == 0:
-            print(' --- Inference time: {:.3f} s / 10 iterations ---'.format(
-                time.time() - time1))
-            time1 = time.time()
 
     for key in output_dict.keys():
         output_dict[key] = np.concatenate(output_dict[key], axis=0)
