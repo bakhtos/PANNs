@@ -163,7 +163,6 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     if device == 'cuda':
         model.to(device)
     
-    time1 = time.time()
     
     for batch_data_dict in train_loader:
         """batch_data_dict: {
@@ -172,28 +171,6 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             'target': (batch_size [*2 if mixup], classes_num), 
             (ifexist) 'mixup_lambda': (batch_size * 2,)}
         """
-        
-        # Evaluate
-
-        model.train(False)
-
-        train_fin_time = time.time()
-
-        eval_average_precision, eval_auc = evaluate(model, eval_loader)
-                            
-        logging.info('Validate test mAP: {:.3f}'.format(
-            np.mean(eval_average_precision)))
-
-        statistics.append((eval_average_precision, eval_auc))
-
-        train_time = train_fin_time - train_bgn_time
-        validate_time = time.time() - train_fin_time
-
-        logging.info(
-            f'--- Iteration: {iteration}, training time: {train_time:.3f} s, validate time: {validate_time:.3f} s')
-
-        train_bgn_time = time.time()
-        
         
         # Mixup lambda
         if augmentation:
@@ -207,6 +184,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             batch_data_dict[key] = move_data_to_device(batch_data_dict[key], device)
         
         # Forward
+        train_bgn_time = time.time()
         model.train(True)
 
         # 'embedding' is either embedding or framewise output, depends on model
@@ -229,10 +207,23 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         optimizer.step()
         optimizer.zero_grad()
         
-        if iteration % 10 == 0:
-            logging.info('--- Iteration: {}, train time: {:.3f} s / 10 iterations ---'\
-                .format(iteration, time.time() - time1))
-            time1 = time.time()
+        train_fin_time = time.time()
+
+        if iteration > 0 and iteration % 10 == 0:
+            # Evaluate
+
+            model.train(False)
+
+            eval_average_precision, eval_auc = evaluate(model, eval_loader)
+                            
+            statistics.append((eval_average_precision, eval_auc))
+
+            train_time = train_fin_time - train_bgn_time
+            validate_time = time.time() - train_fin_time
+
+            logging.info(
+                f'--- Iteration: {iteration}, training time: {train_time:.3f} s, validate time: {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
+
         
         # Save model/Stop learning
         if iteration % 100000 == 0 or iteration == iter_max:
@@ -250,8 +241,9 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             statistics_name = "statistics_"+param_string+f",iteration={iteration}.pickle"
             statistics_path = os.path.join(statistics_dir, statistics_name)
             pickle.dump(statistics, open(statistics_path, 'wb'))
-            logging.info('Model saved to {}'.format(checkpoint_path))
+            logging.info(f'Model saved to {checkpoint_path}')
             if iteration == iter_max: break # Stop learning
+
         iteration += 1
         
 
