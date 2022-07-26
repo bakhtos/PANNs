@@ -98,6 +98,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     
     if 'cuda' in str(device):
         logging.info('Using GPU.')
+        logging.info('GPU number: {}'.format(torch.cuda.device_count()))
         device = 'cuda'
     else:
         logging.info('Using CPU. Set --cuda flag to use GPU.')
@@ -157,10 +158,9 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         statistics = []
     
     # Parallel
-    print('GPU number: {}'.format(torch.cuda.device_count()))
     model = torch.nn.DataParallel(model)
 
-    if 'cuda' in str(device):
+    if device == 'cuda':
         model.to(device)
     
     time1 = time.time()
@@ -229,13 +229,13 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
         # Backward
         loss.backward()
-        print(loss)
+        logging.info(f"--- Iteration: {iteration}, training loss: {loss.item()}")
         
         optimizer.step()
         optimizer.zero_grad()
         
         if iteration % 10 == 0:
-            print('--- Iteration: {}, train time: {:.3f} s / 10 iterations ---'\
+            logging.info('--- Iteration: {}, train time: {:.3f} s / 10 iterations ---'\
                 .format(iteration, time.time() - time1))
             time1 = time.time()
         
