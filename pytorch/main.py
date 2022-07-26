@@ -175,7 +175,6 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         
         # Evaluate
 
-        '''
         model.train(False)
 
         train_fin_time = time.time()
@@ -191,12 +190,8 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         validate_time = time.time() - train_fin_time
 
         logging.info(
-            'iteration: {}, train time: {:.3f} s, validate time: {:.3f} s'
-                ''.format(iteration, train_time, validate_time))
+            f'--- Iteration: {iteration}, training time: {train_time:.3f} s, validate time: {validate_time:.3f} s')
 
-        logging.info('------------------------------------')
-
-        '''
         train_bgn_time = time.time()
         
         
@@ -217,7 +212,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         # 'embedding' is either embedding or framewise output, depends on model
         clipwise_output, embedding = model(batch_data_dict['waveform'], 
              batch_data_dict['mixup_lambda'])
-        """{'clipwise_output': (batch_size, classes_num), ...}"""
+        """clipwise_output: (batch_size, classes_num)"""
 
         if augmentation:
             target = do_mixup(batch_data_dict['target'], batch_data_dict['mixup_lambda'])
