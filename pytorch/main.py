@@ -150,12 +150,12 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         model.load_state_dict(checkpoint['model'])
         train_sampler.load_state_dict(checkpoint['sampler'])
         statistics = checkpoint['statistics']
-        statistics = statistics[0:resume_iteration+1]
+        statistics = {k:v for k, v in statistics.items if k < resume_iteration}
         iteration = checkpoint['iteration']
 
     else:
         iteration = 0
-        statistics = []
+        statistics = {}
     
     # Parallel
     model = torch.nn.DataParallel(model)
@@ -209,12 +209,12 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         
         train_fin_time = time.time()
 
-        if iteration > 0 and iteration % 10 == 0:
+        if iteration > 0 and iteration % 2000 == 0:
             # Evaluate
 
             eval_average_precision, eval_auc = evaluate(model, eval_loader)
                             
-            statistics.append((eval_average_precision, eval_auc))
+            statistics[iteration] = (eval_average_precision, eval_auc)
 
             train_time = train_fin_time - train_bgn_time
             validate_time = time.time() - train_fin_time
