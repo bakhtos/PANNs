@@ -67,6 +67,7 @@ def train(*, train_indexes_hdf5_path,
     :param int iter_max: Train until this iteration (default 1000000) 
     :param bool cuda: If True, try to use GPU for traning (default False)
     :param int classes_num: Amount of classes used in the dataset (default 110)
+    :raises ValueError: if model_type or sampler not found among defined ones.
     """
 
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
