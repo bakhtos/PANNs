@@ -16,9 +16,9 @@ import torch.utils.data
 from file_utils import create_folder, get_filename
 from logger import create_logging
 from mixup import Mixup
-from models import MODELS
+from models import *
 from pytorch_utils import move_data_to_device, count_parameters, count_flops, do_mixup, evaluate
-from data_generator import AudioSetDataset, SAMPLERS, collate_fn
+from data_generator import *
 
 
 def train(*, train_indexes_hdf5_path,
@@ -105,7 +105,11 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         device = 'cpu'
     
     # Model
-    Model = MODELS[model_type]
+    if model_type in models.__all__:
+        Model = eval(model_type)
+    else:
+        raise ValueError(f"'{model_type}' is not among the defined models.")
+
     model = Model(sample_rate=sample_rate, window_size=window_size, 
         hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
         classes_num=classes_num)
@@ -115,7 +119,10 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     dataset = AudioSetDataset(sample_rate=sample_rate)
 
     # Train sampler
-    Sampler = SAMPLERS[sampler]
+    if sampler in data_loader.__all__:
+        Sampler = eval(sampler)
+    else:
+        raise ValueError(f"'{sampler}' is not among the defined samplers.")
      
     train_sampler = Sampler(
         indexes_hdf5_path=train_indexes_hdf5_path, 

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 
 from utils.file_utils import create_folder, get_filename
-from models import MODELS
+from models import *
 from pytorch_utils import move_data_to_device
 
 
@@ -23,7 +23,11 @@ def audio_tagging(sample_rate, window_size, hop_size, mel_bins, fmin, fmax,
     _,labels,_,_,_,_ = get_labels_metadata()
 
     # Model
-    Model = MODELS[model_type]
+    if model_type in models.__all__:
+        Model = eval(model_type)
+    else:
+        raise ValueError(f"'{model_type}' is not among the defined models.")
+
     model = Model(sample_rate=sample_rate, window_size=window_size, 
         hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
         classes_num=classes_num)
@@ -83,7 +87,11 @@ def sound_event_detection(sample_rate, window_size, hop_size, mel_bins, fmin,
     create_folder(os.path.dirname(fig_path))
 
     # Model
-    Model = MODELS[model_type]
+    if model_type in models.__all__:
+        Model = eval(model_type)
+    else:
+        raise ValueError(f"'{model_type}' is not among the defined models.")
+
     model = Model(sample_rate=sample_rate, window_size=window_size, 
         hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
         classes_num=classes_num)

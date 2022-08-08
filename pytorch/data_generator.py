@@ -9,6 +9,12 @@ import logging
 
 from array_utils import int16_to_float32
 
+__all__ = ['AudioSetDataset',
+           'TrainSampler',
+           'BalancedTrainSampler',
+           'AlternateTrainSampler',
+           'EvaluateSampler',
+           'collate_fn']
 
 class AudioSetDataset(object):
     def __init__(self, sample_rate=32000):
@@ -380,7 +386,3 @@ def collate_fn(list_data_dict):
     return np_data_dict
 
 
-SAMPLERS = {'TrainSampler': TrainSampler,
-            'BalancedTrainSampler': BalancedTrainSampler,
-            'AlternateTrainSampler': AlternateTrainSampler,
-            'EvaluateSampler': EvaluateSampler}
