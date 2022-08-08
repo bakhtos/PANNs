@@ -157,7 +157,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         model.load_state_dict(checkpoint['model'])
         train_sampler.load_state_dict(checkpoint['sampler'])
         statistics = checkpoint['statistics']
-        statistics = {k:v for k, v in statistics.items if k < resume_iteration}
+        statistics = {k:v for k, v in statistics.items() if k < resume_iteration}
         iteration = checkpoint['iteration']
 
     else:
