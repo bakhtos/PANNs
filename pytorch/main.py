@@ -63,12 +63,13 @@ def train(*, train_indexes_hdf5_path,
     :param int batch_size: Batch size to use for training/evaluation (default 32)
     :param float learning_rate: Learning rate to use in training (default 1e-3)
     :param int resume_iteration: If greater than 0, load a checkpoint and resume traning from this iteration (default 0)
-    :param str resume_checkpoint_path: If :py:data:resume_iteration is greater than 0, read a checkpoint to be resumed from this path (default None, will cause a :py:exc:ValueError if :py:data:resume_iteration is greater than 0)
+    :param str resume_checkpoint_path: If resume_iteration is greater than 0, read a checkpoint to be resumed from this path (default None)
     :param int iter_max: Train until this iteration (default 1000000) 
     :param bool cuda: If True, try to use GPU for traning (default False)
     :param int classes_num: Amount of classes used in the dataset (default 110)
     :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
-    :raises ValueError: if model_type or sampler not found among defined ones.
+    :raises ValueError: if model_type or sampler not found among defined ones
+    :raises ValueError: if resume_iteration is non-zero, but no resume_cehckpoint_path given
     """
 
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
