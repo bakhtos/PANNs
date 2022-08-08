@@ -27,16 +27,15 @@ def train(*, train_indexes_hdf5_path,
           logs_dir=None,
           checkpoints_dir=None,
           statistics_dir=None,
-          window_size=1024, hop_size=320, sample_rate=32000,
+          window_size=1024, hop_size=320, sample_rate=32000, clip_length=10000,
           fmin=50, fmax=14000, mel_bins=64,
           sampler='TrainSampler',
           augmentation=False, mixup_alpha=1.0,
           batch_size=32, learning_rate=1e-3, resume_iteration=0,
           resume_checkpoint_path=None, iter_max=1000000,
-          cuda=False, classes_num=110):
-    """.. py:function:: train(train_indexes_hdf5_path, eval_indexes_hdf5_path, model_path, [logs_dir=None, checkpoints_dir=None, statistics_dir=None, window_size=1024, hop_size=320, sample_rate=32000, fmin=50, fmax=14000, mel_bins=64, sampler='BalancedTrainSampler', augmentation=False, mixup_alpha=1.0, batch_size=32, learning_rate=1e-3, resume_iteration=0, resume_checkpoint_path=None, iter_max=1000000, cuda=False, classes_num=110])
-
-    Train AudioSet tagging model. 
+          cuda=False, classes_num=110,
+          num_workers=8):
+    """Train AudioSet tagging model. 
 
     Models are saved to and loaded from 'checkpoints' using torch.save/torch.load respectively.
     A checkpoint is a dictionary containng following keys:
@@ -54,6 +53,7 @@ def train(*, train_indexes_hdf5_path,
     :param int window_size: Window size of filter to be used in training (default 1024)
     :param int hop_size: Hop size of filter to be used in traning (default 320)
     :param int sample_rate: Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)
+    :param int clip_length: Length (in ms) of Audio clips user in dataset (default 10000)
     :param int fmin: Minimum frequency to be used when creating Logmel filterbank (default 50)
     :param int fmax: Maximum frequency to be used when creating Logmel filterbank (default 14000)
     :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
@@ -67,13 +67,13 @@ def train(*, train_indexes_hdf5_path,
     :param int iter_max: Train until this iteration (default 1000000) 
     :param bool cuda: If True, try to use GPU for traning (default False)
     :param int classes_num: Amount of classes used in the dataset (default 110)
+    :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
     :raises ValueError: if model_type or sampler not found among defined ones.
     """
 
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
 
-    num_workers = 8
-    clip_samples = sample_rate*10
+    clip_samples = sample_rate*clip_length//1000
     
     if resume_iteration > 0 and resume_checkpoint_path is None:
         raise ValueError("resume_iteration is greater than 0, but no resume_checkpoint_path was given.")
@@ -272,6 +272,8 @@ if __name__ == '__main__':
                         help="Hop size of filter to be used in traning (default 320)")
     parser.add_argument('--sample_rate', type=int, default=32000,
                         help="Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)")
+    parser.add_argument('--clip_length', type=int, default=10000,
+                        help="Length (in ms) of audio clips used in the dataset (default 10000)")
     parser.add_argument('--fmin', type=int, default=50,
                         help="Minimum frequency to be used when creating Logmel filterbank (default 50)")
     parser.add_argument('--fmax', type=int, default=14000,
@@ -298,6 +300,8 @@ if __name__ == '__main__':
                         help="If set, try to use GPU for traning")
     parser.add_argument('--classes_num', type=int, default=110,
                         help="Amount of classes used in the dataset")
+    parser.add_argument('--num_workers', type=int, default=8,
+                        help="Amount of workers to pass to torch.utils.data.DataLoader (default 8)")
     
     args = parser.parse_args()
 
@@ -310,6 +314,7 @@ if __name__ == '__main__':
           window_size=args.window_size,
           hop_size=args.hop_size,
           sample_rate=args.sample_rate,
+          clip_length=args.clip_length,
           fmin=args.fmin,
           fmax=args.fmax,
           mel_bins=args.mel_bins,
@@ -322,4 +327,5 @@ if __name__ == '__main__':
           resume_checkpoint_path=args.resume_checkpoint_path,
           iter_max=args.iter_max,
           cuda=args.cuda,
-          classes_num=args.classes_num)
+          classes_num=args.classes_num,
+          num_workers=args.num_workers)
