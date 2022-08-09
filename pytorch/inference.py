@@ -25,6 +25,8 @@ def inference(*, audio_path,
                  sed=False, verbose=False):
     """Perform Audio Tagging or Sound Event Detection of an audio clip with a pre-trained model.
 
+    If trying to perform SED on a non-SED model, prints a warning and performs
+    Audio Tagging instead.
     If used with verbose=True, will also print the top-10 classes and save a figure
     of SED results in './figures/AUDIO_NAME.png', otherwise simply returns
     the model output and list of class labels.
@@ -60,6 +62,11 @@ def inference(*, audio_path,
     model = Model(sample_rate=sample_rate, window_size=window_size, 
         hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
         classes_num=classes_num)
+
+    if sed and not model.sed_model:
+        print(f"Warning! Asked to perform SED but {model_type} is not a SED model."
+              "Performing Audio Tagging instead.")
+        sed = False
     
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
 
