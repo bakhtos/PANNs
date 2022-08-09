@@ -23,7 +23,30 @@ def inference(*, audio_path,
                  cuda=False,
                  classes_num=110,
                  sed=False, verbose=False):
-    """Inference audio tagging result of an audio clip.
+    """Perform Audio Tagging or Sound Event Detection of an audio clip with a pre-trained model.
+
+    If used with verbose=True, will also print the top-10 classes and save a figure
+    of SED results in './figures/AUDIO_NAME.png', otherwise simply returns
+    the model output and list of class labels.
+
+    :param str audio_path: WAV audiofile to be used for inference
+    :param str checkpoint_path: Read a checkpoint to be used for inference from this path
+    :param str model_type: Name of model to train (one of the model classes defined in models.py)
+    :param int window_size: Window size of filter to be used in training (default 1024)
+    :param int hop_size: Hop size of filter to be used in traning (default 320)
+    :param int sample_rate: Sample rate of the used audio clips (default 32000)
+    :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
+    :param int fmin: Minimum frequency to be used when creating Logmel filterbank (default 50)
+    :param int fmax: Maximum frequency to be used when creating Logmel filterbank (default 14000)
+    :param bool cuda: If True, try to use GPU for traning (default False)
+    :param int classes_num: Amount of classes used in the dataset (default 110)
+    :param bool sed: If True, perform SED, otherwise Audio Tagging (default False)
+    :param bool verbose: If True, print top 10 classes and save a SED figure (default False)
+    :return result: Either clipwise or framewise output of the model (for AT/SED respectively)
+    :rtype numpy.ndarray:
+    :return labels: List of labels in order used in the resulting matrix
+    :rtype list[str]:
+    :raises ValueError: If model_type not found in defined models
     """
     
     _,labels,_,_,_,_ = get_labels_metadata()
