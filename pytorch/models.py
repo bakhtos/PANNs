@@ -208,6 +208,12 @@ class Cnn14(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -292,6 +298,12 @@ class Cnn14_no_specaug(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -379,6 +391,12 @@ class Cnn14_no_dropout(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -459,6 +477,12 @@ class Cnn6(nn.Module):
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -543,6 +567,12 @@ class Cnn10(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -624,6 +654,12 @@ class _ResnetBasicBlock(nn.Module):
 
         self.init_weights()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weights(self):
         init_layer(self.conv1)
         init_bn(self.bn1)
@@ -678,6 +714,12 @@ class _ResnetBottleneck(nn.Module):
         self.stride = stride
 
         self.init_weights()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weights(self):
         init_layer(self.conv1)
@@ -830,6 +872,12 @@ class ResNet22(nn.Module):
 
         self.init_weights()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weights(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -914,6 +962,12 @@ class ResNet38(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
         self.init_weights()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weights(self):
         init_bn(self.bn0)
@@ -1000,6 +1054,12 @@ class ResNet54(nn.Module):
 
         self.init_weights()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weights(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1084,6 +1144,12 @@ class Cnn14_emb512(nn.Module):
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -1174,6 +1240,12 @@ class Cnn14_emb128(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1262,6 +1334,12 @@ class Cnn14_emb32(nn.Module):
         self.fc_audioset = nn.Linear(32, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -1389,6 +1467,12 @@ class MobileNetV1(nn.Module):
         self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
 
         self.init_weights()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weights(self):
         init_bn(self.bn0)
@@ -1569,6 +1653,12 @@ class MobileNetV2(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1620,6 +1710,12 @@ class LeeNetConvBlock(nn.Module):
         self.bn1 = nn.BatchNorm1d(out_channels)
 
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
         
     def init_weight(self):
         init_layer(self.conv1)
@@ -1660,6 +1756,12 @@ class LeeNet11(nn.Module):
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_layer(self.fc1)
@@ -1715,6 +1817,12 @@ class LeeNetConvBlock2(nn.Module):
         self.bn2 = nn.BatchNorm1d(out_channels)
 
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
         
     def init_weight(self):
         init_layer(self.conv1)
@@ -1757,6 +1865,12 @@ class LeeNet24(nn.Module):
         self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_layer(self.fc1)
@@ -1838,6 +1952,12 @@ class DaiNetResBlock(nn.Module):
         self.bn_downsample = nn.BatchNorm1d(out_channels)
 
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
         
     def init_weight(self):
         init_layer(self.conv1)
@@ -1891,6 +2011,12 @@ class DaiNet19(nn.Module):
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_layer(self.conv0)
@@ -1964,6 +2090,12 @@ class _ResnetBasicBlockWav1d(nn.Module):
         self.stride = stride
 
         self.init_weights()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weights(self):
         init_layer(self.conv1)
@@ -2098,6 +2230,12 @@ class Res1dNet31(nn.Module):
          
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_layer(self.conv0)
         init_bn(self.bn0)
@@ -2151,6 +2289,12 @@ class Res1dNet51(nn.Module):
          
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_layer(self.conv0)
         init_bn(self.bn0)
@@ -2200,6 +2344,12 @@ class ConvPreWavBlock(nn.Module):
         self.bn2 = nn.BatchNorm1d(out_channels)
 
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
         
     def init_weight(self):
         init_layer(self.conv1)
@@ -2255,6 +2405,12 @@ class Wavegram_Cnn14(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_layer(self.pre_conv0)
@@ -2351,6 +2507,12 @@ class Wavegram_Logmel_Cnn14(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_layer(self.pre_conv0)
@@ -2464,6 +2626,12 @@ class Wavegram_Logmel128_Cnn14(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_layer(self.pre_conv0)
         init_bn(self.pre_bn0)
@@ -2575,6 +2743,12 @@ class Cnn14_16k(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -2670,6 +2844,12 @@ class Cnn14_8k(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -2758,6 +2938,12 @@ class Cnn14_mixup_time_domain(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -2850,6 +3036,12 @@ class Cnn14_mel32(nn.Module):
         
         self.init_weight()
 
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
+
     def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -2938,6 +3130,12 @@ class Cnn14_mel128(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = False
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -3029,6 +3227,12 @@ class Cnn14_DecisionLevelMax(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = True
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -3127,6 +3331,12 @@ class Cnn14_DecisionLevelAvg(nn.Module):
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
         
         self.init_weight()
+
+        self._sed_model = True
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
@@ -3229,6 +3439,12 @@ class Cnn14_DecisionLevelAtt(nn.Module):
         self.att_block = AttBlock(2048, classes_num, activation='sigmoid')
         
         self.init_weight()
+
+        self._sed_model = True
+
+    @property
+    def sed_model(self):
+        return self._sed_model
 
     def init_weight(self):
         init_bn(self.bn0)
