@@ -286,21 +286,21 @@ if __name__ == '__main__':
     parser.add_argument('--augmentation', action='store_true', default=False,
                         help="If set, use Mixup for data augmentation")
     parser.add_argument('--mixup_alpha', type=float, default=1.0,
-                        help="If using augmentation, use this as alpha parameter for Mixup") 
+                        help="If using augmentation, use this as alpha parameter for Mixup (default 1.0)")
     parser.add_argument('--batch_size', type=int, default=32,
-                        help="Batch size to use for training/evaluation")
+                        help="Batch size to use for training/evaluation (default 32)")
     parser.add_argument('--learning_rate', type=float, default=1e-3,
-                        help="Learning rate to use in training")
+                        help="Learning rate to use in training (default 1e-3)")
     parser.add_argument('--resume_iteration', type=int, default=0,
                         help="If greater than 0, load a checkpoint and resume traning from this iteration")
     parser.add_argument('--resume_checkpoint_path', type=str, default=None,
                         help="If --resume_iteration  is greater than zero, read a checkpoint from this path")
     parser.add_argument('--iter_max', type=int, default=1000000,
-                        help="Train until this iteration")
+                        help="Train until this iteration (default 1000000)")
     parser.add_argument('--cuda', action='store_true', default=False,
                         help="If set, try to use GPU for traning")
     parser.add_argument('--classes_num', type=int, default=110,
-                        help="Amount of classes used in the dataset")
+                        help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
                         help="Amount of workers to pass to torch.utils.data.DataLoader (default 8)")
     
