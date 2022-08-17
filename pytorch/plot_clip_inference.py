@@ -10,6 +10,7 @@ import torch
 from file_utils import create_folder, get_filename
 from models import *
 from pytorch_utils import move_data_to_device
+from metadata_utils import get_labels_metadata
 
 
 def inference(*, audio_path,
