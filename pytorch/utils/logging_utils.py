@@ -2,7 +2,9 @@ import os
 import logging
 import datetime
 
-from file_utils import create_folder
+from .file_utils import create_folder
+
+__all__ = ['create_logging']
 
 def create_logging(log_dir, filemode):
     create_folder(log_dir)

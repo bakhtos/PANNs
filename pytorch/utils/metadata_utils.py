@@ -2,6 +2,8 @@ import os
 import numpy as np
 import copy
 
+__all__ = ['get_labels_metadata',
+           'read_metadata']
 
 def get_labels_metadata():
     # Load label

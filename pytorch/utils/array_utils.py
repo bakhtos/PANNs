@@ -1,5 +1,9 @@
 import numpy as np
 
+__all__ = ['float32_to_int16',
+           'int16_to_float32',
+           'pad_or_truncate']
+
 
 def float32_to_int16(x):
     assert np.max(np.abs(x)) <= 1.2
