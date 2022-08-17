@@ -3469,10 +3469,6 @@ class Cnn14_DecisionLevelAvg(nn.Module):
         framewise_output = interpolate(segmentwise_output, self.interpolate_ratio)
         framewise_output = pad_framewise_output(framewise_output, frames_num)
 
-        # Get framewise output
-        framewise_output = interpolate(segmentwise_output, self.interpolate_ratio)
-        framewise_output = pad_framewise_output(framewise_output, frames_num)
-
         return clipwise_output, framewise_output
 
 
