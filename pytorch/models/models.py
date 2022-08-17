@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torchlibrosa.stft import Spectrogram, LogmelFilterBank
 
 from pytorch_utils import do_mixup, interpolate, pad_framewise_output
-from blocks import *
+from .blocks import *
 __all__ = ['Cnn14',
           'Cnn14_no_specaug',
           'Cnn14_no_dropout',
