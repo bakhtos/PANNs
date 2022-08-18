@@ -1,7 +1,5 @@
 import os
-import sys
 import pickle
-sys.path.insert(1, os.path.join(sys.path[0], '../utils'))
 import numpy as np
 import argparse
 import time
@@ -13,12 +11,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from file_utils import create_folder, get_filename
-from logger import create_logging
-from mixup import Mixup
-from models import *
-from pytorch_utils import move_data_to_device, count_parameters, count_flops, do_mixup, evaluate
-from data_generator import *
+from panns.utils.file_utils import create_folder, get_filename
+from panns.utils.logging_utils import create_logging
+from panns.data.mixup import Mixup
+from panns.models import *
+from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops, do_mixup, evaluate
+from panns.data.loaders import *
 
 
 def train(*, train_indexes_hdf5_path,
@@ -107,7 +105,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         device = 'cpu'
     
     # Model
-    if model_type in models.__all__:
+    if model_type in panns.models.__all__:
         Model = eval(model_type)
     else:
         raise ValueError(f"'{model_type}' is not among the defined models.")
@@ -121,7 +119,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     dataset = AudioSetDataset(sample_rate=sample_rate)
 
     # Train sampler
-    if sampler in data_loader.__all__:
+    if sampler in panns.loaders.__all__:
         Sampler = eval(sampler)
     else:
         raise ValueError(f"'{sampler}' is not among the defined samplers.")
