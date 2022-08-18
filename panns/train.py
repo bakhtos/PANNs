@@ -135,11 +135,11 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
     # Data loader
     train_loader = torch.utils.data.DataLoader(dataset=dataset, 
-        batch_sampler=train_sampler, collate_fn=collate_fn, 
+        batch_sampler=train_sampler, collate_fn=panns.data.loaders.collate_fn, 
         num_workers=num_workers, pin_memory=True)
     
     eval_loader = torch.utils.data.DataLoader(dataset=dataset, 
-        batch_sampler=eval_sampler, collate_fn=collate_fn, 
+        batch_sampler=eval_sampler, collate_fn=panns.data.loaders.collate_fn, 
         num_workers=num_workers, pin_memory=True)
 
     if augmentation:
