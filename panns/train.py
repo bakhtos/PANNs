@@ -117,7 +117,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
      
     # Dataset will be used by DataLoader later. Dataset takes a meta as input 
     # and return a waveform and a target.
-    dataset = AudioSetDataset(sample_rate=sample_rate)
+    dataset = panns.data.loaders.AudioSetDataset(sample_rate=sample_rate)
 
     # Train sampler
     if sampler in panns.loaders.__all__:
@@ -130,7 +130,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         batch_size=batch_size * 2 if augmentation else batch_size)
     
     # Evaluate sampler
-    eval_sampler = EvaluateSampler(
+    eval_sampler = panns.data.loaders.EvaluateSampler(
         indexes_hdf5_path=eval_indexes_hdf5_path, batch_size=batch_size)
 
     # Data loader
