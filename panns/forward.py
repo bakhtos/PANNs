@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 
-from .utils.pytorch_utils import move_data_to_device, append_to_dict
+from panns.utils.pytorch_utils import move_data_to_device, append_to_dict
 
 __all__ = ['forward']
 
