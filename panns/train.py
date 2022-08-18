@@ -120,7 +120,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     dataset = panns.data.loaders.AudioSetDataset(sample_rate=sample_rate)
 
     # Train sampler
-    if sampler in panns.loaders.__all__:
+    if sampler in panns.data.loaders.__all__:
         Sampler = eval("panns.data.loaders."+sampler)
     else:
         raise ValueError(f"'{sampler}' is not among the defined samplers.")
