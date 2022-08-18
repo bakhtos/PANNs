@@ -11,12 +11,12 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from panns.utils.file_utils import create_folder, get_filename
-from panns.utils.logging_utils import create_logging
-from panns.data.mixup import Mixup
-from panns.models import *
-from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops, do_mixup, evaluate
-from panns.data.loaders import *
+from .utils.file_utils import create_folder, get_filename
+from .utils.logging_utils import create_logging
+from .data.mixup import Mixup
+from .models import *
+from .utils.pytorch_utils import move_data_to_device, count_parameters, count_flops, do_mixup, evaluate
+from .data.loaders import *
 
 
 def train(*, train_indexes_hdf5_path,
