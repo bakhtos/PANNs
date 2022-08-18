@@ -7,6 +7,7 @@ import logging
 from ..utils.array_utils import int16_to_float32
 
 __all__ = ['AudioSetDataset',
+           'SamplerBase',
            'TrainSampler',
            'BalancedTrainSampler',
            'AlternateTrainSampler',
@@ -67,7 +68,7 @@ class AudioSetDataset(object):
             raise Exception('Incorrect sample rate!')
 
 
-class Base(object):
+class SamplerBase(object):
     def __init__(self, indexes_hdf5_path, batch_size, random_seed):
         """Base class of train sampler.
         
@@ -93,7 +94,7 @@ class Base(object):
         logging.info('Load target time: {:.3f} s'.format(time.time() - load_time))
 
 
-class TrainSampler(Base):
+class TrainSampler(SamplerBase):
     def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
         """Balanced sampler. Generate batch meta for training.
         
@@ -151,7 +152,7 @@ class TrainSampler(Base):
         self.pointer = state['pointer']
 
 
-class BalancedTrainSampler(Base):
+class BalancedTrainSampler(SamplerBase):
     def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
         """Balanced sampler. Generate batch meta for training. Data are equally 
         sampled from different sound classes.
@@ -236,7 +237,7 @@ class BalancedTrainSampler(Base):
         self.pointers_of_classes = state['pointers_of_classes']
 
 
-class AlternateTrainSampler(Base):
+class AlternateTrainSampler(SamplerBase):
     def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
         """AlternateSampler is a combination of Sampler and Balanced Sampler. 
         AlternateSampler alternately sample data from Sampler and Blanced Sampler.
@@ -381,5 +382,3 @@ def collate_fn(list_data_dict):
         np_data_dict[key] = np.array([data_dict[key] for data_dict in list_data_dict])
     
     return np_data_dict
-
-
