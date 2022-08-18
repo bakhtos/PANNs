@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from panns.utils.pytorch_utils import interpolate, pad_framewise_output
-from panns.utils.data.mixup import do_mixup
+from panns.data.mixup import do_mixup
 
 __all__ = ['init_layer',
            'init_bn',
