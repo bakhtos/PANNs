@@ -3,8 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchlibrosa.stft import Spectrogram, LogmelFilterBank
 
-from pytorch_utils import do_mixup, interpolate, pad_framewise_output
+from panns.utils.pytorch_utils import interpolate, pad_framewise_output
+from panns.data.mixup import do_mixup
 from .blocks import *
+
 __all__ = ['Cnn14',
           'Cnn14_no_specaug',
           'Cnn14_no_dropout',
