@@ -1,5 +1,4 @@
-import os, sys
-sys.path.insert(1, os.path.join(sys.path[0], '../utils'))
+import os
 import argparse
 
 import numpy as np
@@ -7,10 +6,10 @@ import librosa.load, librosa.stft
 import matplotlib.pyplot as plt
 import torch
 
-from file_utils import create_folder, get_filename
-from models import *
-from pytorch_utils import move_data_to_device
-from metadata_utils import get_labels_metadata
+from panns.utils.file_utils import create_folder, get_filename
+from panns.models import *
+from panns.utils.pytorch_utils import move_data_to_device
+from panns.utils.metadata_utils import get_labels_metadata
 
 
 def inference(*, audio_path,
@@ -55,7 +54,7 @@ def inference(*, audio_path,
     _,labels,_,_,_,_ = get_labels_metadata()
 
     # Model
-    if model_type in models.__all__:
+    if model_type in panns.models.__all__:
         Model = eval(model_type)
     else:
         raise ValueError(f"'{model_type}' is not among the defined models.")
