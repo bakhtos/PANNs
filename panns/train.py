@@ -13,9 +13,10 @@ import torch.utils.data
  
 from panns.utils.file_utils import create_folder, get_filename
 from panns.utils.logging_utils import create_logging
-from panns.data.mixup import Mixup
+from panns.data.mixup import Mixup, do_mixup
 from panns.models import *
-from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops, do_mixup, evaluate
+from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops
+from panns.evaluate import evaluate
 from panns.data.loaders import *
 
 
