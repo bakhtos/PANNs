@@ -4,7 +4,7 @@ import csv
 import time
 import logging
 
-from ..utils.array_utils import int16_to_float32
+from panns.utils.array_utils import int16_to_float32
 
 __all__ = ['AudioSetDataset',
            'SamplerBase',
