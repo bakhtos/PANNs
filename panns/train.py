@@ -14,10 +14,10 @@ import torch.utils.data
 from panns.utils.file_utils import create_folder, get_filename
 from panns.utils.logging_utils import create_logging
 from panns.data.mixup import Mixup, do_mixup
-from panns.models import *
+import panns.models
 from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops
 from panns.evaluate import evaluate
-from panns.data.loaders import *
+import panns.data.loaders
 
 
 def train(*, train_indexes_hdf5_path,
@@ -107,7 +107,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     
     # Model
     if model_type in panns.models.__all__:
-        Model = eval(model_type)
+        Model = eval("panns.models."+model_type)
     else:
         raise ValueError(f"'{model_type}' is not among the defined models.")
 
@@ -121,7 +121,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
     # Train sampler
     if sampler in panns.loaders.__all__:
-        Sampler = eval(sampler)
+        Sampler = eval("panns.data.loaders."+sampler)
     else:
         raise ValueError(f"'{sampler}' is not among the defined samplers.")
      
