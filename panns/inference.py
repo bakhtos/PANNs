@@ -1,14 +1,10 @@
-import os, sys
-sys.path.insert(1, os.path.join(sys.path[0], '../utils'))
-
-
 import torch
 import numpy as np
 
-from data_generator import AudioSetDataset, EvaluationSampler, collate_fn
-from pytorch_utils import forward
-from file_utils import create_folder
-from models import *
+from panns.data.loaders import AudioSetDataset, EvaluationSampler, collate_fn
+from .forward import forward
+from panns.utils.file_utils import create_folder
+from panns.models import *
 
 
 def inference(*, eval_indexes_hdf5_path,                                                    
