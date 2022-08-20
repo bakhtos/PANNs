@@ -16,7 +16,7 @@ __all__ = ['init_layer',
  
 
 def init_layer(layer):
-    """Initialize a Linear or Convolutional layer. """
+    """Initialize a Linear or Convolutional layer."""
     nn.init.xavier_uniform_(layer.weight)
  
     if hasattr(layer, 'bias'):
@@ -25,7 +25,7 @@ def init_layer(layer):
             
     
 def init_bn(bn):
-    """Initialize a Batchnorm layer. """
+    """Initialize a Batchnorm layer."""
     bn.bias.data.fill_(0.)
     bn.weight.data.fill_(1.)
 
@@ -149,10 +149,10 @@ class AttBlock(nn.Module):
 class DropStripes(nn.Module):
     def __init__(self, dim, drop_width, stripes_num):
         """Drop stripes.
-        Args:
-          dim: int, dimension along which to drop
-          drop_width: int, maximum width of stripes to drop
-          stripes_num: int, how many stripes to drop
+
+          :param int dim: Dimension along which to drop
+          :param int drop_width: Maximum width of stripes to drop
+          :param int stripes_num: How many stripes to drop
         """
         super(DropStripes, self).__init__()
 
@@ -163,7 +163,10 @@ class DropStripes(nn.Module):
         self.stripes_num = stripes_num
 
     def forward(self, input):
-        """input: (batch_size, channels, time_steps, freq_bins)"""
+        """Drop stripes of input.
+
+        Input must be of shape (batch_size, channels, time_steps, freq_bins).
+        """
 
         assert input.ndimension() == 4
 
