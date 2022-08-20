@@ -15,9 +15,9 @@ from panns.utils.logging_utils import create_logging
 from panns.utils.array_utils import float32_to_int16, pad_or_truncate
 
 def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
-                      class_list_path, class_codes_path,
-                      clip_length=10000, sample_rate=32000, classes_num=110,
-                      mini_data=0):
+                   class_list_path, class_codes_path,
+                   clip_length=10000, sample_rate=32000, classes_num=110,
+                   mini_data=0):
     """Pack waveform and target of several audio clips to a single hdf5 file. 
 
        :param str audios_dir: Path to the directory containing files to be packed
@@ -83,7 +83,7 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
     logging.info('Pack hdf5 time: {:.3f}'.format(time.time() - total_time))
  
 
-def create_indexes(hdf5_path, hdf5_index_path):
+def create_indexes(*, hdf5_path, hdf5_index_path):
     """Create indexes of hdf5-packed files for dataloader to read when training.
 
        :param str hdf5_path: Path of the hdf5-packed audios
@@ -106,12 +106,12 @@ def create_indexes(hdf5_path, hdf5_index_path):
     print('Write to {}'.format(hdf5_index_path))
           
 
-def combine_indexes(hdf5_indexes_dir, hdf5_full_index_path, classes_num):
+def combine_indexes(*, hdf5_indexes_dir, hdf5_full_index_path, classes_num=110):
     """Combine several hdf5 indexes to a single hdf5.
 
        :param str indexes_hdf5_dir: Path to a directory with all indexes to be combined
        :param str full_indexes_hdf5_path: Path to save the combined index
-       :param int classes_num: Amount of classes used in the dataset
+       :param int classes_num: Amount of classes used in the dataset (default 110)
        :return: None
        :rtype: None
     """
@@ -172,25 +172,36 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers(dest='mode')
 
     parser_create_indexes = subparsers.add_parser('create_indexes')
-    parser_create_indexes.add_argument('--hdf5_path', type=str, required=True, help='Path of packed waveforms hdf5.')
-    parser_create_indexes.add_argument('--hdf5_index_path', type=str, required=True, help='Path to write out indexes hdf5.')
+    parser_create_indexes.add_argument('--hdf5_path', type=str, required=True,
+                                       help='Path of packed waveforms hdf5.')
+    parser_create_indexes.add_argument('--hdf5_index_path', type=str, required=True,
+                                       help='Path to write out indexes hdf5.')
 
     parser_combine_full_indexes = subparsers.add_parser('combine_indexes')
-    parser_combine_full_indexes.add_argument('--hdf5_indexes_dir', type=str, required=True, help='Directory containing indexes hdf5s to be combined.')
-    parser_combine_full_indexes.add_argument('--hdf5_full_index_path', type=str, required=True, help='Path to write out full indexes hdf5 file.')
-    parser_combine_full_indexes.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset.')
+    parser_combine_full_indexes.add_argument('--hdf5_indexes_dir', type=str,
+      required=True, help='Directory containing indexes hdf5s to be combined.')
+    parser_combine_full_indexes.add_argument('--hdf5_full_index_path', type=str,
+            required=True, help='Path to write out full indexes hdf5 file.')
+    parser_combine_full_indexes.add_argument('--classes_num', type=int, default=110,
+                            help='The amount of classes used in the dataset.')
 
     parser_waveforms_to_hdf5 = subparsers.add_parser('wav_to_hdf5')
-    parser_waveforms_to_hdf5.add_argument('--audios_dir', type=str, required=True, help='Directory with the  downloaded audio.')
-    parser_waveforms_to_hdf5.add_argument('--csv_path', type=str, required=True, help='Path of csv file containing audio info.')
+    parser_waveforms_to_hdf5.add_argument('--audios_dir', type=str, required=True,
+                                help='Directory with the  downloaded audio.')
+    parser_waveforms_to_hdf5.add_argument('--csv_path', type=str, required=True,
+                                help='Path of csv file containing audio info.')
     parser_waveforms_to_hdf5.add_argument('--class_list_path', type=str, required=True,
                 help="File with selected classes' identifiers, one on each line.")
     parser_waveforms_to_hdf5.add_argument('--class_codes_path', type=str, required=True,
                 help='File that matches class identifiers with their labels.')
-    parser_waveforms_to_hdf5.add_argument('--hdf5_path', type=str, required=True, help='Path to save packed hdf5.')
-    parser_waveforms_to_hdf5.add_argument('--sample_rate', type=int, default=44100, help='Sample rate of the used audios.')
-    parser_waveforms_to_hdf5.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset.')
-    parser_waveforms_to_hdf5.add_argument('--mini_data', type=int, default=0, help='If specified, use only this many audios.')
+    parser_waveforms_to_hdf5.add_argument('--hdf5_path', type=str, required=True,
+                                            help='Path to save packed hdf5.')
+    parser_waveforms_to_hdf5.add_argument('--sample_rate', type=int, default=44100,
+                                         help='Sample rate of the used audios.')
+    parser_waveforms_to_hdf5.add_argument('--classes_num', type=int, default=110,
+                            help='The amount of classes used in the dataset.')
+    parser_waveforms_to_hdf5.add_argument('--mini_data', type=int, default=0,
+                            help='If specified, use only this many audios.')
     parser_waveforms_to_hdf5.add_argument('--clip_length', type=int, default=10000,
                 help='Length (in ms) of audio clips used in the dataset (default 10000)')
     args = parser.parse_args()
