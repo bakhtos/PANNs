@@ -15,7 +15,7 @@ def int16_to_float32(x):
     
 
 def pad_or_truncate(x, audio_length):
-    """Pad all audio to specific length."""
+    """Pad or truncate audio to match audio_length."""
     if len(x) <= audio_length:
         return np.concatenate((x, np.zeros(audio_length - len(x))), axis=0)
     else:
