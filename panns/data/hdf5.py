@@ -14,8 +14,10 @@ from panns.utils.metadata_utils import get_labels_metadata, read_metadata
 from panns.utils.logging_utils import create_logging 
 from panns.utils.array_utils import float32_to_int16, pad_or_truncate
 
-def waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path,
-                           sample_rate, classes_num, mini_data=0):
+def waveforms_to_hdf5(*, audios_dir, csv_path, waveforms_hdf5_path,
+                      class_list_path, class_codes_path,
+                      clip_length=10000, sample_rate=32000, classes_num=110,
+                      mini_data=0):
     """.. py:function:: waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, sample_rate, classes_num, [mini_data=0])
     
         Pack waveform and target of several audio clips to a single hdf5 file. 
@@ -30,9 +32,9 @@ def waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path,
         :rtype: None
     """
 
-    clip_samples = sample_rate*10
+    clip_samples = sample_rate*clip_length//1000
 
-    _,_,_,_,id_to_ix,_ = get_labels_metadata()
+    _,_,_,_,id_to_ix,_ = get_labels_metadata(class_list_path, class_codes_path)
 
 
     create_folder(os.path.dirname(waveforms_hdf5_path))
@@ -183,11 +185,16 @@ if __name__ == '__main__':
     parser_waveforms_to_hdf5 = subparsers.add_parser('waveforms_to_hdf5')
     parser_waveforms_to_hdf5.add_argument('--audios_dir', type=str, required=True, help='Directory with the  downloaded audio.')
     parser_waveforms_to_hdf5.add_argument('--csv_path', type=str, required=True, help='Path of csv file containing audio info.')
+    parser_waveforms_to_hdf5.add_argument('--class_list_path', type=str, required=True,
+                help='File with selected classes' identifiers, one on each line.')
+    parser_waveforms_to_hdf5.add_argument('--class_codes_path', type=str, required=True,
+                help='File that matches class identifiers with their labels'.)
     parser_waveforms_to_hdf5.add_argument('--waveforms_hdf5_path', type=str, required=True, help='Path to save packed hdf5.')
     parser_waveforms_to_hdf5.add_argument('--sample_rate', type=int, default=44100, help='Sample rate of the used audios.')
     parser_waveforms_to_hdf5.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset.')
     parser_waveforms_to_hdf5.add_argument('--mini_data', type=int, default=0, help='If specified, use only this many audios.')
-
+    parser_waveforms_to_hdf5.add_argument('--clip_length', type=int, default=10000,
+                help='Length (in ms) of audio clips used in the dataset (default 10000)')
     args = parser.parse_args()
     
     if args.mode == 'create_indexes':
@@ -201,6 +208,9 @@ if __name__ == '__main__':
 
     elif args.mode == 'waveforms_to_hdf5':
         waveforms_to_hdf5(audios_dir=args.audios_dir, csv_path=args.csv_path,
+                          class_list_path=args.class_list_path,
+                          class_codes_path=args.class_codes_path,
+                          clip_length=args.clip_length,
                           waveforms_hdf5_path=args.waveforms_hdf5_path,
                           sample_rate=args.sample_rate,
                           classes_num=args.classes_num,
