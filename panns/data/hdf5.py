@@ -188,7 +188,7 @@ if __name__ == '__main__':
     parser_waveforms_to_hdf5.add_argument('--class_list_path', type=str, required=True,
                 help="File with selected classes' identifiers, one on each line.")
     parser_waveforms_to_hdf5.add_argument('--class_codes_path', type=str, required=True,
-                help='File that matches class identifiers with their labels'.)
+                help='File that matches class identifiers with their labels.')
     parser_waveforms_to_hdf5.add_argument('--waveforms_hdf5_path', type=str, required=True, help='Path to save packed hdf5.')
     parser_waveforms_to_hdf5.add_argument('--sample_rate', type=int, default=44100, help='Sample rate of the used audios.')
     parser_waveforms_to_hdf5.add_argument('--classes_num', type=int, default=110, help='The amount of classes used in the dataset.')
