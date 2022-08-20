@@ -25,14 +25,12 @@ def get_labels_metadata(class_list_path, class_codes_path):
 
     lb_to_ix = dict()
     ix_to_lb = dict()
-    
-    for i, label in enumerate(labels):
-        lb_to_ix[label] = i
-        ix_to_lb[i] = label
-
     id_to_ix = dict()
     ix_to_id = dict()
-    for i, code in enumerate(ids):
+    
+    for i, (label, code) in enumerate(zip(labels,ids)):
+        lb_to_ix[label] = i
+        ix_to_lb[i] = label
         id_to_ix[code] = i
         ix_to_id[i] = code 
 
