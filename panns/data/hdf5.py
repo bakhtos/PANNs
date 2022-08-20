@@ -186,7 +186,7 @@ if __name__ == '__main__':
     parser_waveforms_to_hdf5.add_argument('--audios_dir', type=str, required=True, help='Directory with the  downloaded audio.')
     parser_waveforms_to_hdf5.add_argument('--csv_path', type=str, required=True, help='Path of csv file containing audio info.')
     parser_waveforms_to_hdf5.add_argument('--class_list_path', type=str, required=True,
-                help='File with selected classes' identifiers, one on each line.')
+                help="File with selected classes' identifiers, one on each line.")
     parser_waveforms_to_hdf5.add_argument('--class_codes_path', type=str, required=True,
                 help='File that matches class identifiers with their labels'.)
     parser_waveforms_to_hdf5.add_argument('--waveforms_hdf5_path', type=str, required=True, help='Path to save packed hdf5.')
