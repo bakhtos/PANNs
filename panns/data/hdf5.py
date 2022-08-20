@@ -18,18 +18,20 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
                       class_list_path, class_codes_path,
                       clip_length=10000, sample_rate=32000, classes_num=110,
                       mini_data=0):
-    """.. py:function:: waveforms_to_hdf5(audios_dir, csv_path, waveforms_hdf5_path, sample_rate, classes_num, [mini_data=0])
-    
-        Pack waveform and target of several audio clips to a single hdf5 file. 
+    """Pack waveform and target of several audio clips to a single hdf5 file. 
 
-        :param str audios_dir: Path to the directory containing files to be packed
-        :param str csv_path: Path to the csv (tsv) file of  weak class labels for the audios
-        :param str hdf5_path: Path to save the hdf5-packed file
-        :param int sample_rate: Sample rate of packed audios
-        :param int classes_num: Amount of classes used in the dataset
-        :param int mini_data: If greater than 0, use only this many first files (for debugging, default 0)
-        :return: None
-        :rtype: None
+       :param str audios_dir: Path to the directory containing files to be packed
+       :param str csv_path: Path to the csv (tsv) file of  weak class labels for the audios
+       :param str hdf5_path: Path to save the hdf5-packed file
+       :param str class_list_path: Path to txt file with list of select classes'
+                                   identifiers, one on each line
+       :param str class_codes_file: Path to tsv file that matches class codes to labels
+       :param int clip_length: Length (in ms) of audio clips used in the dataset (default 10000)
+       :param int sample_rate: Sample rate of packed audios (default 32000)
+       :param int classes_num: Amount of classes used in the dataset (default 110)
+       :param int mini_data: If greater than 0, use only this many first files (for debugging, default 0)
+       :return: None
+       :rtype: None
     """
 
     clip_samples = sample_rate*clip_length//1000
@@ -82,14 +84,12 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
  
 
 def create_indexes(hdf5_path, hdf5_index_path):
-    """.. py:function:: create_indexes(waveforms_hdf5_path, indexes_hdf5_path)
+    """Create indexes of hdf5-packed files for dataloader to read when training.
 
-        Create indexes of hdf5-packed files for dataloader to read when training.
-
-        :param str hdf5_path: Path of the hdf5-packed audios
-        :param str hdf5_index_path: Path to save index of the packed audios
-        :return: None
-        :rtype: None
+       :param str hdf5_path: Path of the hdf5-packed audios
+       :param str hdf5_index_path: Path to save index of the packed audios
+       :return: None
+       :rtype: None
     """
 
     # Paths
@@ -107,15 +107,13 @@ def create_indexes(hdf5_path, hdf5_index_path):
           
 
 def combine_indexes(hdf5_indexes_dir, hdf5_full_index_path, classes_num):
-    """.. py:function:: combine_indexes(indexes_hdf5s_dir, full_indexes_hdf5_path, classes_num)
+    """Combine several hdf5 indexes to a single hdf5.
 
-        Combine several hdf5 indexes to a single hdf5.
-
-        :param str indexes_hdf5_dir: Path to a directory with all indexes to be combined
-        :param str full_indexes_hdf5_path: Path to save the combined index
-        :param int classes_num: Amount of classes used in the dataset
-        :return: None
-        :rtype: None
+       :param str indexes_hdf5_dir: Path to a directory with all indexes to be combined
+       :param str full_indexes_hdf5_path: Path to save the combined index
+       :param int classes_num: Amount of classes used in the dataset
+       :return: None
+       :rtype: None
     """
 
     # Paths
