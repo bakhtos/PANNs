@@ -15,25 +15,19 @@ __all__ = ['AudioSetDataset',
            'collate_fn']
 
 class AudioSetDataset(object):
+    """Take meta of the audio clip, return waveform and target vector."""
     def __init__(self, sample_rate=32000):
-        """This class takes the meta of an audio clip as input, and return 
-        the waveform and target of the audio clip. This class is used by DataLoader. 
-        """
         self.sample_rate = sample_rate
     
     def __getitem__(self, meta):
         """Load waveform and target of an audio clip.
         
-        Args:
-          meta: {
-            'hdf5_path': str, 
-            'index_in_hdf5': int}
-
-        Returns: 
-          data_dict: {
-            'audio_name': str, 
-            'waveform': (clip_samples,), 
-            'target': (classes_num,)}
+        :param dict meta: Dictionary which maps 'hdf5_path': str
+                          and 'index_in_hdf5': int
+        :return data_dict: Dictionary which maps 'audio_name': str,
+                          'waveform': numpy.ndarray (shape=(clip_samples,)),
+                          'target': numpy.ndarray (shape=(classes_num,))
+        :rtype: dict
         """
         hdf5_path = meta['hdf5_path']
         index_in_hdf5 = meta['index_in_hdf5']
@@ -50,14 +44,8 @@ class AudioSetDataset(object):
         return data_dict
 
     def resample(self, waveform):
-        """Resample.
+        """Downsamples a 32000Hz sampled audio to 16000Hz or 8000Hz."""
 
-        Args:
-          waveform: (clip_samples,)
-
-        Returns:
-          (resampled_clip_samples,)
-        """
         if self.sample_rate == 32000:
             return waveform
         elif self.sample_rate == 16000:
@@ -69,13 +57,12 @@ class AudioSetDataset(object):
 
 
 class SamplerBase(object):
-    def __init__(self, indexes_hdf5_path, batch_size, random_seed):
+    def __init__(self, hdf5_index_path, batch_size, random_seed):
         """Base class of train sampler.
-        
-        Args:
-          indexes_hdf5_path: string
-          batch_size: int
-          random_seed: int
+
+          :param str hdf5_index_path: HDF5 index contaning the datatset
+          :param int batch_size: Size of the returned batch-meta
+          :param int random_seed: Seed for the randomization of sampling
         """
         self.batch_size = batch_size
         self.random_state = np.random.RandomState(random_seed)
@@ -83,7 +70,7 @@ class SamplerBase(object):
         # Load target
         load_time = time.time()
 
-        with h5py.File(indexes_hdf5_path, 'r') as hf:
+        with h5py.File(hdf5_index_path, 'r') as hf:
             self.audio_names = [audio_name.decode() for audio_name in hf['audio_name'][:]]
             self.hdf5_paths = [hdf5_path.decode() for hdf5_path in hf['hdf5_path'][:]]
             self.indexes_in_hdf5 = hf['index_in_hdf5'][:]
@@ -95,15 +82,14 @@ class SamplerBase(object):
 
 
 class TrainSampler(SamplerBase):
-    def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
-        """Balanced sampler. Generate batch meta for training.
+    def __init__(self, hdf5_index_path, batch_size, random_seed=1234):
+        """Regular sampler. Samples by randomly shuffling the list of files.
         
-        Args:
-          indexes_hdf5_path: string
-          batch_size: int
-          random_seed: int
+           :param string hdf5_index_path: HDF5 index containing the dataset
+           :param int batch_size: Size of the returned batch-meta
+           :param int random_seed: Seed for randomization of sampling
         """
-        super(TrainSampler, self).__init__(indexes_hdf5_path, batch_size, random_seed)
+        super(TrainSampler, self).__init__(hdf5_index_path, batch_size, random_seed)
         
         self.indexes = np.arange(self.audios_num)
             
@@ -115,11 +101,11 @@ class TrainSampler(SamplerBase):
     def __iter__(self):
         """Generate batch meta for training. 
         
-        Returns:
-          batch_meta: e.g.: [
-            {'hdf5_path': string, 'index_in_hdf5': int}, 
-            ...]
+        :return batch_meta: List of dictionaries, each dictionary maps
+                            'hdf5_path': str, 'index_in_hdf5': int
+        :rtype: list
         """
+
         batch_size = self.batch_size
 
         while True:
@@ -153,16 +139,14 @@ class TrainSampler(SamplerBase):
 
 
 class BalancedTrainSampler(SamplerBase):
-    def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
-        """Balanced sampler. Generate batch meta for training. Data are equally 
-        sampled from different sound classes.
+    def __init__(self, hdf5_index_path, batch_size, random_seed=1234):
+        """Balanced sampler. Data are equally sampled from different sound classes.
         
-        Args:
-          indexes_hdf5_path: string
-          batch_size: int
-          random_seed: int
+           :param string hdf5_index_path: HDF5 index contaning the dataset
+           :param int batch_size: Size of the returned batch-meta
+           :param int random_seed: Seed for sampling randomization
         """
-        super(BalancedTrainSampler, self).__init__(indexes_hdf5_path, 
+        super(BalancedTrainSampler, self).__init__(hdf5_index_path, 
             batch_size, random_seed)
         
         self.samples_num_per_class = np.sum(self.targets, axis=0)
@@ -193,10 +177,9 @@ class BalancedTrainSampler(SamplerBase):
     def __iter__(self):
         """Generate batch meta for training. 
         
-        Returns:
-          batch_meta: e.g.: [
-            {'hdf5_path': string, 'index_in_hdf5': int}, 
-            ...]
+        :return batch_meta: List of dictionaries, each dictionary maps
+                            'hdf5_path': str, 'index_in_hdf5': int
+        :rtype: list
         """
         batch_size = self.batch_size
 
@@ -238,18 +221,17 @@ class BalancedTrainSampler(SamplerBase):
 
 
 class AlternateTrainSampler(SamplerBase):
-    def __init__(self, indexes_hdf5_path, batch_size, random_seed=1234):
-        """AlternateSampler is a combination of Sampler and Balanced Sampler. 
-        AlternateSampler alternately sample data from Sampler and Blanced Sampler.
+    def __init__(self, hdf5_index_path, batch_size, random_seed=1234):
+        """Alternatively sample data from Sampler and Balanced Sampler.
         
-        Args:
-          indexes_hdf5_path: string          
-          batch_size: int
-          random_seed: int
+           :param string hdf5_index_path: HDF5 index contaning the dataset
+           :param int batch_size: Size of the returned batch-meta
+           :param int random_seed: Seed for sampling randomization
         """
-        self.sampler1 = TrainSampler(indexes_hdf5_path, batch_size, random_seed)
 
-        self.sampler2 = BalancedTrainSampler(indexes_hdf5_path, batch_size, random_seed)
+        self.sampler1 = TrainSampler(hdf5_index_path, batch_size, random_seed)
+
+        self.sampler2 = BalancedTrainSampler(hdf5_index_path, batch_size, random_seed)
 
         self.batch_size = batch_size
         self.count = 0
@@ -257,11 +239,11 @@ class AlternateTrainSampler(SamplerBase):
     def __iter__(self):
         """Generate batch meta for training. 
         
-        Returns:
-          batch_meta: e.g.: [
-            {'hdf5_path': string, 'index_in_hdf5': int}, 
-            ...]
+        :return batch_meta: List of dictionaries, each dictionary maps
+                            'hdf5_path': str, 'index_in_hdf5': int
+        :rtype: list
         """
+
         batch_size = self.batch_size
 
         while True:
@@ -320,16 +302,16 @@ class AlternateTrainSampler(SamplerBase):
 
 
 class EvaluateSampler(object):
-    def __init__(self, indexes_hdf5_path, batch_size):
-        """Evaluate sampler. Generate batch meta for evaluation.
+    def __init__(self, hdf5_index_path, batch_size):
+        """Evaluation sampler. Samples all data in eval dataset without randomization.
         
-        Args:
-          indexes_hdf5_path: string
-          batch_size: int
+           :param string hdf5_index_path: HDF5 index contaning the dataset
+           :param int batch_size: Size of the returned batch-meta
         """
+
         self.batch_size = batch_size
 
-        with h5py.File(indexes_hdf5_path, 'r') as hf:
+        with h5py.File(hdf5_index_path, 'r') as hf:
             self.audio_names = [audio_name.decode() for audio_name in hf['audio_name'][:]]
             self.hdf5_paths = [hdf5_path.decode() for hdf5_path in hf['hdf5_path'][:]]
             self.indexes_in_hdf5 = hf['index_in_hdf5'][:]
@@ -340,12 +322,11 @@ class EvaluateSampler(object):
     def __iter__(self):
         """Generate batch meta for training. 
         
-        Returns:
-          batch_meta: e.g.: [
-            {'hdf5_path': string, 
-             'index_in_hdf5': int}
-            ...]
+        :return batch_meta: List of dictionaries, each dictionary maps
+                            'hdf5_path': str, 'index_in_hdf5': int
+        :rtype: list
         """
+
         batch_size = self.batch_size
         pointer = 0
 
@@ -368,13 +349,14 @@ class EvaluateSampler(object):
 
 def collate_fn(list_data_dict):
     """Collate data.
-    Args:
-      list_data_dict, e.g., [{'audio_name': str, 'waveform': (clip_samples,), ...}, 
-                             {'audio_name': str, 'waveform': (clip_samples,), ...},
-                             ...]
-    Returns:
-      np_data_dict, dict, e.g.,
-          {'audio_name': (batch_size,), 'waveform': (batch_size, clip_samples), ...}
+
+       :param list list_data_dict: List of dictionaries with similar keys
+                                   mapping to numpy.ndarray's
+
+       :return np_dict_data: One dictionary with same keys as input dictionary,
+                             each key maps to the same arrays as in input dicts,
+                             but concatenated across a new (leftmost) dimension
+       :rtype: dict
     """
     np_data_dict = {}
     
