@@ -5,25 +5,23 @@ import copy
 __all__ = ['get_labels_metadata',
            'read_metadata']
 
-def get_labels_metadata():
+def get_labels_metadata(class_list_path, class_codes_path):
     # Load label
-    selected_classes_path = os.path.join('metadata', 'selected_classes.txt')
-    file_classes = open(selected_classes_path, 'r')
+    class_list_file = open(class_list_path, 'r')
     selected_classes = set()
-    for line in file_classes:
+    for line in class_list_file:
         selected_classes.add(line[:-1])
-    file_classes.close()
+    class_list_file.close()
     
-    mid_to_disp = os.path.join('metadata', 'mid_to_display_name.tsv')
-    file_mid = open(mid_to_disp,  'r')
+    class_codes_file = open(class_codes_path,  'r')
     labels = []
     ids = []    # Each label has a unique id such as "/m/068hy"
-    for line in file_mid:
+    for line in class_codes_file:
         code, label = line.split('\t')
         if code in selected_classes:
             ids.append(code)
             labels.append(label)
-    file_mid.close()
+    class_codes_file.close()
 
     lb_to_ix = dict()
     ix_to_lb = dict()
