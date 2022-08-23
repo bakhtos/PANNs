@@ -68,7 +68,7 @@ def train(*, train_indexes_hdf5_path,
     :param int classes_num: Amount of classes used in the dataset (default 110)
     :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
     :raises ValueError: if model_type or sampler not found among defined ones
-    :raises ValueError: if resume_iteration is non-zero, but no resume_cehckpoint_path given
+    :raises ValueError: if resume_iteration is non-zero, but no resume_checkpoint_path given
     """
 
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
