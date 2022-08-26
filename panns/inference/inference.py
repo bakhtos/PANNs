@@ -62,3 +62,5 @@ def inference(*, eval_indexes_hdf5_path,
     
     if sed:
         result = output_dict['framewise_output']
+    else:
+        result = output_dict['clipwise_output']
