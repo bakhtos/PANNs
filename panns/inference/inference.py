@@ -11,6 +11,7 @@ from panns.models import *
 
 def inference(*, eval_indexes_hdf5_path,                                                    
                  checkpoint_path,                                               
+                 labels,
                  model_type,                                                    
                  window_size=1024,                                              
                  hop_size=320,                                                  
@@ -19,11 +20,10 @@ def inference(*, eval_indexes_hdf5_path,
                  fmin=50, fmax=14000,                                           
                  cuda=False,                                                    
                  classes_num=110,                                               
-                 sed=False, verbose=False,
+                 sed=False,
                  num_workers=8, batch_size=32):
 
 
-    _,labels,_,_,_,_ = get_labels_metadata()                                    
                                                                              
     # Model                                                                     
     if model_type in models.__all__:                                            
@@ -109,3 +109,8 @@ def process_event(class_labels, frame_probabilities, threshold, hop_length_secon
     results = results.process_events(minimum_event_length=None, minimum_event_gap=0.1)
     results = results.process_events(minimum_event_length=0.1, minimum_event_gap=None)
     return results
+
+
+if __name__ == '__main__':
+
+    _,labels,_,_,_,_ = get_labels_metadata()
