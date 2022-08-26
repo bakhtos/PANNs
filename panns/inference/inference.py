@@ -11,7 +11,6 @@ from panns.models import *
 
 def inference(*, eval_indexes_hdf5_path,                                                    
                  checkpoint_path,                                               
-                 labels,
                  model_type,                                                    
                  window_size=1024,                                              
                  hop_size=320,                                                  
