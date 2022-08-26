@@ -21,7 +21,33 @@ def inference(*, eval_indexes_hdf5_path,
                  classes_num=110,                                               
                  sed=False,
                  num_workers=8, batch_size=32):
+    '''Obtain audio tagging or sound event detection results from a model.
 
+    Return either a clipwise_output or framewise_output of a model after
+    going through the entire provided dataset. If SED was requested for a model
+    that cannot provide framewise_output, automatically switches to AT.
+
+    :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
+    :param str checkpoint_path: Path to the saved checkpoint of the model
+                                (as created by panns.train)
+    :param str model_type: Name of the model saved in checkpoint
+                           (must be one of classes defined in panns.models.models.py)
+    :param int window_size: Window size of filter used in training (default 1024)
+    :param int hop_size: Hop size of filter used in training (default 320)
+    :param int sample_rate: Sample rate of the used audio clips; supported values
+                            are 32000, 16000, 8000 (default 32000)
+    :param int mel_bins: Amount of mel filters used in the model
+    :param int fmin: Minimum frequency used in Logmel filterbank of the model
+    :param int fmax: Maximum frequency used in Logmel filterbank of the model
+    :param bool cuda: If True, try to use GPU for inference (default False)
+    :param int classes_num: Amount of classes used in the dataset (default 110)
+    :param bool sed: If True, perform Sound Event Detection, otherwise Audio Tagging
+                     (default False)
+    :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
+                            (default 8)
+    :param int batch_size: Batch size to use for evaluation (default 32)
+    :raises ValueError: if model_type not found in panns.models.models.py
+    '''
 
                                                                              
     # Model                                                                     
