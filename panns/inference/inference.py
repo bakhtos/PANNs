@@ -108,8 +108,9 @@ def detect_events(*, frame_probabilities,
 
         # Store events
         for event in event_segments:
-            results.append(metadata.MetaDataItem({'event_onset': event[0],
-                                                  'event_offset': event[1],
+            results.append(metadata.MetaDataItem({'onset': event[0],
+                                                  'offset': event[1],
+                                                  'filename': filename,
                                                   'event_label': event_label}))
 
     results = metadata.MetaDataContainer(results)
