@@ -88,11 +88,20 @@ def find_contiguous_regions(activity_array):
     return change_indices.reshape((-1, 2))
 
 
-def process_event(class_labels, frame_probabilities, threshold, hop_length_seconds):
+def detect_events(*, frame_probabilities,
+                  class_labels,
+                  filename,
+                  threshold=0.5,
+                  minimum_event_length=0.1,
+                  minimum_event_gap=0.1,
+                  sample_rate=32000,
+                  hop_length=320):
+
+    hop_length_seconds = hop_length/sample_rate
     results = []
-    for event_id, event_label in enumerate(class_labels):
+    for event_ix, event_label in ix_to_lb.items():
         # Binarization
-        event_activity = frame_probabilities[event_id, :] > threshold
+        event_activity = frame_probabilities[event_ix, :] > threshold
 
         # Convert active frames into segments and translate frame indices into time stamps
         event_segments = find_contiguous_regions(event_activity) * hop_length_seconds
