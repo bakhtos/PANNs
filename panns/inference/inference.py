@@ -116,8 +116,8 @@ def detect_events(*, frame_probabilities,
     results = metadata.MetaDataContainer(results)
 
     # Event list post-processing
-    results = results.process_events(minimum_event_length=None, minimum_event_gap=0.1)
-    results = results.process_events(minimum_event_length=0.1, minimum_event_gap=None)
+    results = results.process_events(minimum_event_length=minimum_event_length,
+                                     minimum_event_gap=minimum_event_gap)
     return results
 
 
