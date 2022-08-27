@@ -133,6 +133,23 @@ def detect_events(*, frame_probabilities,
                   minimum_event_gap=0.1,
                   sample_rate=32000,
                   hop_length=320):
+    '''Detect Sound Events using a given framewise probability array.
+
+    :param numpy.ndarray frame_probabilities: A two-dimensional array of framewise
+        probablities of classes. First dimension corresponds to the classes,
+        second to the frames of the audio clip
+    :param dict ix_to_id: Dictionary mapping event indexes (from 0 to classes_num-1) used
+        to access the event in the frame matrix to their ids (codes)
+    :param str filename: Name of the audio clip to which the frame_probabilities correspond.
+    :param float threshold: Threshold used to binarize the frame_probabilites.
+        Values higher than the threshold are considered as 'event detected' (default 0.5)
+    :param int minimum_event_length: Minimum length (in seconds) of detetected event
+        to be considered really present
+    :param int minimum_event_gap: Minimum length (in seconds) of a gap between
+        two events to distinguish them, if the gap is smaller events are merged
+    :param int sample_rate: Sample rate of audio clips used in the dataset (default 32000)
+    :param int hop_length: Hop length which was used to obtain the frame_probabilities (default 320)
+    '''
 
     hop_length_seconds = hop_length/sample_rate
     results = []
