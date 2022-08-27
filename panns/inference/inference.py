@@ -114,7 +114,7 @@ def find_contiguous_regions(activity_array):
 
 
 def detect_events(*, frame_probabilities,
-                  class_labels,
+                  ix_to_id,
                   filename,
                   threshold=0.5,
                   minimum_event_length=0.1,
@@ -124,7 +124,7 @@ def detect_events(*, frame_probabilities,
 
     hop_length_seconds = hop_length/sample_rate
     results = []
-    for event_ix, event_label in ix_to_lb.items():
+    for event_ix, event_id in ix_to_id.items():
         # Binarization
         event_activity = frame_probabilities[event_ix, :] > threshold
 
@@ -136,7 +136,7 @@ def detect_events(*, frame_probabilities,
             results.append(metadata.MetaDataItem({'onset': event[0],
                                                   'offset': event[1],
                                                   'filename': filename,
-                                                  'event_label': event_label}))
+                                                  'event_label': event_id}))
 
     results = metadata.MetaDataContainer(results)
 
@@ -148,4 +148,4 @@ def detect_events(*, frame_probabilities,
 
 if __name__ == '__main__':
 
-    _,labels,_,_,_,_ = get_labels_metadata()
+    _,_,_,_,_,ix_to_id = get_labels_metadata()
