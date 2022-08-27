@@ -48,6 +48,8 @@ def inference(*, eval_indexes_hdf5_path,
     :param int batch_size: Batch size to use for evaluation (default 32)
     :return: result - Array of either clipwise or framewise output
     :rtype: numpy.ndarray
+    :return: audio_names - Names of audios used in the provided eval dataset
+    :rtype: numpy.ndarray
     :raises ValueError: if model_type not found in panns.models.models.py
     '''
 
@@ -88,13 +90,15 @@ def inference(*, eval_indexes_hdf5_path,
         num_workers=num_workers, pin_memory=True)
 
     output_dict = forward(model, eval_loader)
+
+    audio_names = output_dict['audio_name']
     
     if sed:
         result = output_dict['framewise_output'].data.cpu().numpy()
     else:
         result = output_dict['clipwise_output'].data.cpu().numpy()
 
-    return result
+    return result, audio_names
 
 
 def find_contiguous_regions(activity_array):
