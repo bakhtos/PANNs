@@ -46,6 +46,8 @@ def inference(*, eval_indexes_hdf5_path,
     :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
                             (default 8)
     :param int batch_size: Batch size to use for evaluation (default 32)
+    :return: result - Array of either clipwise or framewise output
+    :rtype: numpy.ndarray
     :raises ValueError: if model_type not found in panns.models.models.py
     '''
 
@@ -88,9 +90,11 @@ def inference(*, eval_indexes_hdf5_path,
     output_dict = forward(model, eval_loader)
     
     if sed:
-        result = output_dict['framewise_output']
+        result = output_dict['framewise_output'].data.cpu().numpy()
     else:
-        result = output_dict['clipwise_output']
+        result = output_dict['clipwise_output'].data.cpu().numpy()
+
+    return result
 
 
 def find_contiguous_regions(activity_array):
