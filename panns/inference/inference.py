@@ -1,3 +1,5 @@
+import argparse
+
 import torch
 import numpy as np
 import pandas as pd
@@ -181,4 +183,51 @@ def detect_events(*, frame_probabilities,
 
 if __name__ == '__main__':
 
-    _,_,_,_,_,ix_to_id = get_labels_metadata()
+    #_,_,_,_,_,ix_to_id = get_labels_metadata()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--eval_indexes_hdf5_path', type=str, required=True,
+                        help="Path to hdf5 index of the evaluation set")
+    parser.add_argument('--model_type', type=str, required=True,
+                        help="Name of model to train")
+    parser.add_argument('--checkpoint_path', type=str,
+                        help="File to load the NN checkpoint from")
+    parser.add_argument('--window_size', type=int, default=1024,
+                        help="Window size of filter to be used in training (default 1024)")
+    parser.add_argument('--hop_size', type=int, default=320,
+                        help="Hop size of filter to be used in traning (default 320)")
+    parser.add_argument('--sample_rate', type=int, default=32000,
+                        help="Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)")
+    parser.add_argument('--fmin', type=int, default=50,
+                        help="Minimum frequency to be used when creating Logmel filterbank (default 50)")
+    parser.add_argument('--fmax', type=int, default=14000,
+                        help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
+    parser.add_argument('--mel_bins', type=int, default=64,
+                        help="Amount of mel filters to use in the filterbank (default 64)")
+    parser.add_argument('--batch_size', type=int, default=32,
+                        help="Batch size to use for training/evaluation (default 32)")
+    parser.add_argument('--cuda', action='store_true', default=False,
+                        help="If set, try to use GPU for traning")
+    parser.add_argument('--sed', action='store_true', default=False,
+                        help='If set, perform Sound Event Detection, otherwise Audio Tagging')
+    parser.add_argument('--classes_num', type=int, default=110,
+                        help="Amount of classes used in the dataset (default 110)")
+    parser.add_argument('--num_workers', type=int, default=8,
+                        help="Amount of workers to pass to torch.utils.data.DataLoader (default 8)")
+
+    args = parser.parse_args()
+
+    results, audio_names = inference(eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
+                                     model_type=args.model_type,
+                                     checkpoint_path=args.checkpoint_path,
+                                     window_size=args.window_size,
+                                     hop_size=args.hop_size,
+                                     sample_rate=args.sample_rate,
+                                     fmin=args.fmin, fmax=args.fmax,
+                                     mel_bins=args.mel_bins,
+                                     batch_size=args.batch_size,
+                                     cuda=args.cuda, sed=args.sed,
+                                     classes_num=args.classes_num,
+                                     num_workers=args.num_workers)
+    print(results.shape)
+    print(audio_names.shape)
