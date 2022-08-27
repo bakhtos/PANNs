@@ -98,6 +98,14 @@ def inference(*, eval_indexes_hdf5_path,
 
 
 def find_contiguous_regions(activity_array):
+    '''Detect blocks of consecutive 1/True values in an activity array (vector).
+
+    :param numpy.ndarray activity_array: An activity array (vector) of 1s and 0s
+            (True/False values)
+    :return: change_indices - Array of two columns, indicating intervals of
+            blocks of consecutive True values
+    :rtype: numpy.ndarray
+    '''
 
     # Find the changes in the activity_array
     change_indices = np.logical_xor(activity_array[1:], activity_array[:-1]).nonzero()[0]
