@@ -48,6 +48,7 @@ def read_metadata(csv_path, classes_num, id_to_ix):
     file = open(csv_path, 'r')
     for line in file:
         video_id, label = line.split('\t')
+        if video_id == 'filename': continue
         label=label[:-1]
 
         if video_id not in video_id_to_ix:
