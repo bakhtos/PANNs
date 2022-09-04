@@ -57,7 +57,7 @@ def inference(*, eval_indexes_hdf5_path,
 
                                                                              
     # Model                                                                     
-    if model_type in models.__all__:                                            
+    if model_type in panns.models.__all__:                                            
         Model = eval(model_type)                                                
     else:                                                                       
         raise ValueError(f"'{model_type}' is not among the defined models.")    
