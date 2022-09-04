@@ -79,7 +79,9 @@ def inference(*, eval_indexes_hdf5_path,
     if device.type == 'cuda':                                                   
         model.to(device)                                                        
         print(f'Using GPU. GPU number: {torch.cuda.device_count()}')            
+        sed_model = model.sed_model
         model = torch.nn.DataParallel(model)                                    
+        model.sed_model = sed_model
     else:                                                                       
         print('Using CPU.')
 
