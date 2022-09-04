@@ -236,7 +236,7 @@ if __name__ == '__main__':
     print(results.shape)
     print(audio_names.shape)
 
-    detect_events(*, frame_probabilities=results[0,:,:],
+    detect_events(frame_probabilities=results[0,:,:],
                   ix_to_id=ix_to_id,
                   filename=audio_names[0],
                   threshold=0.5,
