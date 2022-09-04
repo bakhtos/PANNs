@@ -86,7 +86,7 @@ def inference(*, eval_indexes_hdf5_path,
     dataset = AudioSetDataset(sample_rate=sample_rate)
     # Evaluate sampler                                                          
     eval_sampler = EvaluateSampler(                                             
-        indexes_hdf5_path=eval_indexes_hdf5_path, batch_size=batch_size)        
+        hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)        
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,                  
         batch_sampler=eval_sampler, collate_fn=collate_fn,                      
         num_workers=num_workers, pin_memory=True)
