@@ -8,6 +8,7 @@ from dcase_util.containers import metadata
 from panns.data.loaders import AudioSetDataset, EvaluateSampler, collate_fn
 from panns.forward import forward
 from panns.utils.file_utils import create_folder
+from panns.utils.metadata_utils import get_labels_metadata
 import panns.models
 
 
