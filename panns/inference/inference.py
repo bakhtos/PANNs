@@ -8,7 +8,7 @@ from dcase_util.containers import metadata
 from panns.data.loaders import AudioSetDataset, EvaluateSampler, collate_fn
 from panns.forward import forward
 from panns.utils.file_utils import create_folder
-from panns.models import *
+import panns.models
 
 
 def inference(*, eval_indexes_hdf5_path,                                                    
@@ -58,7 +58,7 @@ def inference(*, eval_indexes_hdf5_path,
                                                                              
     # Model                                                                     
     if model_type in panns.models.__all__:                                            
-        Model = eval(model_type)                                                
+        Model = eval("panns.models."+model_type)                                                
     else:                                                                       
         raise ValueError(f"'{model_type}' is not among the defined models.")    
                                                                                 
