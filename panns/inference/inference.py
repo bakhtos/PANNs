@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from dcase_util.containers import metadata
 
-from panns.data.loaders import AudioSetDataset, EvaluationSampler, collate_fn
+from panns.data.loaders import AudioSetDataset, EvaluateSampler, collate_fn
 from panns.forward import forward
 from panns.utils.file_utils import create_folder
 from panns.models import *
