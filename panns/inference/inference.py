@@ -98,9 +98,9 @@ def inference(*, eval_indexes_hdf5_path,
     audio_names = output_dict['audio_name']
     
     if sed:
-        result = output_dict['framewise_output'].data.cpu().numpy()
+        result = output_dict['framewise_output']
     else:
-        result = output_dict['clipwise_output'].data.cpu().numpy()
+        result = output_dict['clipwise_output']
 
     return result, audio_names
 
