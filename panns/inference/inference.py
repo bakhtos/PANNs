@@ -185,7 +185,6 @@ def detect_events(*, frame_probabilities,
 
 if __name__ == '__main__':
 
-    #_,_,_,_,_,ix_to_id = get_labels_metadata()
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--eval_indexes_hdf5_path', type=str, required=True,
@@ -216,9 +215,12 @@ if __name__ == '__main__':
                         help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
                         help="Amount of workers to pass to torch.utils.data.DataLoader (default 8)")
+    parser.add_argument('--class_list_path', type=str, required=True)
+    parser.add_argument('--class_codes_path', type=str, required=True)
 
     args = parser.parse_args()
 
+    _,_,_,_,_,ix_to_id = get_labels_metadata(args.class_list_path, args.class_codes_path)
     results, audio_names = inference(eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
                                      model_type=args.model_type,
                                      checkpoint_path=args.checkpoint_path,
