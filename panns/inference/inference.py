@@ -136,7 +136,7 @@ def find_contiguous_regions(activity_array):
 
 def detect_events(*, frame_probabilities,
                   ix_to_id,
-                  filename,
+                  filenames,
                   threshold=0.5,
                   minimum_event_length=0.1,
                   minimum_event_gap=0.1,
@@ -149,7 +149,7 @@ def detect_events(*, frame_probabilities,
         second to the frames of the audio clip
     :param dict ix_to_id: Dictionary mapping event indexes (from 0 to classes_num-1) used
         to access the event in the frame matrix to their ids (codes)
-    :param str filename: Name of the audio clip to which the frame_probabilities correspond.
+    :param str filenames: Name of the audio clip to which the frame_probabilities correspond.
     :param float threshold: Threshold used to binarize the frame_probabilites.
         Values higher than the threshold are considered as 'event detected' (default 0.5)
     :param int minimum_event_length: Minimum length (in seconds) of detetected event
@@ -162,16 +162,20 @@ def detect_events(*, frame_probabilities,
 
     hop_length_seconds = hop_size/sample_rate
     results = []
-    for event_ix, event_id in ix_to_id.items():
-        # Binarization
-        event_activity = frame_probabilities[event_ix, :] > threshold
+    n_files = frame_probabilities.shape[0]
+    for f in range(n_files):
+        frame_probability = frame_probabilities[f, :,:]
+        filename = filenames[f]
+        for event_ix, event_id in ix_to_id.items():
+            # Binarization
+            event_activity = frame_probability[event_ix, :] > threshold
 
-        # Convert active frames into segments and translate frame indices into time stamps
-        event_segments = find_contiguous_regions(event_activity) * hop_length_seconds
+            # Convert active frames into segments and translate frame indices into time stamps
+            event_segments = find_contiguous_regions(event_activity) * hop_length_seconds
 
-        # Store events
-        for event in event_segments:
-            results.append(metadata.MetaDataItem({'onset': event[0],
+            # Store events
+            for event in event_segments:
+                results.append(metadata.MetaDataItem({'onset': event[0],
                                                   'offset': event[1],
                                                   'filename': filename,
                                                   'event_label': event_id}))
@@ -237,9 +241,9 @@ if __name__ == '__main__':
     print(results.shape)
     print(audio_names.shape)
 
-    events = detect_events(frame_probabilities=results[0,:,:],
+    events = detect_events(frame_probabilities=results,
                   ix_to_id=ix_to_id,
-                  filename=audio_names[0],
+                  filenames=audio_names,
                   threshold=0.5,
                   minimum_event_length=0.1,
                   minimum_event_gap=0.1,
