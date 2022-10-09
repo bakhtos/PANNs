@@ -10,7 +10,7 @@ import h5py
 import librosa
 
 from panns.utils.file_utils import create_folder, get_sub_filepaths, get_filename
-from panns.utils.metadata_utils import get_labels_metadata, read_metadata
+from panns.utils.metadata_utils import get_labels, get_weak_target
 from panns.utils.logging_utils import create_logging 
 from panns.utils.array_utils import float32_to_int16, pad_or_truncate
 
@@ -40,7 +40,7 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
 
     clip_samples = sample_rate*clip_length//1000
 
-    _,_,_,_,id_to_ix,_ = get_labels_metadata(class_list_path, class_codes_path)
+    class_ids,_,_,_ = get_labels(class_codes_path, class_list_path)
 
 
     create_folder(os.path.dirname(hdf5_path))
@@ -51,7 +51,7 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
     logging.info('Write logs to {}'.format(logs_dir))
     
     # Read csv file
-    audio_names, targets = read_metadata(csv_path, classes_num, id_to_ix)
+    audio_names, targets = get_weak_target(csv_path, class_ids)
 
     if mini_data > 0:
         audio_names = audio_names[0:mini_data]
