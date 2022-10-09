@@ -25,10 +25,10 @@ def get_labels(class_labels_path, selected_classes_path):
     labels : list,
         List of all selected classes' labels,
         in the order they were given in 'selected_classes_path'.
-    lb_to_ix : dict[str] -> int,
-        Map from selected classes' labels to their index in 'labels'.
-    id_to_ix : dict[str] -> int,
-        Map from selected classes' ids to their index in 'ids'.
+    lb_to_id : dict[str] -> int,
+        Map from selected classes' labels to their ids.
+    id_to_lb : dict[str] -> int,
+        Map from selected classes' ids to their labels.
     '''
 
     selected_classes_file = open(selected_classes, 'r')
@@ -48,16 +48,14 @@ def get_labels(class_labels_path, selected_classes_path):
             labels.append(label)
     class_labels_file.close()
 
-    lb_to_ix = dict()
-    ix_to_lb = dict()
-    id_to_ix = dict()
-    ix_to_id = dict()
+    lb_to_id = dict()
+    id_to_lb = dict()
     
-    for i, (label, id_) in enumerate(zip(labels,ids)):
-        lb_to_ix[label] = i
-        id_to_ix[id_] = i
+    for label, id_ in zip(labels,ids):
+        lb_to_id[label] = id_
+        id_to_lb[id_] = label
 
-    return ids, labels, lb_to_ix, id_to_ix
+    return ids, labels, lb_to_id, id_to_lb
 
 
 def get_weak_target(data_path, class_ids):
