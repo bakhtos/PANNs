@@ -70,7 +70,7 @@ def get_weak_target(data_path, class_ids):
 
     id_to_ix = {id_ : ix for ix, id_ in enumerate(class_ids)}
     zero_vector = [0]*len(class_ids)
-    targets = []
+    target = []
     audio_names = []
     count = 0  
     video_id_to_ix = dict()
@@ -84,13 +84,13 @@ def get_weak_target(data_path, class_ids):
         if video_id not in video_id_to_ix:
             video_id_to_ix[video_id] = count
             count +=1
-            targets.append(copy.deepcopy(zero_vector))
+            target.append(copy.deepcopy(zero_vector))
             audio_names.append(video_id)
 
         video_ix = video_id_to_ix[video_id]
         class_ix = id_to_ix[label]
         
-        targets[video_ix][class_ix] = 1
+        target[video_ix][class_ix] = 1
     file.close()
 
-    return np.array(audio_names), np.array(targets)
+    return np.array(audio_names), np.array(target)
