@@ -3,7 +3,7 @@ import numpy as np
 import copy
 
 __all__ = ['get_labels',
-           'read_metadata']
+           'get_weak_target']
 
 def get_labels(class_labels_path, selected_classes_path):
     ''' Map selected labels from label to id and index and vice versa.
@@ -66,25 +66,26 @@ def get_labels(class_labels_path, selected_classes_path):
     return ids, labels, lb_to_ix, ix_to_lb, id_to_ix, ix_to_id
 
 
-def read_metadata(csv_path, classes_num, id_to_ix):
-    """Read metadata of AudioSet from a csv file.  """
+def get_weak_target(data_path, class_ids):
 
-    zero_vector = [0]*classes_num
+    id_to_ix = {id_ : ix for ix, id_ in enumerate(class_ids)}
+    zero_vector = [0]*len(class_ids)
     targets = []
     audio_names = []
     count = 0  
     video_id_to_ix = dict()
-    file = open(csv_path, 'r')
+    file = open(data_path, 'r')
     for line in file:
-        video_id, label = line.split('\t')
-        label=label[:-1]
+        parts = line.split('\t')
+        video_id = parts[0]
+        if video_id == 'filename': continue
+        label = parts[1].removesuffix('\n')
 
         if video_id not in video_id_to_ix:
             video_id_to_ix[video_id] = count
             count +=1
             targets.append(copy.deepcopy(zero_vector))
-            audio_name = 'Y'+video_id+'.wav'
-            audio_names.append(audio_name)
+            audio_names.append(video_id)
 
         video_ix = video_id_to_ix[video_id]
         class_ix = id_to_ix[label]
