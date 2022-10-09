@@ -2,37 +2,66 @@ import os
 import numpy as np
 import copy
 
-__all__ = ['get_labels_metadata',
+__all__ = ['get_labels',
            'read_metadata']
 
-def get_labels_metadata(class_list_path, class_codes_path):
-    # Load label
-    class_list_file = open(class_list_path, 'r')
+def get_labels(class_labels_path, selected_classes_path):
+    ''' Map selected labels from label to id and index and vice versa.
+
+    Parameters
+    __________
+
+    class_labels_path : str,
+        Dataset labels in tsv format (as in 'Reformatted' dataset').
+    selected_classes_path : str,
+        List of class ids selected for training, one per line.
+
+    Returns
+    _______
+
+    ids : list,
+        List of all selected classes' ids,
+        in the order they were given in 'selected_classes_path'.
+    labels : list,
+        List of all selected classes' labels,
+        in the order they were given in 'selected_classes_path'.
+    lb_to_ix : dict[str] -> int,
+        Map from selected classes' labels to their index in 'labels'.
+    ix_to_lb : dict[int] -> str,
+        Map from selected classes' index in 'labels' to the class label.
+    id_to_ix : dict[str] -> int,
+        Map from selected classes' ids to their index in 'ids'.
+    ix_to_id : dict[int] -> str,
+        Map from selected classes' index in 'ids' to the class id.
+    '''
+
+    selected_classes_file = open(selected_classes, 'r')
     selected_classes = set()
-    for line in class_list_file:
-        selected_classes.add(line[:-1])
-    class_list_file.close()
+    for line in selected_classes_file:
+        selected_classes.add(line.removesuffix('\n'))
+    selected_classes_file.close()
     
-    class_codes_file = open(class_codes_path,  'r')
+    class_labels_file = open(class_labels_path,  'r')
     labels = []
     ids = []    # Each label has a unique id such as "/m/068hy"
-    for line in class_codes_file:
-        code, label = line.split('\t')
-        if code in selected_classes:
-            ids.append(code)
+    for line in class_labels_file:
+        id_, label = line.split('\t')
+        if id_ in selected_classes:
+            label = label.removesuffix('\n')
+            ids.append(id_)
             labels.append(label)
-    class_codes_file.close()
+    class_labels_file.close()
 
     lb_to_ix = dict()
     ix_to_lb = dict()
     id_to_ix = dict()
     ix_to_id = dict()
     
-    for i, (label, code) in enumerate(zip(labels,ids)):
+    for i, (label, id_) in enumerate(zip(labels,ids)):
         lb_to_ix[label] = i
         ix_to_lb[i] = label
-        id_to_ix[code] = i
-        ix_to_id[i] = code 
+        id_to_ix[id_] = i
+        ix_to_id[i] = id_ 
 
     return ids, labels, lb_to_ix, ix_to_lb, id_to_ix, ix_to_id
 
