@@ -67,6 +67,27 @@ def get_labels(class_labels_path, selected_classes_path):
 
 
 def get_weak_target(data_path, class_ids):
+    ''' Create weak labels target numpy array.
+
+    Parameters
+    __________
+
+    data_path : str,
+        Dataset file to create target from (in 'Reformatted' format).
+    class_ids : list[str],
+        List of class ids, index in the list will correspond to the index,
+        in the target array.
+
+    Returns
+    _______
+
+    audio_names : numpy.array[str],
+        List of all files from data_path, index in this list corresponds
+        to the index in the target array.
+    target : numpy.array[int],
+        Target array of weak labels with shape (videos, classes).
+    '''
+
 
     id_to_ix = {id_ : ix for ix, id_ in enumerate(class_ids)}
     zero_vector = [0]*len(class_ids)
