@@ -75,7 +75,7 @@ def get_weak_target(data_path, class_ids):
     data_path : str,
         Dataset file to create target from (in 'Reformatted' format).
     class_ids : list[str],
-        List of class ids, index in the list will correspond to the index,
+        List of class ids, index in the list will correspond to the index
         in the target array.
 
     Returns
