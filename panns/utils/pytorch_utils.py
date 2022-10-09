@@ -21,11 +21,11 @@ def move_data_to_device(x, device):
     return x.to(device)
 
 
-def append_to_dict(dict, key, value):
-    if key in dict.keys():
-        dict[key].append(value)
+def append_to_dict(d, key, value):
+    if key in d:
+        d[key].append(value)
     else:
-        dict[key] = [value]
+        d[key] = [value]
 
 
 def interpolate(x, ratio):
