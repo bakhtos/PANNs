@@ -162,19 +162,26 @@ def detect_events(*, frame_probabilities,
 
     hop_length_seconds = hop_size/sample_rate
     results = []
+    activity_array = frame_probabilities > threshold
+    change_indices = np.logical_xor(activity_array[:,1:,:], activity_array[,:-1,:])
     n_files = frame_probabilities.shape[0]
     for f in range(n_files):
-        frame_probability = frame_probabilities[f, :,:]
         filename = filenames[f]
         for event_ix, event_id in ix_to_id.items():
-            # Binarization
-            event_activity = frame_probability[:, event_ix] > threshold
+            event_activity = change_indices[f,:, event_ix].nonzero()[0] + 1
 
-            # Convert active frames into segments and translate frame indices into time stamps
-            event_segments = find_contiguous_regions(event_activity) * hop_length_seconds
+            if activity_array[f,0,event_ix]:
+                # If the first element of activity_array is True add 0 at the beginning
+                event_activity = np.r_[0, event_activity]
+
+            if activity_array[f,-1,event_ix]:
+                # If the last element of activity_array is True, add the length of the array
+                event_activity = np.r_[event_activity, activity_array.shape[1]]
+
+            event_activity = event_activity.reshape((-1, 2)) * hop_length_seconds
 
             # Store events
-            for event in event_segments:
+            for event in event_activity:
                 results.append(metadata.MetaDataItem({'onset': event[0],
                                                   'offset': event[1],
                                                   'filename': filename,
