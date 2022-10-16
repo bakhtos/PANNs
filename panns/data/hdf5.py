@@ -56,7 +56,7 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
     if mini_data > 0:
         audio_names = audio_names[0:mini_data]
-        tagrets = target[0:mini_data]
+        target = target[0:mini_data]
 
     audios_num = len(audio_names)
 
