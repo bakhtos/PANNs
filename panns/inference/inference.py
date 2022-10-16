@@ -163,7 +163,7 @@ def detect_events(*, frame_probabilities,
     hop_length_seconds = hop_size/sample_rate
     results = []
     activity_array = frame_probabilities > threshold
-    change_indices = np.logical_xor(activity_array[:,1:,:], activity_array[,:-1,:])
+    change_indices = np.logical_xor(activity_array[:,1:,:], activity_array[:,:-1,:])
     n_files = frame_probabilities.shape[0]
     for f in range(n_files):
         filename = filenames[f]
