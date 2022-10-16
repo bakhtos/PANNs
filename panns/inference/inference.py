@@ -107,6 +107,7 @@ def inference(*, eval_indexes_hdf5_path,
 def detect_events(*, frame_probabilities,
                   ix_to_id,
                   filenames,
+                  output='events.txt',
                   threshold=0.5,
                   minimum_event_length=0.1,
                   minimum_event_gap=0.1,
@@ -130,7 +131,7 @@ def detect_events(*, frame_probabilities,
     :param int hop_size: Hop length which was used to obtain the frame_probabilities (default 320)
     '''
 
-    event_file = open('event.txt', 'w')
+    event_file = open(output, 'w')
     event_file.write('filename\tevent_label\tonset\toffset\n')
     hop_length_seconds = hop_size/sample_rate
     activity_array = frame_probabilities > threshold
