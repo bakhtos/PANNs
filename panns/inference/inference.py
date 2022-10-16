@@ -182,6 +182,8 @@ def detect_events(*, frame_probabilities,
 
             # Store events
             for event in event_activity:
+                if (minimum_event_length is not None and
+                    event[1]-event[0] >= minimum_event_length): continue
                 results.append(metadata.MetaDataItem({'onset': event[0],
                                                   'offset': event[1],
                                                   'filename': filename,
