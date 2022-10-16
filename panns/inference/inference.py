@@ -181,8 +181,9 @@ def detect_events(*, frame_probabilities,
             event_activity = event_activity.reshape((-1, 2)) * hop_length_seconds
 
             # Store events
-            current_onset = event_activity[0][0]
-            current_offset = event_activity[0][1]
+            if event_activity.size !=0:
+                current_onset = event_activity[0][0]
+                current_offset = event_activity[0][1]
             for event in event_activity:
                 if (minimum_event_length is not None and
                     event[1]-event[0] < minimum_event_length): continue
@@ -198,6 +199,11 @@ def detect_events(*, frame_probabilities,
                 else:
                     results.append(metadata.MetaDataItem({'onset': event[0],
                                                   'offset': event[1],
+                                                  'filename': filename,
+                                                  'event_label': event_id}))
+            if minimum_event_gap is not None:
+                results.append(metadata.MetaDataItem({'onset': current_onset,
+                                                  'offset': current_offset,
                                                   'filename': filename,
                                                   'event_label': event_id}))
 
