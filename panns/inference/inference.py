@@ -2,8 +2,6 @@ import argparse
 
 import torch
 import numpy as np
-import pandas as pd
-from dcase_util.containers import metadata
 
 from panns.data.loaders import AudioSetDataset, EvaluateSampler, collate_fn
 from panns.forward import forward
