@@ -104,34 +104,6 @@ def inference(*, eval_indexes_hdf5_path,
     return result, audio_names
 
 
-def find_contiguous_regions(activity_array):
-    '''Detect blocks of consecutive 1/True values in an activity array (vector).
-
-    :param numpy.ndarray activity_array: An activity array (vector) of 1s and 0s
-            (True/False values)
-    :return: change_indices - Array of two columns, indicating intervals of
-            blocks of consecutive True values
-    :rtype: numpy.ndarray
-    '''
-
-    # Find the changes in the activity_array
-    change_indices = np.logical_xor(activity_array[1:], activity_array[:-1]).nonzero()[0]
-
-    # Shift change_index with one, focus on frame after the change.
-    change_indices += 1
-
-    if activity_array[0]:
-        # If the first element of activity_array is True add 0 at the beginning
-        change_indices = np.r_[0, change_indices]
-
-    if activity_array[-1]:
-        # If the last element of activity_array is True, add the length of the array
-        change_indices = np.r_[change_indices, len(activity_array)]
-
-    # Reshape the result into two columns
-    return change_indices.reshape((-1, 2))
-
-
 def detect_events(*, frame_probabilities,
                   ix_to_id,
                   filenames,
