@@ -168,7 +168,7 @@ def detect_events(*, frame_probabilities,
         filename = filenames[f]
         for event_ix, event_id in ix_to_id.items():
             # Binarization
-            event_activity = frame_probability[event_ix, :] > threshold
+            event_activity = frame_probability[:, event_ix] > threshold
 
             # Convert active frames into segments and translate frame indices into time stamps
             event_segments = find_contiguous_regions(event_activity) * hop_length_seconds
