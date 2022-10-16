@@ -4,8 +4,6 @@ import csv
 import time
 import logging
 
-from panns.utils.array_utils import int16_to_float32
-
 __all__ = ['AudioSetDataset',
            'SamplerBase',
            'TrainSampler',
@@ -34,7 +32,7 @@ class AudioSetDataset(object):
 
         with h5py.File(hdf5_path, 'r') as hf:
             audio_name = hf['audio_name'][index_in_hdf5].decode()
-            waveform = int16_to_float32(hf['waveform'][index_in_hdf5])
+            waveform = hf['waveform'][index_in_hdf5]
             target = hf['target'][index_in_hdf5].astype(np.float32)
 
         data_dict = {
