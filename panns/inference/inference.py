@@ -256,4 +256,4 @@ if __name__ == '__main__':
                   hop_size=args.hop_size)
 
     events.save('events.txt', fields=['filename', 'event_label', 'onset', 'offset'],
-                delimiter='\t')
+                header=True, delimiter='\t')
