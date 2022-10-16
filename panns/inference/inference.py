@@ -160,8 +160,9 @@ def detect_events(*, frame_probabilities,
     :param int hop_size: Hop length which was used to obtain the frame_probabilities (default 320)
     '''
 
+    event_file = open('event.txt', 'w')
+    event_file.write('filename\tevent_label\tonset\toffset\n')
     hop_length_seconds = hop_size/sample_rate
-    results = []
     activity_array = frame_probabilities > threshold
     change_indices = np.logical_xor(activity_array[:,1:,:], activity_array[:,:-1,:])
     n_files = frame_probabilities.shape[0]
@@ -189,27 +190,17 @@ def detect_events(*, frame_probabilities,
                     event[1]-event[0] < minimum_event_length): continue
                 if minimum_event_gap is not None:
                     if (event[0] - current_offset >= minimum_event_gap):
-                        results.append(metadata.MetaDataItem({'onset': current_onset,
-                                                  'offset': current_offset,
-                                                  'filename': filename,
-                                                  'event_label': event_id}))
+                        event_file.write(f'{filename}\t{event_id}\t{current_onset}\t{current_offset}\n')
                         current_onset = event[0]
                     current_offset = event[1]
 
                 else:
-                    results.append(metadata.MetaDataItem({'onset': event[0],
-                                                  'offset': event[1],
-                                                  'filename': filename,
-                                                  'event_label': event_id}))
+                    event_file.write(f'{filename}\t{event_id}\t{event[0]}\t{event[1]}\n')
+
             if minimum_event_gap is not None and event_activity.size != 0:
-                results.append(metadata.MetaDataItem({'onset': current_onset,
-                                                  'offset': current_offset,
-                                                  'filename': filename,
-                                                  'event_label': event_id}))
+                event_file.write(f'{filename}\t{event_id}\t{current_onset}\t{current_offset}\n')
 
-    results = metadata.MetaDataContainer(results)
-
-    return results
+    event_file.close()
 
 
 if __name__ == '__main__':
@@ -263,7 +254,7 @@ if __name__ == '__main__':
                                      classes_num=args.classes_num,
                                      num_workers=args.num_workers)
 
-    events = detect_events(frame_probabilities=results,
+    detect_events(frame_probabilities=results,
                   ix_to_id=ix_to_id,
                   filenames=audio_names,
                   threshold=0.5,
@@ -271,6 +262,3 @@ if __name__ == '__main__':
                   minimum_event_gap=0.1,
                   sample_rate=args.sample_rate,
                   hop_size=args.hop_size)
-
-    events.save('events.txt', fields=['filename', 'event_label', 'onset', 'offset'],
-                header=True, delimiter='\t')
