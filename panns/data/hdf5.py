@@ -16,32 +16,35 @@ from panns.utils.array_utils import float32_to_int16, pad_or_truncate
 
 __all__ = ['wav_to_hdf5', 'create_indexes', 'combine_indexes']
 
-def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
-                   class_list_path, class_codes_path, logs_dir=None,
+def wav_to_hdf5(*, audios_dir, hdf5_path,
+                   audio_names, target, logs_dir=None,
                    clip_length=10000, sample_rate=32000, classes_num=110,
                    mini_data=0):
     """Pack waveform and target of several audio clips to a single hdf5 file. 
+       Parameters
+       __________
 
-       :param str audios_dir: Path to the directory containing files to be packed
-       :param str csv_path: Path to the csv (tsv) file of  weak class labels for the audios
-       :param str hdf5_path: Path to save the hdf5-packed file
-       :param str class_list_path: Path to txt file with list of select classes'
-                                   identifiers, one on each line
-       :param str logs_dir: Directory to save logs into, if None creates a
-                            directory 'logs' in CWD (default None)
-       :param str class_codes_file: Path to tsv file that matches class codes to labels
-       :param int clip_length: Length (in ms) of audio clips used in the dataset (default 10000)
-       :param int sample_rate: Sample rate of packed audios (default 32000)
-       :param int classes_num: Amount of classes used in the dataset (default 110)
-       :param int mini_data: If greater than 0, use only this many first files (for debugging, default 0)
-       :return: None
-       :rtype: None
+       audios_dir : str,
+            Path to the directory containing files to be packed
+       hdf5_path : str,
+            Path to save the hdf5-packed file
+       audio_names : numpy.ndarray,
+            Array of file names in the dataset, in the same order as in target
+       target : numpy.ndarray,
+            The target (weak) label array to pack
+       logs_dir : str, optional (default None)
+            Directory to save logs into, if None creates a directory 'logs' in CWD
+       clip_length : int, optional (default 10000)
+            Length (in ms) of audio clips used in the dataset
+       sample_rate : int, optional (default 32000)
+            Sample rate of packed audios
+       classes_num : int, optional (default 110),
+            Amount of classes used in the dataset
+       mini_data : int, optional (default 0)
+            If greater than 0, use only this many first files
     """
 
     clip_samples = sample_rate*clip_length//1000
-
-    class_ids,_,_,_ = get_labels(class_codes_path, class_list_path)
-
 
     create_folder(os.path.dirname(hdf5_path))
 
@@ -50,12 +53,10 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
     create_logging(logs_dir, filemode='w')
     logging.info('Write logs to {}'.format(logs_dir))
     
-    # Read csv file
-    audio_names, targets = get_weak_target(csv_path, class_ids)
 
     if mini_data > 0:
         audio_names = audio_names[0:mini_data]
-        tagrets = targets[0:mini_data]
+        tagrets = target[0:mini_data]
 
     audios_num = len(audio_names)
 
@@ -63,9 +64,9 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
     start_time = time.time()
 
     with h5py.File(hdf5_path, 'w') as hf:
-        hf.create_dataset('audio_name', shape=((audios_num,)), dtype='S20')
-        hf.create_dataset('waveform', shape=((audios_num, clip_samples)), dtype=np.int16)
-        hf.create_dataset('target', shape=((audios_num, classes_num)), dtype=np.bool)
+        hf.create_dataset('audio_name', shape=(audios_num,), dtype='S20')
+        hf.create_dataset('waveform', shape=(audios_num, clip_samples), dtype=np.int16)
+        hf.create_dataset('target', shape=(audios_num, classes_num), dtype=np.bool)
         hf.attrs.create('sample_rate', data=sample_rate, dtype=np.int32)
 
         # Pack waveform & target of several audio clips to a single hdf5 file
@@ -79,7 +80,7 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
 
                 hf['audio_name'][n] = audio_names[n].encode()
                 hf['waveform'][n] = float32_to_int16(audio)
-                hf['target'][n] = targets[n]
+                hf['target'][n] = target[n]
             else:
                 logging.info(f'{n} - File does not exist: {audio_path}')
 
@@ -91,12 +92,12 @@ def wav_to_hdf5(*, audios_dir, csv_path, hdf5_path,
 def create_indexes(*, hdf5_path, hdf5_index_path, logs_dir=None):
     """Create indexes of hdf5-packed files for dataloader to read when training.
 
-       :param str hdf5_path: Path of the hdf5-packed audios
-       :param str hdf5_index_path: Path to save index of the packed audios
-       :param str logs_dir: Directory to save logs into, if None creates a
-                            directory 'logs' in CWD (default None)
-       :return: None
-       :rtype: None
+       hdf5_path : str,
+            Path of the hdf5-packed audios
+       hdf5_index_path : str,
+            Path to save index of the packed audios
+       logs_dir : str,
+            Directory to save logs into, if None creates a directory 'logs' in CWD
     """
 
     # Paths
@@ -125,13 +126,14 @@ def combine_indexes(*, hdf5_indexes_dir, hdf5_full_index_path, logs_dir=None,
                        classes_num=110):
     """Combine several hdf5 indexes to a single hdf5.
 
-       :param str indexes_hdf5_dir: Path to a directory with all indexes to be combined
-       :param str full_indexes_hdf5_path: Path to save the combined index
-       :param int classes_num: Amount of classes used in the dataset (default 110)
-       :param str logs_dir: Directory to save logs into, if None creates a
-                            directory 'logs' in CWD (default None)
-       :return: None
-       :rtype: None
+       indexes_hdf5_dir : str,
+            Path to a directory with all indexes to be combined
+       full_indexes_hdf5_path : str,
+            Path to save the combined index
+       classes_num : int, optional (default 100)
+            Amount of classes used in the dataset
+       logs_dir : str, optional (default None)
+            Directory to save logs into, if None creates a directory 'logs' in CWD
     """
 
     # Paths
@@ -224,7 +226,7 @@ if __name__ == '__main__':
                                 help='Path of csv file containing audio info.')
     parser_waveforms_to_hdf5.add_argument('--class_list_path', type=str, required=True,
                 help="File with selected classes' identifiers, one on each line.")
-    parser_waveforms_to_hdf5.add_argument('--class_codes_path', type=str, required=True,
+    parser_waveforms_to_hdf5.add_argument('--selected_classes_path', type=str, required=True,
                 help='File that matches class identifiers with their labels.')
     parser_waveforms_to_hdf5.add_argument('--hdf5_path', type=str, required=True,
                                             help='Path to save packed hdf5.')
@@ -251,11 +253,13 @@ if __name__ == '__main__':
                         classes_num=args.classes_num, logs_dir=args.logs_dir)
 
     elif args.mode == 'wav_to_hdf5':
-        wav_to_hdf5(audios_dir=args.audios_dir, csv_path=args.csv_path,
-                          class_list_path=args.class_list_path,
-                          class_codes_path=args.class_codes_path,
-                          clip_length=args.clip_length,
+        class_ids,_,_,_ = get_labels(args.selected_classes_path, args.class_list_path)
+        audio_names, target = get_weak_target(args.csv_path, args.class_ids)
+
+        wav_to_hdf5(audios_dir=args.audios_dir,
                           hdf5_path=args.hdf5_path,
+                          audio_names=audio_names, target=target,
+                          clip_length=args.clip_length,
                           sample_rate=args.sample_rate,
                           classes_num=args.classes_num,
                           mini_data=args.mini_data,
