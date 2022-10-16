@@ -238,8 +238,6 @@ if __name__ == '__main__':
                                      cuda=args.cuda, sed=args.sed,
                                      classes_num=args.classes_num,
                                      num_workers=args.num_workers)
-    print(results.shape)
-    print(audio_names.shape)
 
     events = detect_events(frame_probabilities=results,
                   ix_to_id=ix_to_id,
@@ -249,5 +247,6 @@ if __name__ == '__main__':
                   minimum_event_gap=0.1,
                   sample_rate=args.sample_rate,
                   hop_size=args.hop_size)
+
     events.save('events.txt', fields=['filename', 'event_label', 'onset', 'offset'],
-                delimiter = '\t')
+                delimiter='\t')
