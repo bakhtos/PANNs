@@ -12,7 +12,6 @@ import librosa
 from panns.utils.file_utils import create_folder, get_sub_filepaths, get_filename
 from panns.utils.metadata_utils import get_labels, get_weak_target
 from panns.utils.logging_utils import create_logging 
-from panns.utils.array_utils import pad_or_truncate
 
 __all__ = ['wav_to_hdf5', 'create_indexes', 'combine_indexes']
 
@@ -76,10 +75,13 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
             if os.path.isfile(audio_path):
                 logging.info(f'{n} - {audio_path}')
                 (audio, _) = librosa.core.load(audio_path, sr=sample_rate, mono=True, dtype=float32)
-                audio = pad_or_truncate(audio, clip_samples)
+                if len(audio) >= clip_samples: audio2 = audio[:clip_samples]
+                if len(audio) < clip_samples:
+                    audio2 = np.zeros(clip_samples)
+                    audio2[:len(audio)] = audio
 
                 hf['audio_name'][n] = audio_names[n].encode()
-                hf['waveform'][n] = audio
+                hf['waveform'][n] = audio2
                 hf['target'][n] = target[n]
             else:
                 logging.info(f'{n} - File does not exist: {audio_path}')
