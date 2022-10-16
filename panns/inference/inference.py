@@ -201,7 +201,7 @@ def detect_events(*, frame_probabilities,
                                                   'offset': event[1],
                                                   'filename': filename,
                                                   'event_label': event_id}))
-            if minimum_event_gap is not None:
+            if minimum_event_gap is not None and event_activity.size != 0:
                 results.append(metadata.MetaDataItem({'onset': current_onset,
                                                   'offset': current_offset,
                                                   'filename': filename,
