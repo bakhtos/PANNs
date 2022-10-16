@@ -117,7 +117,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
      
     # Dataset will be used by DataLoader later. Dataset takes a meta as input 
     # and return a waveform and a target.
-    dataset = panns.data.loaders.AudioSetDataset(sample_rate=sample_rate)
+    dataset = panns.data.loaders.AudioSetDataset()
 
     # Train sampler
     if sampler in panns.data.loaders.__all__:

@@ -16,8 +16,8 @@ __all__ = ['AudioSetDataset',
 
 class AudioSetDataset(object):
     """Take meta of the audio clip, return waveform and target vector."""
-    def __init__(self, sample_rate=32000):
-        self.sample_rate = sample_rate
+    def __init__(self):
+        pass
     
     def __getitem__(self, meta):
         """Load waveform and target of an audio clip.
@@ -42,18 +42,6 @@ class AudioSetDataset(object):
             'audio_name': audio_name, 'waveform': waveform, 'target': target}
             
         return data_dict
-
-    def resample(self, waveform):
-        """Downsamples a 32000Hz sampled audio to 16000Hz or 8000Hz."""
-
-        if self.sample_rate == 32000:
-            return waveform
-        elif self.sample_rate == 16000:
-            return waveform[0 :: 2]
-        elif self.sample_rate == 8000:
-            return waveform[0 :: 4]
-        else:
-            raise Exception('Incorrect sample rate!')
 
 
 class SamplerBase(object):
