@@ -35,7 +35,6 @@ class AudioSetDataset(object):
         with h5py.File(hdf5_path, 'r') as hf:
             audio_name = hf['audio_name'][index_in_hdf5].decode()
             waveform = int16_to_float32(hf['waveform'][index_in_hdf5])
-            waveform = self.resample(waveform)
             target = hf['target'][index_in_hdf5].astype(np.float32)
 
         data_dict = {
