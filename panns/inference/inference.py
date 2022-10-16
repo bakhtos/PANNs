@@ -249,4 +249,5 @@ if __name__ == '__main__':
                   minimum_event_gap=0.1,
                   sample_rate=args.sample_rate,
                   hop_size=args.hop_size)
-    events.save('events.txt')
+    events.save('events.txt', fields=['filename', 'event_label', 'onset', 'offset'],
+                delimiter = '\t')
