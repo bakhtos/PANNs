@@ -10,16 +10,16 @@ from panns.utils.metadata_utils import get_labels_metadata
 import panns.models
 
 
-def inference(*, eval_indexes_hdf5_path,                                                    
-                 checkpoint_path,                                               
-                 model_type,                                                    
-                 window_size=1024,                                              
-                 hop_size=320,                                                  
-                 sample_rate=32000,                                             
-                 mel_bins=64,                                                   
-                 fmin=50, fmax=14000,                                           
-                 cuda=False,                                                    
-                 classes_num=110,                                               
+def inference(*, eval_indexes_hdf5_path, 
+                 checkpoint_path,
+                 model_type,
+                 window_size=1024,
+                 hop_size=320,
+                 sample_rate=32000,
+                 mel_bins=64,
+                 fmin=50, fmax=14000,
+                 cuda=False,
+                 classes_num=110,
                  sed=False,
                  num_workers=8, batch_size=32):
     '''Obtain audio tagging or sound event detection results from a model.
@@ -54,48 +54,48 @@ def inference(*, eval_indexes_hdf5_path,
     :raises ValueError: if model_type not found in panns.models.models.py
     '''
 
-                                                                             
-    # Model                                                                     
-    if model_type in panns.models.__all__:                                            
-        Model = eval("panns.models."+model_type)                                                
-    else:                                                                       
-        raise ValueError(f"'{model_type}' is not among the defined models.")    
-                                                                                
-    model = Model(sample_rate=sample_rate, window_size=window_size,             
-        hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax,             
-        classes_num=classes_num)                                                
-                                                                                
+ 
+    # Model
+    if model_type in panns.models.__all__:
+        Model = eval("panns.models."+model_type)
+    else:
+        raise ValueError(f"'{model_type}' is not among the defined models.")
+
+    model = Model(sample_rate=sample_rate, window_size=window_size,
+        hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax,
+        classes_num=classes_num)
+
     if sed and not model.sed_model:
         print(f"Warning! Asked to perform SED but {model_type} is not a SED model."
               "Performing Audio Tagging instead.")
         sed = False
-                                                                                
+
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
-                                                                                
-    checkpoint = torch.load(checkpoint_path, map_location=device)               
+ 
+    checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint['model'])
-    # Parallel                                                                  
-    if device.type == 'cuda':                                                   
-        model.to(device)                                                        
-        print(f'Using GPU. GPU number: {torch.cuda.device_count()}')            
+    # Parallel
+    if device.type == 'cuda':
+        model.to(device)
+        print(f'Using GPU. GPU number: {torch.cuda.device_count()}')
         sed_model = model.sed_model
-        model = torch.nn.DataParallel(model)                                    
+        model = torch.nn.DataParallel(model)
         model.sed_model = sed_model
-    else:                                                                       
+    else:
         print('Using CPU.')
 
     dataset = AudioSetDataset(sample_rate=sample_rate)
-    # Evaluate sampler                                                          
+    # Evaluate sampler
     eval_sampler = EvaluateSampler(                                             
-        hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)        
-    eval_loader = torch.utils.data.DataLoader(dataset=dataset,                  
-        batch_sampler=eval_sampler, collate_fn=collate_fn,                      
+        hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)
+    eval_loader = torch.utils.data.DataLoader(dataset=dataset,
+        batch_sampler=eval_sampler, collate_fn=collate_fn,
         num_workers=num_workers, pin_memory=True)
 
     output_dict = forward(model, eval_loader)
 
     audio_names = output_dict['audio_name']
-    
+
     if sed:
         result = output_dict['framewise_output']
     else:
@@ -115,8 +115,7 @@ def detect_events(*, frame_probabilities,
                   hop_size=320):
     '''Detect Sound Events using a given framewise probability array.
 
-    :param numpy.ndarray frame_probabilities: A two-dimensional array of framewise
-        probablities of classes. First dimension corresponds to the classes,
+    :param numpy.ndarray frame_probabilities: A two-dimensional array of framewise probablities of classes. First dimension corresponds to the classes,
         second to the frames of the audio clip
     :param dict ix_to_id: Dictionary mapping event indexes (from 0 to classes_num-1) used
         to access the event in the frame matrix to their ids (codes)
@@ -175,8 +174,6 @@ def detect_events(*, frame_probabilities,
 
 
 if __name__ == '__main__':
-
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--eval_indexes_hdf5_path', type=str, required=True,
                         help="Path to hdf5 index of the evaluation set")
@@ -184,8 +181,7 @@ if __name__ == '__main__':
                         help="Name of model to train")
     parser.add_argument('--checkpoint_path', type=str,
                         help="File to load the NN checkpoint from")
-    parser.add_argument('--window_size', type=int, default=1024,
-                        help="Window size of filter to be used in training (default 1024)")
+    parser.add_argument('--window_size', type=int, default=1024, help="Window size of filter to be used in training (default 1024)")
     parser.add_argument('--hop_size', type=int, default=320,
                         help="Hop size of filter to be used in traning (default 320)")
     parser.add_argument('--sample_rate', type=int, default=32000,
@@ -194,8 +190,7 @@ if __name__ == '__main__':
                         help="Minimum frequency to be used when creating Logmel filterbank (default 50)")
     parser.add_argument('--fmax', type=int, default=14000,
                         help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
-    parser.add_argument('--mel_bins', type=int, default=64,
-                        help="Amount of mel filters to use in the filterbank (default 64)")
+    parser.add_argument('--mel_bins', type=int, default=64, help="Amount of mel filters to use in the filterbank (default 64)")
     parser.add_argument('--batch_size', type=int, default=32,
                         help="Batch size to use for training/evaluation (default 32)")
     parser.add_argument('--cuda', action='store_true', default=False,
