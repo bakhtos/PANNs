@@ -12,7 +12,7 @@ def get_labels(class_labels_path, selected_classes_path):
     __________
 
     class_labels_path : str,
-        Dataset labels in tsv format (as in 'Reformatted' dataset').
+        Dataset labels in tsv format (as in 'Reformatted' dataset).
     selected_classes_path : str,
         List of class ids selected for training, one per line.
 
