@@ -10,7 +10,7 @@ from panns.utils.metadata_utils import get_labels_metadata
 import panns.models
 
 
-def inference(*, eval_indexes_hdf5_path, 
+def inference(*, eval_indexes_hdf5_path,
                  checkpoint_path,
                  model_type,
                  window_size=1024,
@@ -54,7 +54,7 @@ def inference(*, eval_indexes_hdf5_path,
     :raises ValueError: if model_type not found in panns.models.models.py
     '''
 
- 
+
     # Model
     if model_type in panns.models.__all__:
         Model = eval("panns.models."+model_type)
@@ -71,7 +71,7 @@ def inference(*, eval_indexes_hdf5_path,
         sed = False
 
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
- 
+
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint['model'])
     # Parallel
@@ -86,7 +86,7 @@ def inference(*, eval_indexes_hdf5_path,
 
     dataset = AudioSetDataset(sample_rate=sample_rate)
     # Evaluate sampler
-    eval_sampler = EvaluateSampler(                                             
+    eval_sampler = EvaluateSampler(
         hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,
         batch_sampler=eval_sampler, collate_fn=collate_fn,
