@@ -132,20 +132,22 @@ def detect_events(*, frame_probabilities,
 
     event_file = open(output, 'w')
     event_file.write('filename\tevent_label\tonset\toffset\n')
+
     hop_length_seconds = hop_size/sample_rate
+
     activity_array = frame_probabilities > threshold
     change_indices = np.logical_xor(activity_array[:,1:,:], activity_array[:,:-1,:])
-    n_files = frame_probabilities.shape[0]
-    for f in range(n_files):
-        filename = filenames[f]
-        for event_ix, event_id in ix_to_id.items():
-            event_activity = change_indices[f,:, event_ix].nonzero()[0] + 1
 
-            if activity_array[f,0,event_ix]:
+    for file_ix in range(frame_probabilities.shape[0]):
+        filename = filenames[file_ix]
+        for event_ix, event_id in enumerate(label_id_list):
+            event_activity = change_indices[file_ix,:, event_ix].nonzero()[0] + 1
+
+            if activity_array[file_ix,0,event_ix]:
                 # If the first element of activity_array is True add 0 at the beginning
                 event_activity = np.r_[0, event_activity]
 
-            if activity_array[f,-1,event_ix]:
+            if activity_array[file_ix,-1,event_ix]:
                 # If the last element of activity_array is True, add the length of the array
                 event_activity = np.r_[event_activity, activity_array.shape[1]]
 
