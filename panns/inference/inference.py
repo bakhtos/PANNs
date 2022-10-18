@@ -120,6 +120,7 @@ def detect_events(*, frame_probabilities,
     :param dict ix_to_id: Dictionary mapping event indexes (from 0 to classes_num-1) used
         to access the event in the frame matrix to their ids (codes)
     :param str filenames: Name of the audio clip to which the frame_probabilities correspond.
+    :param str output: Filename to write detected events into (default 'events.txt')
     :param float threshold: Threshold used to binarize the frame_probabilites.
         Values higher than the threshold are considered as 'event detected' (default 0.5)
     :param int minimum_event_length: Minimum length (in seconds) of detetected event
@@ -201,6 +202,14 @@ if __name__ == '__main__':
                         help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
                         help="Amount of workers to pass to torch.utils.data.DataLoader (default 8)")
+    parser.add_argument('--threshold', type=float, default=0.5,
+                        help="Threshold for frame activity tensor, values above the threshold"
+                        " are interpreted as 'event present' (default 0.5)")
+    parser.add_argument('--minimum_event_length', type=float, default=0.1,
+                        help="Events shorter than this ae filtered out (default 0.1)")
+    parser.add_argument('--minimum_event_gap', type=float, default=0.1,
+                        help="Two consecutive events with gap between them less"
+                        " than this are joined together (default 0.1)")
     parser.add_argument('--class_list_path', type=str, required=True)
     parser.add_argument('--class_codes_path', type=str, required=True)
 
@@ -223,8 +232,8 @@ if __name__ == '__main__':
     detect_events(frame_probabilities=results,
                   ix_to_id=ix_to_id,
                   filenames=audio_names,
-                  threshold=0.5,
-                  minimum_event_length=0.1,
-                  minimum_event_gap=0.1,
+                  threshold=args.threshold,
+                  minimum_event_length=args.minimum_event_length,
+                  minimum_event_gap=args.minimum_event_gap,
                   sample_rate=args.sample_rate,
                   hop_size=args.hop_size)
