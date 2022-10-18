@@ -97,7 +97,7 @@ def create_indexes(*, hdf5_path, hdf5_index_path, logs_dir=None):
             Path of the hdf5-packed audios
        hdf5_index_path : str,
             Path to save index of the packed audios
-       logs_dir : str,
+       logs_dir : str, optional (default None)
             Directory to save logs into, if None creates a directory 'logs' in CWD
     """
 
@@ -127,9 +127,9 @@ def combine_indexes(*, hdf5_indexes_dir, hdf5_full_index_path, logs_dir=None,
                        classes_num=110):
     """Combine several hdf5 indexes to a single hdf5.
 
-       indexes_hdf5_dir : str,
+       hdf5_indexes_dir : str,
             Path to a directory with all indexes to be combined
-       full_indexes_hdf5_path : str,
+       hdf5_full_index_path : str,
             Path to save the combined index
        classes_num : int, optional (default 100)
             Amount of classes used in the dataset
@@ -225,10 +225,10 @@ if __name__ == '__main__':
                                 help='Directory with the  downloaded audio.')
     parser_waveforms_to_hdf5.add_argument('--csv_path', type=str, required=True,
                                 help='Path of csv file containing audio info.')
-    parser_waveforms_to_hdf5.add_argument('--class_list_path', type=str, required=True,
-                help="File with selected classes' identifiers, one on each line.")
+    parser_waveforms_to_hdf5.add_argument('--class_labels_path', type=str, required=True,
+                help="Dataset labels in tsv format (as in 'Reformatted' dataset)")
     parser_waveforms_to_hdf5.add_argument('--selected_classes_path', type=str, required=True,
-                help='File that matches class identifiers with their labels.')
+                help="List of all selected classes, one per line")
     parser_waveforms_to_hdf5.add_argument('--hdf5_path', type=str, required=True,
                                             help='Path to save packed hdf5.')
     parser_waveforms_to_hdf5.add_argument('--sample_rate', type=int, default=44100,
@@ -254,7 +254,7 @@ if __name__ == '__main__':
                         classes_num=args.classes_num, logs_dir=args.logs_dir)
 
     elif args.mode == 'wav_to_hdf5':
-        class_ids,_,_,_ = get_labels(args.selected_classes_path, args.class_list_path)
+        class_ids,_,_,_ = get_labels(args.classes_labels_path, args.selected_classes_path)
         audio_names, target = get_weak_target(args.csv_path, args.class_ids)
 
         wav_to_hdf5(audios_dir=args.audios_dir,
