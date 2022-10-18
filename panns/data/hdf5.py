@@ -9,7 +9,6 @@ import logging
 import h5py
 import librosa
 
-from panns.utils.file_utils import get_sub_filepaths
 from panns.utils.metadata_utils import get_labels, get_weak_target
 from panns.utils.logging_utils import create_logging 
 
@@ -139,7 +138,7 @@ def combine_indexes(*, hdf5_indexes_dir, hdf5_full_index_path, logs_dir=None,
     """
 
     # Paths
-    paths = get_sub_filepaths(hdf5_indexes_dir)
+    paths = [path.path for path in os.scandir(hdf5_indexes_dir) if path.is_file()]
 
     if logs_dir is None:
         logs_dir = os.path.join(os.getcwd(), 'logs')
