@@ -32,16 +32,20 @@ def forward(model, generator, return_input=False,
         
         with torch.no_grad():
             model.eval()
-            # Framewise output could also be 'embedding' depending on the model
-            clipwise_output, framewise_output = model(batch_waveform)
+            #  Second_output is either 'embedding' (non-sed model) or 'framewise_output' (sed model)
+            clipwise_output, second_output = model(batch_waveform)
 
         append_to_dict(output_dict, 'audio_name', batch_data_dict['audio_name'])
 
         append_to_dict(output_dict, 'clipwise_output', 
             clipwise_output.data.cpu().numpy())
 
-        append_to_dict(output_dict, 'framewise_output', 
-            framewise_output.data.cpu().numpy())
+        if model.sed_model:
+            append_to_dict(output_dict, 'framewise_output',
+                           second_output.data.cpu().numpy())
+        else:
+            append_to_dict(output_dict, 'embedding',
+                           second_output.data.cpu().numpy())
             
         if return_input:
             append_to_dict(output_dict, 'waveform', batch_data_dict['waveform'])
