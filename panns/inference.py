@@ -5,7 +5,7 @@ import numpy as np
 
 from panns.data.loaders import AudioSetDataset, EvaluateSampler, collate_fn
 from panns.forward import forward
-from panns.utils.metadata_utils import get_labels_metadata
+from panns.utils.metadata_utils import get_labels
 import panns.models
 
 
@@ -104,7 +104,7 @@ def inference(*, eval_indexes_hdf5_path,
 
 
 def detect_events(*, frame_probabilities,
-                  ix_to_id,
+                  label_id_list,
                   filenames,
                   output='events.txt',
                   threshold=0.5,
@@ -116,8 +116,8 @@ def detect_events(*, frame_probabilities,
 
     :param numpy.ndarray frame_probabilities: A two-dimensional array of framewise probablities of classes. First dimension corresponds to the classes,
         second to the frames of the audio clip
-    :param dict ix_to_id: Dictionary mapping event indexes (from 0 to classes_num-1) used
-        to access the event in the frame matrix to their ids (codes)
+    :param dict label_id_list:
+        List of class ids used to index the frame_probabilities tensor
     :param str filenames: Name of the audio clip to which the frame_probabilities correspond.
     :param str output: Filename to write detected events into (default 'events.txt')
     :param float threshold: Threshold used to binarize the frame_probabilites.
@@ -181,6 +181,11 @@ if __name__ == '__main__':
                         help="Name of model to train")
     parser.add_argument('--checkpoint_path', type=str,
                         help="File to load the NN checkpoint from")
+    parser.add_argument('--selected_classes_path', type=str, required=True,
+                        help="Dataset class labels in tsv format (as in 'Reformatted' dataset)"
+    parser.add_argument('--class_labels_path', type=str, required=True,
+                        help='List of selected classes that were used in training'
+                        '/are used in the model, one per line')
     parser.add_argument('--window_size', type=int, default=1024, help="Window size of filter to be used in training (default 1024)")
     parser.add_argument('--hop_size', type=int, default=320,
                         help="Hop size of filter to be used in traning (default 320)")
@@ -209,12 +214,9 @@ if __name__ == '__main__':
     parser.add_argument('--minimum_event_gap', type=float, default=0.1,
                         help="Two consecutive events with gap between them less"
                         " than this are joined together (default 0.1)")
-    parser.add_argument('--class_list_path', type=str, required=True)
-    parser.add_argument('--class_codes_path', type=str, required=True)
 
     args = parser.parse_args()
 
-    _,_,_,_,_,ix_to_id = get_labels_metadata(args.class_list_path, args.class_codes_path)
     results, audio_names = inference(eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
                                      model_type=args.model_type,
                                      checkpoint_path=args.checkpoint_path,
@@ -228,8 +230,9 @@ if __name__ == '__main__':
                                      classes_num=args.classes_num,
                                      num_workers=args.num_workers)
 
+    ids,_,_,_ = get_labels(args.class_labels_path, args.selected_classes_path)
     detect_events(frame_probabilities=results,
-                  ix_to_id=ix_to_id,
+                  label_id_list=ids,
                   filenames=audio_names,
                   threshold=args.threshold,
                   minimum_event_length=args.minimum_event_length,
