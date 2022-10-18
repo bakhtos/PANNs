@@ -1,29 +1,16 @@
 import numpy as np
 
-__all__ = ['Mixup',
+__all__ = ['mixup_coefficients',
            'do_mixup']
 
-class Mixup(object):
-    def __init__(self, mixup_alpha, random_seed=1234):
-        """Mixup coefficient generator."""
-
-        self.mixup_alpha = mixup_alpha
-        self.random_state = np.random.RandomState(random_seed)
-
-    def get_lambda(self, batch_size):
-        """Mixup random coefficients.
-
-           :param int batch_size: batch size of the dataset
-           :return mixup_lambdas: Array of lambda coefficients, with shape (batch_size,)
-           :rtype: numpy.ndarray
-        """
-        mixup_lambdas = []
-        for n in range(0, batch_size, 2):
-            lam = self.random_state.beta(self.mixup_alpha, self.mixup_alpha, 1)[0]
-            mixup_lambdas.append(lam)
-            mixup_lambdas.append(1. - lam)
-
-        return np.array(mixup_lambdas)
+def mixup_coefficients(mixup_alpha, random_seed=1234, batch_size=32):
+    random_state = np.random.default_rng(random_seed)
+    while True:
+        lambdas = np.zeros(batch_size)
+        lam = random_state.beta(mixup_alpha, mixup_alpha, batch_size//2)
+        lambdas[0::2] = lam
+        lambdas[1::2] = 1.0 - lam
+        yield lambdas
 
 def do_mixup(x, mixup_lambda):
     """Mixup x of even indexes (0, 2, 4, ...) with x of odd indexes (1, 3, 5, ...).

@@ -12,7 +12,7 @@ import torch.optim as optim
 import torch.utils.data
  
 from panns.utils.logging_utils import create_logging
-from panns.data.mixup import Mixup, do_mixup
+from panns.data.mixup import mixup_coefficients, do_mixup
 import panns.models
 from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops
 from panns.evaluate import evaluate
@@ -142,7 +142,8 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         num_workers=num_workers, pin_memory=True)
 
     if augmentation:
-        mixup_augmenter = Mixup(mixup_alpha=mixup_alpha)
+        mixup_augmenter = mixup_coefficients(mixup_alpha=mixup_alpha,
+                                             batch_size=batch_size)
     
     # Optimizer
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, 
@@ -181,8 +182,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         
         # Mixup lambda
         if augmentation:
-            batch_data_dict['mixup_lambda'] = mixup_augmenter.get_lambda(
-                batch_size=len(batch_data_dict['waveform']))
+            batch_data_dict['mixup_lambda'] = next(mixup_augmenter)
         else: 
             batch_data_dict['mixup_lambda'] = None
 
