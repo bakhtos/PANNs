@@ -8,6 +8,7 @@ from panns.forward import forward
 from panns.utils.metadata_utils import get_labels
 import panns.models
 
+__all__ = ['inference', 'detect_events']
 
 def inference(*, eval_indexes_hdf5_path,
                  checkpoint_path,
