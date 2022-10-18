@@ -9,7 +9,7 @@ import logging
 import h5py
 import librosa
 
-from panns.utils.file_utils import create_folder, get_sub_filepaths
+from panns.utils.file_utils import get_sub_filepaths
 from panns.utils.metadata_utils import get_labels, get_weak_target
 from panns.utils.logging_utils import create_logging 
 
@@ -45,7 +45,7 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
     clip_samples = sample_rate*clip_length//1000
 
-    create_folder(os.path.dirname(hdf5_path))
+    os.makedirs(os.path.dirname(hdf5_path), exist_ok=True)
 
     if logs_dir is None:
         logs_dir = os.path.join(os.getcwd(), 'logs')
@@ -103,7 +103,7 @@ def create_indexes(*, hdf5_path, hdf5_index_path, logs_dir=None):
     """
 
     # Paths
-    create_folder(os.path.dirname(hdf5_index_path))
+    os.makedirs(os.path.dirname(hdf5_index_path), exist_ok=True)
     if logs_dir is None:
         logs_dir = os.path.join(os.getcwd(), 'logs')
     create_logging(logs_dir)

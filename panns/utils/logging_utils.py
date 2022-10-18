@@ -2,12 +2,11 @@ import os
 import logging
 import datetime
 
-from .file_utils import create_folder
 
 __all__ = ['create_logging']
 
 def create_logging(log_dir, filemode):
-    create_folder(log_dir)
+    os.makedirs(log_dir, exist_ok=True)
     i1 = 0
 
     while os.path.isfile(os.path.join(log_dir, '{:04d}.log'.format(i1))):

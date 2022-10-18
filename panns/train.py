@@ -11,7 +11,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from panns.utils.file_utils import create_folder
 from panns.utils.logging_utils import create_logging
 from panns.data.mixup import Mixup, do_mixup
 import panns.models
@@ -87,11 +86,11 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     workspace = os.getcwd()
     if checkpoints_dir is None:
         checkpoints_dir = os.path.join(workspace, 'checkpoints')
-    create_folder(checkpoints_dir)
+    os.makedirs(checkpoints_dir, exist_ok)
     
     if statistics_dir is None:
         statistics_dir = os.path.join(workspace, 'statistics')
-    create_folder(statistics_dir)
+    os.makedirs(statistics_dir, exist_ok)
 
     if logs_dir is None:
         logs_dir = os.path.join(workspace, 'logs')
