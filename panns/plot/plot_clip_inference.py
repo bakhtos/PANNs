@@ -6,7 +6,7 @@ import librosa.load, librosa.stft
 import matplotlib.pyplot as plt
 import torch
 
-from panns.utils.file_utils import create_folder, get_filename
+from panns.utils.file_utils import create_folder
 from panns.models import *
 from panns.utils.pytorch_utils import move_data_to_device
 from panns.utils.metadata_utils import get_labels_metadata
@@ -119,7 +119,8 @@ def inference(*, audio_path,
             plt.tight_layout()
             create_folder('figures')
 
-            fig_path = os.path.join('figures', get_filename(audio_path)+'.png')
+            fig_name = os.path.splitext(os.path.split(audio_path)) + '.png'
+            fig_path = os.path.join('figures', fig_name)
             print(f'Save sound event detection visualization of {audio_path} to {fig_path}.')
             plt.savefig(fig_path)
 

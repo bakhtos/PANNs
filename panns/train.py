@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from panns.utils.file_utils import create_folder, get_filename
+from panns.utils.file_utils import create_folder
 from panns.utils.logging_utils import create_logging
 from panns.data.mixup import Mixup, do_mixup
 import panns.models

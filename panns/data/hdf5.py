@@ -9,7 +9,7 @@ import logging
 import h5py
 import librosa
 
-from panns.utils.file_utils import create_folder, get_sub_filepaths, get_filename
+from panns.utils.file_utils import create_folder, get_sub_filepaths
 from panns.utils.metadata_utils import get_labels, get_weak_target
 from panns.utils.logging_utils import create_logging 
 

@@ -1,7 +1,6 @@
 import os
 
 __all__ = ['create_folder',
-           'get_filename',
            'get_sub_filepaths']
 
 def create_folder(fd):
@@ -9,13 +8,6 @@ def create_folder(fd):
         os.makedirs(fd)
         
         
-def get_filename(path):
-    path = os.path.realpath(path)
-    na_ext = path.split('/')[-1]
-    na = os.path.splitext(na_ext)[0]
-    return na
-
-
 def get_sub_filepaths(folder):
     paths = []
     for root, dirs, files in os.walk(folder):

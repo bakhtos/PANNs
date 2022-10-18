@@ -17,7 +17,6 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from panns.utils.file_utils import get_filename
 from panns.models import *
 
 
@@ -108,7 +107,6 @@ if __name__ == '__main__':
 
     # Parse arguments
     args = parser.parse_args()
-    args.filename = get_filename(__file__)
 
     if args.mode == 'train':
         train(sample_rate=args.sample_rate, window_size=args.window_size,
