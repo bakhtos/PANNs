@@ -179,7 +179,7 @@ if __name__ == '__main__':
                         help="Path to hdf5 index of the evaluation set")
     parser.add_argument('--model_type', type=str, required=True,
                         help="Name of model to train")
-    parser.add_argument('--checkpoint_path', type=str,
+    parser.add_argument('--checkpoint_path', type=str,, required=True,
                         help="File to load the NN checkpoint from")
     parser.add_argument('--selected_classes_path', type=str, required=True,
                         help="Dataset class labels in tsv format (as in 'Reformatted' dataset)"
