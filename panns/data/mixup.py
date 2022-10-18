@@ -1,7 +1,7 @@
 import numpy as np
 
 __all__ = ['mixup_coefficients',
-           'do_mixup']
+           'mixup']
 
 def mixup_coefficients(mixup_alpha, random_seed=1234, batch_size=32):
     random_state = np.random.default_rng(random_seed)
@@ -12,7 +12,7 @@ def mixup_coefficients(mixup_alpha, random_seed=1234, batch_size=32):
         lambdas[1::2] = 1.0 - lam
         yield lambdas
 
-def do_mixup(x, mixup_lambda):
+def mixup(x, mixup_lambda):
     """Mixup x of even indexes (0, 2, 4, ...) with x of odd indexes (1, 3, 5, ...).
 
       :param x: array of shape (batch_size * 2, ...) to be mixed
@@ -23,6 +23,6 @@ def do_mixup(x, mixup_lambda):
       :rtype: numpy.ndarray
     """
 
-    out = (x[0 :: 2].transpose(0, -1) * mixup_lambda[0 :: 2] + \
-        x[1 :: 2].transpose(0, -1) * mixup_lambda[1 :: 2]).transpose(0, -1)
-    return out
+    out = x.transpose(-1, 0) * mixup_lambda
+    out = out[::2]+out[1::2]
+    return data.transpose(-1,0)

@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torchlibrosa.stft import Spectrogram, LogmelFilterBank
 
 from panns.utils.pytorch_utils import interpolate, pad_framewise_output
-from panns.data.mixup import do_mixup
+from panns.data.mixup import mixup
 from .blocks import *
 
 __all__ = ['Cnn14',
@@ -106,7 +106,7 @@ class Cnn14(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -194,7 +194,7 @@ class Cnn14_no_specaug(nn.Module):
         
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -289,7 +289,7 @@ class Cnn14_no_dropout(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
@@ -376,7 +376,7 @@ class Cnn6(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -465,7 +465,7 @@ class Cnn10(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -771,7 +771,7 @@ class ResNet22(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training, inplace=True)
@@ -862,7 +862,7 @@ class ResNet38(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training, inplace=True)
@@ -953,7 +953,7 @@ class ResNet54(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training, inplace=True)
@@ -1043,7 +1043,7 @@ class Cnn14_emb512(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -1138,7 +1138,7 @@ class Cnn14_emb128(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -1233,7 +1233,7 @@ class Cnn14_emb32(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -1366,7 +1366,7 @@ class MobileNetV1(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.features(x)
         x = torch.mean(x, dim=3)
@@ -1551,7 +1551,7 @@ class MobileNetV2(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.features(x)
         
@@ -1646,7 +1646,7 @@ class LeeNet11(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x)
         x = self.conv_block2(x, pool_size=3)
@@ -1755,7 +1755,7 @@ class LeeNet24(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x)
         x = F.dropout(x, p=0.1, training=self.training)
@@ -1903,7 +1903,7 @@ class DaiNet19(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.bn0(self.conv0(x))
         x = self.conv_block1(x)
@@ -2121,7 +2121,7 @@ class Res1dNet31(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.bn0(self.conv0(x))
         x = self.resnet(x)
@@ -2180,7 +2180,7 @@ class Res1dNet51(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.bn0(self.conv0(x))
         x = self.resnet(x)
@@ -2304,7 +2304,7 @@ class Wavegram_Cnn14(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            a1 = do_mixup(a1, mixup_lambda)
+            a1 = mixup(a1, mixup_lambda)
         
         x = a1
         x = F.dropout(x, p=0.2, training=self.training)
@@ -2417,8 +2417,8 @@ class Wavegram_Logmel_Cnn14(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
-            a1 = do_mixup(a1, mixup_lambda)
+            x = mixup(x, mixup_lambda)
+            a1 = mixup(a1, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
 
@@ -2535,8 +2535,8 @@ class Wavegram_Logmel128_Cnn14(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
-            a1 = do_mixup(a1, mixup_lambda)
+            x = mixup(x, mixup_lambda)
+            a1 = mixup(a1, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
 
@@ -2641,7 +2641,7 @@ class Cnn14_16k(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -2742,7 +2742,7 @@ class Cnn14_8k(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -2829,7 +2829,7 @@ class Cnn14_mixup_time_domain(nn.Module):
 
         # Mixup in time domain
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.spectrogram_extractor(x)   # (batch_size, 1, time_steps, freq_bins)
         x = self.logmel_extractor(x)    # (batch_size, 1, time_steps, mel_bins)
@@ -2934,7 +2934,7 @@ class Cnn14_mel32(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -3029,7 +3029,7 @@ class Cnn14_mel128(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -3128,7 +3128,7 @@ class Cnn14_DecisionLevelMax(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -3232,7 +3232,7 @@ class Cnn14_DecisionLevelAvg(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)
@@ -3335,7 +3335,7 @@ class Cnn14_DecisionLevelAtt(nn.Module):
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
-            x = do_mixup(x, mixup_lambda)
+            x = mixup(x, mixup_lambda)
         
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         x = F.dropout(x, p=0.2, training=self.training)

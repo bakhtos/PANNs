@@ -12,7 +12,7 @@ import torch.optim as optim
 import torch.utils.data
  
 from panns.utils.logging_utils import create_logging
-from panns.data.mixup import mixup_coefficients, do_mixup
+from panns.data.mixup import mixup_coefficients, mixup
 import panns.models
 from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops
 from panns.evaluate import evaluate
@@ -200,7 +200,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         """clipwise_output: (batch_size, classes_num)"""
 
         if augmentation:
-            target = do_mixup(batch_data_dict['target'], batch_data_dict['mixup_lambda'])
+            target = mixup(batch_data_dict['target'], batch_data_dict['mixup_lambda'])
         else:
             target = batch_data_dict['target']
 
