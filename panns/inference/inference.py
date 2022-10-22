@@ -174,9 +174,9 @@ def detect_events(*, frame_probabilities,
                     event_file.write(f'{filename}\t{event_id}\t{onset_write}\t{offset_write}\n')
 
 
-            if minimum_event_gap is not None and event_activity.size != 0
+            if (minimum_event_gap is not None and event_activity.size != 0
                 and (minimum_event_length is None or current_offset-current_onset >
-                        minimum_event_length):
+                        minimum_event_length)):
                 event_file.write(f'{filename}\t{event_id}\t{current_onset}\t{current_offset}\n')
 
     event_file.close()
