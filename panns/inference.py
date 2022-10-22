@@ -135,8 +135,7 @@ def detect_events(*, frame_probabilities,
     event_file.write('filename\tevent_label\tonset\toffset\n')
 
     hop_length_seconds = hop_size/sample_rate
-
-    activity_array = frame_probabilities > threshold
+    activity_array = frame_probabilities >= threshold
     change_indices = np.logical_xor(activity_array[:,1:,:], activity_array[:,:-1,:])
 
     for file_ix in range(frame_probabilities.shape[0]):
@@ -159,18 +158,26 @@ def detect_events(*, frame_probabilities,
                 current_onset = event_activity[0][0]
                 current_offset = event_activity[0][1]
             for event in event_activity:
-                if (minimum_event_length is not None and
-                    event[1]-event[0] < minimum_event_length): continue
+                need_write = False
                 if minimum_event_gap is not None:
                     if (event[0] - current_offset >= minimum_event_gap):
-                        event_file.write(f'{filename}\t{event_id}\t{current_onset}\t{current_offset}\n')
+                        need_write = True
+                        onset_write = current_onset
+                        offset_write = current_offset
                         current_onset = event[0]
                     current_offset = event[1]
-
                 else:
-                    event_file.write(f'{filename}\t{event_id}\t{event[0]}\t{event[1]}\n')
+                    need_write = True
+                    onset_write = event[0]
+                    offset_write = event[1]
+                if need_write and (minimum_event_length is None or
+                                    offset_write-onset_write > minimum_event_length):
+                    event_file.write(f'{filename}\t{event_id}\t{onset_write}\t{offset_write}\n')
 
-            if minimum_event_gap is not None and event_activity.size != 0:
+
+            if (minimum_event_gap is not None and event_activity.size != 0
+                and (minimum_event_length is None or current_offset-current_onset >
+                        minimum_event_length)):
                 event_file.write(f'{filename}\t{event_id}\t{current_onset}\t{current_offset}\n')
 
     event_file.close()
