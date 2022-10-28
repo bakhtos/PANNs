@@ -1,3 +1,4 @@
+from torch.utils.data import Dataset
 import numpy as np
 import h5py
 import csv
@@ -12,7 +13,7 @@ __all__ = ['AudioSetDataset',
            'EvaluateSampler',
            'collate_fn']
 
-class AudioSetDataset(object):
+class AudioSetDataset(Dataset):
     """Take meta of the audio clip, return waveform and target vector."""
     def __init__(self):
         pass
