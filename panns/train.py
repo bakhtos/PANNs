@@ -130,7 +130,7 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     
     # Evaluate sampler
     eval_sampler = panns.data.loaders.EvaluateSampler(
-        indexes_hdf5_path=eval_indexes_hdf5_path, batch_size=batch_size)
+        hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)
 
     # Data loader
     train_loader = torch.utils.data.DataLoader(dataset=dataset, 
