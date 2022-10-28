@@ -31,7 +31,7 @@ def get_labels(class_labels_path, selected_classes_path):
         Map from selected classes' ids to their labels.
     '''
 
-    selected_classes_file = open(selected_classes, 'r')
+    selected_classes_file = open(selected_classes_path, 'r')
     selected_classes = set()
     for line in selected_classes_file:
         selected_classes.add(line.removesuffix('\n'))
@@ -96,13 +96,13 @@ def get_weak_target(data_path, class_ids):
 
         if video_id not in video_id_to_ix:
             video_id_to_ix[video_id] = count
-            count +=1
+            count += 1
             target.append(copy.deepcopy(zero_vector))
             audio_names.append(video_id)
 
         video_ix = video_id_to_ix[video_id]
         class_ix = id_to_ix[label]
-        
+
         target[video_ix][class_ix] = 1
     file.close()
 
