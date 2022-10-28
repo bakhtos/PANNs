@@ -86,11 +86,11 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     workspace = os.getcwd()
     if checkpoints_dir is None:
         checkpoints_dir = os.path.join(workspace, 'checkpoints')
-    os.makedirs(checkpoints_dir, exist_ok)
+    os.makedirs(checkpoints_dir, exist_ok=True)
     
     if statistics_dir is None:
         statistics_dir = os.path.join(workspace, 'statistics')
-    os.makedirs(statistics_dir, exist_ok)
+    os.makedirs(statistics_dir, exist_ok=True)
 
     if logs_dir is None:
         logs_dir = os.path.join(workspace, 'logs')
