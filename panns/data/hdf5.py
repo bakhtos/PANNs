@@ -1,16 +1,12 @@
 import numpy as np
 import argparse
-import csv
 import os
-import glob
-import datetime
 import time
 import logging
 import h5py
 import librosa
 
-from panns.utils.metadata_utils import get_labels, get_weak_target
-from panns.utils.logging_utils import create_logging 
+from panns.utils.logging_utils import create_logging
 
 __all__ = ['wav_to_hdf5']
 
