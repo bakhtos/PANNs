@@ -81,19 +81,19 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--audios_dir', type=str, required=True,
-                        help='Directory with the  downloaded audio.')
+                        help='Directory with the downloaded audio')
     parser.add_argument('--audio_names_path', type=str, required=True,
                         help='Path to .npy file to load audio filenames to be packed in this order')
     parser.add_argument('--hdf5_path', type=str, required=True,
-                        help='Path to save packed hdf5.')
-    parser.add_argument('--sample_rate', type=int, default=44100,
-                        help='Sample rate of the used audios.')
+                        help='Path to save packed hdf5')
+    parser.add_argument('--sample_rate', type=int, default=32000,
+                        help='Sample rate of the used audios (default 32000)')
     parser.add_argument('--mini_data', type=int, default=0,
-                        help='If specified, use only this many audios.')
+                        help='If specified, use only this many audios')
     parser.add_argument('--clip_length', type=int, default=10000,
                         help='Length (in ms) of audio clips used in the dataset (default 10000)')
     parser.add_argument('--logs_dir', type=str, default=None,
-                        help='Directory to save logs into.')
+                        help="Directory to save logs into (defaults to 'logs' in CWD")
     args = parser.parse_args()
 
     audio_names = np.load(args.audio_names_path)
