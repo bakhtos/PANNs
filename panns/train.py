@@ -14,20 +14,19 @@ import torch.utils.data
 from panns.utils.logging_utils import create_logging
 from panns.data.mixup import mixup_coefficients, mixup
 import panns.models
-from panns.utils.pytorch_utils import move_data_to_device, count_parameters, count_flops
 from panns.evaluate import evaluate
-import panns.data.loaders
+from panns.data.loaders import AudioSetDataset
 
-
-def train(*, train_indexes_hdf5_path,
-          eval_indexes_hdf5_path,
+def train(*, hdf5_files_path_train,
+          target_weak_path_train,
+          hdf5_files_path_eval,
+          target_weak_path_eval,
           model_type,
           logs_dir=None,
           checkpoints_dir=None,
           statistics_dir=None,
           window_size=1024, hop_size=320, sample_rate=32000, clip_length=10000,
           fmin=50, fmax=14000, mel_bins=64,
-          sampler='TrainSampler',
           augmentation=False, mixup_alpha=1.0,
           batch_size=32, learning_rate=1e-3, resume_iteration=0,
           resume_checkpoint_path=None, iter_max=1000000,
@@ -42,8 +41,6 @@ def train(*, train_indexes_hdf5_path,
         * sampler: state_dict of the sampler
         * statistics: list of statistics (average_precision and auc) for evaluation set at each iteration
 
-    :param str train_indexes_hdf5_path: Path to hdf5 index of the train set
-    :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
     :param str model_type: Name of model to train (one of the model classes defined in models.py)
     :param str logs_dir: Directory to save the logs into (will be created if doesn't exist already), if None a directory 'logs' will be created in CWD  (default None)
     :param str checkpoints_dir: Directory to save neural net's checkpoints into (will be created if doesn't exist already), if None a directory 'checkpoints' will be created in CWD (default None)
@@ -73,7 +70,7 @@ def train(*, train_indexes_hdf5_path,
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
 
     clip_samples = sample_rate*clip_length//1000
-    
+
     if resume_iteration > 0 and resume_checkpoint_path is None:
         raise ValueError("resume_iteration is greater than 0, but no resume_checkpoint_path was given.")
 
@@ -81,7 +78,7 @@ def train(*, train_indexes_hdf5_path,
 
     param_string = f"""sample_rate={sample_rate},window_size={window_size},\
 hop_size={hop_size},mel_bins={mel_bins},fmin={fmin},fmax={fmax},model={model_type},\
-sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
+augmentation={augmentation},batch_size={batch_size}"""
 
     workspace = os.getcwd()
     if checkpoints_dir is None:
@@ -116,30 +113,24 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
      
     # Dataset will be used by DataLoader later. Dataset takes a meta as input 
     # and return a waveform and a target.
-    dataset = panns.data.loaders.AudioSetDataset()
+    train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
+    eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
 
-    # Train sampler
-    if sampler in panns.data.loaders.__all__:
-        Sampler = eval("panns.data.loaders."+sampler)
-    else:
-        raise ValueError(f"'{sampler}' is not among the defined samplers.")
-     
-    train_sampler = Sampler(
-        indexes_hdf5_path=train_indexes_hdf5_path, 
-        batch_size=batch_size * 2 if augmentation else batch_size)
-    
-    # Evaluate sampler
-    eval_sampler = panns.data.loaders.EvaluateSampler(
-        hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)
+    train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
+                                               batch_size=batch_size,
+                                               shuffle=True,
+                                               num_workers=num_workers,
+                                               persistent_workers=True,
+                                               pin_memory=True,
+                                               pin_memory_device=device)
 
-    # Data loader
-    train_loader = torch.utils.data.DataLoader(dataset=dataset, 
-        batch_sampler=train_sampler, collate_fn=panns.data.loaders.collate_fn, 
-        num_workers=num_workers, pin_memory=True)
-    
-    eval_loader = torch.utils.data.DataLoader(dataset=dataset, 
-        batch_sampler=eval_sampler, collate_fn=panns.data.loaders.collate_fn, 
-        num_workers=num_workers, pin_memory=True)
+    eval_loader = torch.utils.data.DataLoader(dataset=eval_dataset,
+                                              batch_size=batch_size,
+                                              shuffle=True,
+                                              num_workers=num_workers,
+                                              persistent_workers=True,
+                                              pin_memory=True,
+                                              pin_memory_device=device)
 
     if augmentation:
         mixup_augmenter = mixup_coefficients(mixup_alpha=mixup_alpha,
@@ -150,13 +141,12 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         betas=(0.9, 0.999), eps=1e-08, weight_decay=0., amsgrad=True)
 
     train_bgn_time = time.time()
-    
+
     # Resume training
     if resume_iteration > 0:
         logging.info('Loading checkpoint {}'.format(resume_checkpoint_path))
         checkpoint = torch.load(resume_checkpoint_path)
         model.load_state_dict(checkpoint['model'])
-        train_sampler.load_state_dict(checkpoint['sampler'])
         statistics = checkpoint['statistics']
         statistics = {k:v for k, v in statistics.items() if k < resume_iteration}
         iteration = checkpoint['iteration']
@@ -172,37 +162,21 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         model.to(device)
     
     
-    for batch_data_dict in train_loader:
-        """batch_data_dict: {
-            'audio_name': (batch_size [*2 if mixup],), 
-            'waveform': (batch_size [*2 if mixup], clip_samples), 
-            'target': (batch_size [*2 if mixup], classes_num), 
-            (ifexist) 'mixup_lambda': (batch_size * 2,)}
-        """
-        
-        # Mixup lambda
-        if augmentation:
-            batch_data_dict['mixup_lambda'] = next(mixup_augmenter)
-        else: 
-            batch_data_dict['mixup_lambda'] = None
+    for data, target in train_loader:
 
-        # Move data to device
-        for key in batch_data_dict.keys():
-            batch_data_dict[key] = move_data_to_device(batch_data_dict[key], device)
-        
+        # Mixup lambda
+        mixup_lambda = next(mixup_augmenter) if augmentation else None
+
         # Forward
         train_bgn_time = time.time()
         model.train()
 
         # 'embedding' is either embedding or framewise output, depends on model
-        clipwise_output, embedding = model(batch_data_dict['waveform'], 
-             batch_data_dict['mixup_lambda'])
+        clipwise_output, embedding = model(data, mixup_lambda)
+
         """clipwise_output: (batch_size, classes_num)"""
 
-        if augmentation:
-            target = mixup(batch_data_dict['target'], batch_data_dict['mixup_lambda'])
-        else:
-            target = batch_data_dict['target']
+        target = mixup(target, mixup_lambda) if augmentation else target
 
         # Loss
         loss = F.binary_cross_entropy(clipwise_output, target)
@@ -236,7 +210,6 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
             checkpoint = {
                 'iteration': iteration, 
                 'model': model.module.state_dict(), 
-                'sampler': train_sampler.state_dict(),
                 'statistics': statistics}
 
             checkpoint_name = "checkpoint_"+param_string+f",iteration={iteration}.pth"
@@ -255,10 +228,14 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_indexes_hdf5_path', type=str, required=True,
-                        help="Path to hdf5 index of the train set")
-    parser.add_argument('--eval_indexes_hdf5_path', type=str, required=True,
-                        help="Path to hdf5 index of the evaluation set")
+    parser.add_argument('--hdf5_files_path_train', type=str, required=True,
+                        help="Path to hdf5 file of the train split")
+    parser.add_argument('--target_weak_path_train', type=str, required=True,
+                        help="Path to the weak target array of the train split")
+    parser.add_argument('--hdf5_files_path_eval', type=str, required=True,
+                        help="Path to hdf5 file of the eval split")
+    parser.add_argument('--target_weak_path_eval', type=str, required=True,
+                        help="Path to the weak target array of the eval split")
     parser.add_argument('--model_type', type=str, required=True,
                         help="Name of model to train")
     parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
@@ -279,8 +256,6 @@ if __name__ == '__main__':
                         help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
     parser.add_argument('--mel_bins', type=int, default=64,
                         help="Amount of mel filters to use in the filterbank (default 64)")
-    parser.add_argument('--sampler', type=str, default='TrainSampler', choices=['TrainSampler', 'BalancedTrainSampler', 'AlternateTrainSampler'],
-                        help="The sampler for the dataset to use for training")
     parser.add_argument('--augmentation', action='store_true', default=False,
                         help="If set, use Mixup for data augmentation")
     parser.add_argument('--mixup_alpha', type=float, default=1.0,
@@ -304,8 +279,10 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
-    train(train_indexes_hdf5_path=args.train_indexes_hdf5_path,
-          eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
+    train(hdf5_files_path_train=args.hdf5_files_path_train,
+          target_weak_path_train=args.target_weak_path_train,
+          hdf5_files_path_eval=args.hdf5_files_path_eval,
+          target_weak_path_eval=args.target_weak_path_eval,
           model_type=args.model_type,
           logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
@@ -317,7 +294,6 @@ if __name__ == '__main__':
           fmin=args.fmin,
           fmax=args.fmax,
           mel_bins=args.mel_bins,
-          sampler=args.sampler,
           augmentation=args.augmentation,
           mixup_alpha=args.mixup_alpha,
           batch_size=args.batch_size,
