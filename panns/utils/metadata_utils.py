@@ -84,7 +84,7 @@ def get_weak_target(data_path, class_ids):
         Target array of weak labels with shape (videos, classes).
     """
 
-    id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
+    class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
     zero_vector = [0] * len(class_ids)
     target = []
     audio_names = []
@@ -106,7 +106,7 @@ def get_weak_target(data_path, class_ids):
             audio_names.append(video_id)
 
         video_ix = video_id_to_ix[video_id]
-        class_ix = id_to_ix[label]
+        class_ix = class_id_to_ix[label]
 
         target[video_ix][class_ix] = 1
     file.close()
