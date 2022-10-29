@@ -35,7 +35,9 @@ def get_labels(class_labels_path, selected_classes_path):
     selected_classes_file = open(selected_classes_path, 'r')
     selected_classes = set()
     for line in selected_classes_file:
-        selected_classes.add(line.removesuffix('\n'))
+        if line.endswith('\n'):
+            line = line[:-1]
+        selected_classes.add(line)  # TODO - change to .removesuffix() when Python 3.9 is supported
     selected_classes_file.close()
 
     class_labels_file = open(class_labels_path, 'r')
@@ -44,7 +46,8 @@ def get_labels(class_labels_path, selected_classes_path):
     for line in class_labels_file:
         id_, label = line.split('\t')
         if id_ in selected_classes:
-            label = label.removesuffix('\n')
+            if label.endswith('\n'):
+                label = label[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
             ids.append(id_)
             labels.append(label)
     class_labels_file.close()
@@ -92,7 +95,9 @@ def get_weak_target(data_path, class_ids):
         parts = line.split('\t')
         video_id = parts[0]
         if video_id == 'filename': continue
-        label = parts[1].removesuffix('\n')
+        label = parts[1]
+        if label.endswith('\n'):
+            label = label[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
 
         if video_id not in video_id_to_ix:
             video_id_to_ix[video_id] = count
