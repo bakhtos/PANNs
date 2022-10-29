@@ -1,4 +1,4 @@
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, Sampler
 import numpy as np
 import h5py
 import csv
@@ -42,7 +42,7 @@ class AudioSetDataset(Dataset):
         return data_dict
 
 
-class SamplerBase(object):
+class SamplerBase(Sampler):
     def __init__(self, hdf5_index_path, batch_size, random_seed):
         """Base class of train sampler.
 
@@ -206,7 +206,7 @@ class BalancedTrainSampler(SamplerBase):
         self.pointers_of_classes = state['pointers_of_classes']
 
 
-class AlternateTrainSampler(SamplerBase):
+class AlternateTrainSampler(Sampler):
     def __init__(self, hdf5_index_path, batch_size, random_seed=1234):
         """Alternatively sample data from Sampler and Balanced Sampler.
         
