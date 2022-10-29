@@ -10,10 +10,11 @@ from panns.utils.logging_utils import create_logging
 
 __all__ = ['wav_to_hdf5']
 
+
 def wav_to_hdf5(*, audios_dir, hdf5_path,
-                   audio_names, logs_dir=None,
-                   clip_length=10000, sample_rate=32000,
-                   mini_data=0):
+                audio_names, logs_dir=None,
+                clip_length=10000, sample_rate=32000,
+                mini_data=0):
     """Pack waveform of several audio clips to a single hdf5 file.
 
        Parameters
@@ -35,7 +36,7 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
             If greater than 0, use only this many first files
     """
 
-    clip_samples = sample_rate*clip_length//1000
+    clip_samples = sample_rate * clip_length // 1000
 
     os.makedirs(os.path.dirname(hdf5_path), exist_ok=True)
 
@@ -43,7 +44,6 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
         logs_dir = os.path.join(os.getcwd(), 'logs')
     create_logging(logs_dir, filemode='w')
     logging.info('Write logs to {}'.format(logs_dir))
-    
 
     if mini_data > 0:
         audio_names = audio_names[0:mini_data]
@@ -74,34 +74,34 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
     fin_time = time.time()
     logging.info(f'Written to {hdf5_path}')
-    logging.info(f'Pack time: {fin_time-start_time:.3f}')
- 
+    logging.info(f'Pack time: {fin_time - start_time:.3f}')
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--audios_dir', type=str, required=True,
-                                help='Directory with the  downloaded audio.')
+                        help='Directory with the  downloaded audio.')
     parser.add_argument('--audio_names_path', type=str, required=True,
                         help='Path to .npy file to load audio filenames to be packed in this order')
     parser.add_argument('--hdf5_path', type=str, required=True,
-                                            help='Path to save packed hdf5.')
+                        help='Path to save packed hdf5.')
     parser.add_argument('--sample_rate', type=int, default=44100,
-                                         help='Sample rate of the used audios.')
+                        help='Sample rate of the used audios.')
     parser.add_argument('--mini_data', type=int, default=0,
-                            help='If specified, use only this many audios.')
+                        help='If specified, use only this many audios.')
     parser.add_argument('--clip_length', type=int, default=10000,
-                help='Length (in ms) of audio clips used in the dataset (default 10000)')
+                        help='Length (in ms) of audio clips used in the dataset (default 10000)')
     parser.add_argument('--logs_dir', type=str, default=None,
-                            help='Directory to save logs into.')
+                        help='Directory to save logs into.')
     args = parser.parse_args()
-    
+
     audio_names = np.load(args.audio_names_path)
 
     wav_to_hdf5(audios_dir=args.audios_dir,
-                      hdf5_path=args.hdf5_path,
-                      audio_names=audio_names,
-                      clip_length=args.clip_length,
-                      sample_rate=args.sample_rate,
-                      mini_data=args.mini_data,
-                      logs_dir=args.logs_dir)
+                hdf5_path=args.hdf5_path,
+                audio_names=audio_names,
+                clip_length=args.clip_length,
+                sample_rate=args.sample_rate,
+                mini_data=args.mini_data,
+                logs_dir=args.logs_dir)
