@@ -58,7 +58,7 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
         # Pack waveform & target of several audio clips to a single hdf5 file
         for n in range(audios_num):
-            audio_path = os.path.join(audios_dir, audio_names[n])
+            audio_path = os.path.join(audios_dir, "Y"+audio_names[n]+".wav")
 
             if os.path.isfile(audio_path):
                 logging.info(f'{n} - {audio_path}')
