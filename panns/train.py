@@ -126,7 +126,7 @@ augmentation={augmentation},batch_size={batch_size}"""
 
     eval_loader = torch.utils.data.DataLoader(dataset=eval_dataset,
                                               batch_size=batch_size,
-                                              shuffle=True,
+                                              shuffle=False,
                                               num_workers=num_workers,
                                               persistent_workers=True,
                                               pin_memory=True,
