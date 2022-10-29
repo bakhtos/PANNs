@@ -14,7 +14,7 @@ def get_labels(class_labels_path, selected_classes_path):
     __________
 
     class_labels_path : str,
-        Dataset labels in tsv format (as in 'Reformatted' dataset).
+        Dataset labels in tsv format (in 'Reformatted' format).
     selected_classes_path : str,
         List of class ids selected for training, one per line.
 
@@ -70,7 +70,7 @@ def get_weak_target(data_path, class_ids):
     __________
 
     data_path : str,
-        Dataset file to create target from (in 'Reformatted' format).
+        Dataset file to create weak target from (in 'Reformatted' format).
     class_ids : list[str],
         List of class ids, index in the list will correspond to the index
         in the target array.
