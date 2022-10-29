@@ -1,3 +1,4 @@
+import argparse
 import copy
 
 import numpy as np
@@ -112,3 +113,26 @@ def get_weak_target(data_path, class_ids):
     file.close()
 
     return np.array(audio_names), np.array(target)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--class_labels_path', type=str, required=True,
+                        help="Dataset labels in tsv format (in 'Reformatted' format)")
+    parser.add_argument('--selected_classes_path', type=str, required=True,
+                        help="List of class ids selected for training, one per line")
+    parser.add_argument('--data_path', type=str, required=True,
+                        help="Dataset file to create weak target from (in 'Reformatted' format)")
+    parser.add_argument('--audio_names_path', type=str, default='audio_names.npy',
+                        help="Path to save the audio_names numpy array"
+                             " (defaults to 'audio_names.npy' in CWD)")
+    parser.add_argument('--target_weak_path', type=str, default='target_weak.npy',
+                        help="Path to dave the weak target numpy array"
+                             " (defaults to 'target_weak.npy' in CWD)")
+    args = parser.parse_args()
+
+    ids, _, _, _ = get_labels(args.class_labels_path, args.selected_classes_path)
+    audio_names, target_weak = get_weak_target(args.data_path, ids)
+    np.save(args.audio_names_path, audio_names)
+    np.save(args.target_weak_path, target_weak)
