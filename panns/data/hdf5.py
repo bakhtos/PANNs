@@ -73,7 +73,8 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
             if os.path.isfile(audio_path):
                 logging.info(f'{n} - {audio_path}')
-                (audio, _) = librosa.core.load(audio_path, sr=sample_rate, mono=True, dtype=float32)
+                (audio, _) = librosa.core.load(audio_path, sr=sample_rate,
+                                               mono=True, dtype=np.float32)
                 if len(audio) >= clip_samples: audio2 = audio[:clip_samples]
                 if len(audio) < clip_samples:
                     audio2 = np.zeros(clip_samples)
@@ -192,7 +193,7 @@ def combine_indexes(*, hdf5_indexes_dir, hdf5_full_index_path, logs_dir=None,
                 full_hf['index_in_hdf5'].resize((new_n,))
                 full_hf['index_in_hdf5'][n : new_n] = part_hf['index_in_hdf5'][:]
                 fin_time = time.time()
-                logging.info(f"Pack time {fin_time-start_time}')
+                logging.info(f"Pack time {fin_time-start_time}")
     fin_time_tot = time.time() 
     logging.info(f'Written combined full hdf5 to {hdf5_full_index_path}')
     logging.info(f'Total pack time: {fin_time_tot-start_time_tot:.3f}')
