@@ -14,14 +14,8 @@ __all__ = ['inference', 'detect_events']
 def inference(*, hdf5_files_path_eval,
                  target_weak_path_eval,
                  checkpoint_path,
-                 model_type,
-                 window_size=1024,
-                 hop_size=320,
-                 sample_rate=32000,
-                 mel_bins=64,
-                 fmin=50, fmax=14000,
+                 model,
                  cuda=False,
-                 classes_num=110,
                  sed=False,
                  num_workers=8, batch_size=32):
     '''Obtain audio tagging or sound event detection results from a model.
@@ -55,16 +49,6 @@ def inference(*, hdf5_files_path_eval,
     '''
 
 
-    # Model
-    if model_type in panns.models.__all__:
-        Model = eval("panns.models."+model_type)
-    else:
-        raise ValueError(f"'{model_type}' is not among the defined models.")
-
-    model = Model(sample_rate=sample_rate, window_size=window_size,
-                  hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax,
-                  classes_num=classes_num)
-
     if sed and not model.sed_model:
         print(f"Warning! Asked to perform SED but {model_type} is not a SED model."
               "Performing Audio Tagging instead.")
@@ -81,10 +65,8 @@ def inference(*, hdf5_files_path_eval,
         sed_model = model.sed_model
         model = torch.nn.DataParallel(model)
         model.sed_model = sed_model
-        device = 'cuda'
     else:
         print('Using CPU.')
-        device = 'cpu'
 
     dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,
@@ -92,8 +74,7 @@ def inference(*, hdf5_files_path_eval,
                                               shuffle=False,
                                               num_workers=num_workers,
                                               persistent_workers=True,
-                                              pin_memory=True,
-                                              pin_memory_device=device)
+                                              pin_memory=True)
 
     clipwise_output, second_output, _, _ = forward(model, eval_loader)
 
@@ -120,7 +101,8 @@ def detect_events(*, frame_probabilities,
         second to the frames of the audio clip
     :param dict label_id_list:
         List of class ids used to index the frame_probabilities tensor
-    :param str filenames: Name of the audio clip to which the frame_probabilities correspond.
+    :param numpy.ndarray filenames: Name of the audio clip to which the
+    frame_probabilities correspond.
     :param str output: Filename to write detected events into (default 'events.txt')
     :param float threshold: Threshold used to binarize the frame_probabilites.
         Values higher than the threshold are considered as 'event detected' (default 0.5)
@@ -232,20 +214,17 @@ if __name__ == '__main__':
                         " than this are joined together (default 0.1)")
 
     args = parser.parse_args()
-
+    model = panns.models.load_model(args.model_type, args.sample_rate,
+                                    args.window_size, args.hop_size,
+                                    args.mel_bins, args.fmin, args.fmax,
+                                    args.classes_num)
     results = inference(
             hdf5_files_path_eval=args.hdf5_files_path_eval,
             target_weak_path_eval=args.target_weak_path_eval,
-            model_type=args.model_type,
+            model=model,
             checkpoint_path=args.checkpoint_path,
-            window_size=args.window_size,
-            hop_size=args.hop_size,
-            sample_rate=args.sample_rate,
-            fmin=args.fmin, fmax=args.fmax,
-            mel_bins=args.mel_bins,
             batch_size=args.batch_size,
             cuda=args.cuda, sed=args.sed,
-            classes_num=args.classes_num,
             num_workers=args.num_workers)
 
     audio_names = np.load(args.audio_names_path)
