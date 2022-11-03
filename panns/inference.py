@@ -60,12 +60,10 @@ def inference(*, hdf5_files_path_eval,
     checkpoint = torch.load(checkpoint_path, map_location=device)
     model.load_state_dict(checkpoint['model'])
     # Parallel
+    model.to(device)
+    model = torch.nn.DataParallel(model)
     if device.type == 'cuda':
-        model.to(device)
         print(f'Using GPU. GPU number: {torch.cuda.device_count()}')
-        sed_model = model.sed_model
-        model = torch.nn.DataParallel(model)
-        model.sed_model = sed_model
     else:
         print('Using CPU.')
 
