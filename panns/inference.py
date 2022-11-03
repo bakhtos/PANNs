@@ -50,7 +50,8 @@ def inference(*, hdf5_files_path_eval,
 
 
     if sed and not model.sed_model:
-        print(f"Warning! Asked to perform SED but {model_type} is not a SED model."
+        print(f"Warning! Asked to perform SED but given model is not a SED "
+              f"model."
               "Performing Audio Tagging instead.")
         sed = False
 
