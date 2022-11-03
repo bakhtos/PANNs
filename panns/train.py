@@ -21,7 +21,7 @@ import panns.data.loaders
 
 def train(*, train_indexes_hdf5_path,
           eval_indexes_hdf5_path,
-          model_type,
+          model,
           logs_dir=None,
           checkpoints_dir=None,
           statistics_dir=None,
@@ -44,7 +44,8 @@ def train(*, train_indexes_hdf5_path,
 
     :param str train_indexes_hdf5_path: Path to hdf5 index of the train set
     :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
-    :param str model_type: Name of model to train (one of the model classes defined in models.py)
+    :param torch.nn.Module model: Model to train (one of the model classes
+                                                  defined in models.py)
     :param str logs_dir: Directory to save the logs into (will be created if doesn't exist already), if None a directory 'logs' will be created in CWD  (default None)
     :param str checkpoints_dir: Directory to save neural net's checkpoints into (will be created if doesn't exist already), if None a directory 'checkpoints' will be created in CWD (default None)
     :param str statistics_dir: Directory to save evaluation statistics into (will be created if doesn't exist already), if None a directory 'statistics' will be created in CWD (default None) NOTE: statistics are also saved into checkpoints
@@ -103,18 +104,9 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     else:
         logging.info('Using CPU. Set --cuda flag to use GPU.')
         device = 'cpu'
-    
-    # Model
-    if model_type in panns.models.__all__:
-        Model = eval("panns.models."+model_type)
-    else:
-        raise ValueError(f"'{model_type}' is not among the defined models.")
 
-    model = Model(sample_rate=sample_rate, window_size=window_size, 
-        hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
-        classes_num=classes_num)
-     
-    # Dataset will be used by DataLoader later. Dataset takes a meta as input 
+
+    # Dataset will be used by DataLoader later. Dataset takes a meta as input
     # and return a waveform and a target.
     dataset = panns.data.loaders.AudioSetDataset()
 
@@ -304,9 +296,14 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
+    model = panns.models.load_model(args.model_type, args.sample_rate,
+                                    args.window_size, args.hop_length,
+                                    args.mel_bins, args.fmin, args.fmax,
+                                    args.classes_num)
+
     train(train_indexes_hdf5_path=args.train_indexes_hdf5_path,
           eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
-          model_type=args.model_type,
+          model=model,
           logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
