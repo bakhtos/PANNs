@@ -24,7 +24,7 @@ def evaluate(model, data_loader):
     """
 
     # Forward
-    clipwise_output, _, _, target = forward(model=model, generator=data_loader,
+    clipwise_output, _, _, target = forward(model=model, data_loader=data_loader,
                                             return_target=True)
     clipwise_output = clipwise_output.numpy(force=True)
     target = target.numpy(force=True)
