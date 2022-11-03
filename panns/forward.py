@@ -1,60 +1,60 @@
 import torch
-import numpy as np
-
-from panns.utils.pytorch_utils import move_data_to_device, append_to_dict
 
 __all__ = ['forward']
 
-def forward(model, generator, return_input=False, 
-    return_target=False):
-    """Forward data to a model.
-    
-    Args: 
-      model: object
-      generator: object
-      return_input: bool
-      return_target: bool
 
-    Returns:
-      audio_name: (audios_num,)
-      clipwise_output: (audios_num, classes_num)
-      (ifexist) segmentwise_output: (audios_num, segments_num, classes_num)
-      (ifexist) framewise_output: (audios_num, frames_num, classes_num)
-      (optional) return_input: (audios_num, segment_samples)
-      (optional) return_target: (audios_num, classes_num)
+@torch.no_grad()
+def forward(model, data_loader, return_data=False,
+            return_target=False):
+    """Forward data to a model.
+
+    Parameters
+    __________
+
+    model : torch.nn.Module subclass,
+        Model to forward the data to.
+    data_loader: torch.utils.data.Dataloader,
+        Data loader that provides data and target to the model
+    return_data: bool, optional (default False)
+        If True, third returned argument will be collated input data
+    return_target: bool, optional (default False)
+        If, True, fourth returned argument will be collated target
+
+    Returns
+    _______
+    clipwise_output : torch.Tensor,
+        First output of the model, tensor of shape (audios_num, classes_num)
+    second_output : torch.Tensor,
+        Either segmentwise or framewise output,
+        tensor of shape(audios_num, segments_num or frames_num, classes_num)
+    data : torch.Tensor,
+        If return_data is True, tensor of shape (audios_num, clip_samples),
+        otherwise None
+    target: torch.Tensor,
+        If return_target is True, tensor of shape (audios_num, classes_num),
+        otherwise None
     """
-    output_dict = {}
-    device = next(model.parameters()).device
 
     # Forward data to a model in mini-batches
-    for n, batch_data_dict in enumerate(generator):
-        batch_waveform = move_data_to_device(batch_data_dict['waveform'], device)
-        
-        with torch.no_grad():
-            model.eval()
-            #  Second_output is either 'embedding' (non-sed model) or 'framewise_output' (sed model)
-            clipwise_output, second_output = model(batch_waveform)
 
-        append_to_dict(output_dict, 'audio_name', batch_data_dict['audio_name'])
+    all_clipwise_output = []
+    all_second_output = []
+    all_data = []
+    all_target = []
+    for data, target in data_loader:
+        clipwise_output, second_output = model(data)
 
-        append_to_dict(output_dict, 'clipwise_output', 
-            clipwise_output.data.cpu().numpy())
+        all_clipwise_output.append(clipwise_output)
+        all_second_output.append(second_output)
 
-        if model.sed_model:
-            append_to_dict(output_dict, 'framewise_output',
-                           second_output.data.cpu().numpy())
-        else:
-            append_to_dict(output_dict, 'embedding',
-                           second_output.data.cpu().numpy())
-            
-        if return_input:
-            append_to_dict(output_dict, 'waveform', batch_data_dict['waveform'])
-            
+        if return_data:
+            all_data.append(data)
         if return_target:
-            if 'target' in batch_data_dict.keys():
-                append_to_dict(output_dict, 'target', batch_data_dict['target'])
+            all_target.append(target)
 
-    for key in output_dict.keys():
-        output_dict[key] = np.concatenate(output_dict[key], axis=0)
+    all_clipwise_output = torch.cat(all_clipwise_output, dim=0)
+    all_second_output = torch.cat(all_second_output, dim=0)
+    all_data = torch.cat(all_data) if return_data else None
+    all_target = torch.cat(all_target) if return_target else None
 
-    return output_dict
+    return all_clipwise_output, all_second_output, all_data, all_target
