@@ -1,6 +1,7 @@
 import argparse
 
 import torch
+import torch.utils.data
 import numpy as np
 
 from panns.data.loaders import AudioSetDataset, EvaluateSampler, collate_fn
@@ -12,14 +13,8 @@ __all__ = ['inference', 'detect_events']
 
 def inference(*, eval_indexes_hdf5_path,
                  checkpoint_path,
-                 model_type,
-                 window_size=1024,
-                 hop_size=320,
-                 sample_rate=32000,
-                 mel_bins=64,
-                 fmin=50, fmax=14000,
+                 model,
                  cuda=False,
-                 classes_num=110,
                  sed=False,
                  num_workers=8, batch_size=32):
     '''Obtain audio tagging or sound event detection results from a model.
@@ -31,17 +26,9 @@ def inference(*, eval_indexes_hdf5_path,
     :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
     :param str checkpoint_path: Path to the saved checkpoint of the model
                                 (as created by panns.train)
-    :param str model_type: Name of the model saved in checkpoint
+    :param torch.nn.Module model: Type of the model saved in checkpoint
                            (must be one of classes defined in panns.models.models.py)
-    :param int window_size: Window size of filter used in training (default 1024)
-    :param int hop_size: Hop size of filter used in training (default 320)
-    :param int sample_rate: Sample rate of the used audio clips; supported values
-                            are 32000, 16000, 8000 (default 32000)
-    :param int mel_bins: Amount of mel filters used in the model
-    :param int fmin: Minimum frequency used in Logmel filterbank of the model
-    :param int fmax: Maximum frequency used in Logmel filterbank of the model
     :param bool cuda: If True, try to use GPU for inference (default False)
-    :param int classes_num: Amount of classes used in the dataset (default 110)
     :param bool sed: If True, perform Sound Event Detection, otherwise Audio Tagging
                      (default False)
     :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
@@ -55,18 +42,9 @@ def inference(*, eval_indexes_hdf5_path,
     '''
 
 
-    # Model
-    if model_type in panns.models.__all__:
-        Model = eval("panns.models."+model_type)
-    else:
-        raise ValueError(f"'{model_type}' is not among the defined models.")
-
-    model = Model(sample_rate=sample_rate, window_size=window_size,
-        hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax,
-        classes_num=classes_num)
-
     if sed and not model.sed_model:
-        print(f"Warning! Asked to perform SED but {model_type} is not a SED model."
+        print(f"Warning! Asked to perform SED but given model is not a SED "
+              f"model."
               "Performing Audio Tagging instead.")
         sed = False
 
@@ -84,7 +62,7 @@ def inference(*, eval_indexes_hdf5_path,
     else:
         print('Using CPU.')
 
-    dataset = AudioSetDataset(sample_rate=sample_rate)
+    dataset = AudioSetDataset()
     # Evaluate sampler
     eval_sampler = EvaluateSampler(
         hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)
@@ -227,17 +205,16 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    model = panns.models.load_model(args.model_type, args.sample_rate,
+                                    args.window_size, args.hop_size,
+                                    args.mel_bins, args.fmin, args.fmax,
+                                    args.classes_num)
+
     results, audio_names = inference(eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
-                                     model_type=args.model_type,
+                                     model=model,
                                      checkpoint_path=args.checkpoint_path,
-                                     window_size=args.window_size,
-                                     hop_size=args.hop_size,
-                                     sample_rate=args.sample_rate,
-                                     fmin=args.fmin, fmax=args.fmax,
-                                     mel_bins=args.mel_bins,
                                      batch_size=args.batch_size,
                                      cuda=args.cuda, sed=args.sed,
-                                     classes_num=args.classes_num,
                                      num_workers=args.num_workers)
 
     ids,_,_,_ = get_labels(args.class_labels_path, args.selected_classes_path)
