@@ -15,7 +15,7 @@ from panns.utils.logging_utils import create_logging
 from panns.data.mixup import mixup_coefficients, mixup
 import panns.models
 from panns.evaluate import evaluate
-from panns.data.loaders import AudioSetDataset
+from panns.data.dataset import AudioSetDataset
 
 def train(*, hdf5_files_path_train,
           target_weak_path_train,
