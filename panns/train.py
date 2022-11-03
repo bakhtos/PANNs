@@ -86,11 +86,9 @@ def train(*, hdf5_files_path_train,
     if 'cuda' in str(device):
         logging.info('Using GPU.')
         logging.info('GPU number: {}'.format(torch.cuda.device_count()))
-        device = 'cuda'
     else:
         logging.info('Using CPU. Set --cuda flag to use GPU.')
-        device = 'cpu'
-    
+
     # Dataset will be used by DataLoader later. Dataset takes a meta as input
     # and return a waveform and a target.
     train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
