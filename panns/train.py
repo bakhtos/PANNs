@@ -123,21 +123,18 @@ def train(*, hdf5_files_path_train,
     statistics = {}
 
     for data, target in train_loader:
-        # Mixup lambda
+        # Data augmentation
         mixup_lambda = next(mixup_augmenter) if augmentation else None
-
-        # Forward
-        model.train()
-        train_bgn_time = time.time()
-
-        clipwise_output, _ = model(data, mixup_lambda)
-
         target = mixup(target, mixup_lambda) if augmentation else target
         target = torch.tensor(target, device=device)
-        # Loss
-        loss = F.binary_cross_entropy(clipwise_output, target)
 
-        # Backward
+        train_bgn_time = time.time()
+
+        # Train
+        model.train()
+        clipwise_output, _ = model(data, mixup_lambda)
+
+        loss = F.binary_cross_entropy(clipwise_output, target)
         loss.backward()
 
         optimizer.step()
@@ -147,14 +144,13 @@ def train(*, hdf5_files_path_train,
         logging.info(f'--- Iteration: {iteration}, training time: '
                      f'{train_time:.3f} s, training loss: {loss.item()}')
 
+        # Evaluate
         if iteration > 0 and iteration % 2000 == 0:
-            # Evaluate
             val_begin_time = time.time()
             eval_average_precision, eval_auc = evaluate(model, eval_loader)
-                            
-            statistics[iteration] = (eval_average_precision, eval_auc)
-
             validate_time = time.time() - val_begin_time
+
+            statistics[iteration] = (eval_average_precision, eval_auc)
 
             logging.info(
                 f'--- Iteration: {iteration}, validate time:'
