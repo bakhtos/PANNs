@@ -21,17 +21,14 @@ def train(*, hdf5_files_path_train,
           target_weak_path_train,
           hdf5_files_path_eval,
           target_weak_path_eval,
-          model_type,
+          model,
           logs_dir=None,
           checkpoints_dir=None,
           statistics_dir=None,
-          window_size=1024, hop_size=320, sample_rate=32000, clip_length=10000,
-          fmin=50, fmax=14000, mel_bins=64,
           augmentation=False, mixup_alpha=1.0,
           batch_size=32, learning_rate=1e-3, resume_iteration=0,
           resume_checkpoint_path=None, iter_max=1000000,
-          cuda=False, classes_num=110,
-          num_workers=8):
+          cuda=False, num_workers=8):
     """Train AudioSet tagging model. 
 
     Models are saved to and loaded from 'checkpoints' using torch.save/torch.load respectively.
@@ -69,17 +66,10 @@ def train(*, hdf5_files_path_train,
 
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
 
-    clip_samples = sample_rate*clip_length//1000
-
     if resume_iteration > 0 and resume_checkpoint_path is None:
         raise ValueError("resume_iteration is greater than 0, but no resume_checkpoint_path was given.")
 
     # Paths
-
-    param_string = f"""sample_rate={sample_rate},window_size={window_size},\
-hop_size={hop_size},mel_bins={mel_bins},fmin={fmin},fmax={fmax},model={model_type},\
-augmentation={augmentation},batch_size={batch_size}"""
-
     workspace = os.getcwd()
     if checkpoints_dir is None:
         checkpoints_dir = os.path.join(workspace, 'checkpoints')
@@ -101,17 +91,7 @@ augmentation={augmentation},batch_size={batch_size}"""
         logging.info('Using CPU. Set --cuda flag to use GPU.')
         device = 'cpu'
     
-    # Model
-    if model_type in panns.models.__all__:
-        Model = eval("panns.models."+model_type)
-    else:
-        raise ValueError(f"'{model_type}' is not among the defined models.")
-
-    model = Model(sample_rate=sample_rate, window_size=window_size, 
-        hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
-        classes_num=classes_num)
-     
-    # Dataset will be used by DataLoader later. Dataset takes a meta as input 
+    # Dataset will be used by DataLoader later. Dataset takes a meta as input
     # and return a waveform and a target.
     train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
     eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
@@ -211,11 +191,11 @@ augmentation={augmentation},batch_size={batch_size}"""
                 'model': model.module.state_dict(), 
                 'statistics': statistics}
 
-            checkpoint_name = "checkpoint_"+param_string+f",iteration={iteration}.pth"
+            checkpoint_name = f"checkpoint_iteration={iteration}.pth"
             checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
                 
             torch.save(checkpoint, checkpoint_path)
-            statistics_name = "statistics_"+param_string+f",iteration={iteration}.pickle"
+            statistics_name = f"statistics_iteration={iteration}.pickle"
             statistics_path = os.path.join(statistics_dir, statistics_name)
             pickle.dump(statistics, open(statistics_path, 'wb'))
             logging.info(f'Model saved to {checkpoint_path}')
@@ -278,21 +258,19 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
+    model = panns.models.load_model(args.model_type, args.sample_rate,
+                                    args.window_size, args.hop_size,
+                                    args.mel_bins, args.fmin, args.fmax,
+                                    args.classes_num)
+
     train(hdf5_files_path_train=args.hdf5_files_path_train,
           target_weak_path_train=args.target_weak_path_train,
           hdf5_files_path_eval=args.hdf5_files_path_eval,
           target_weak_path_eval=args.target_weak_path_eval,
-          model_type=args.model_type,
+          model=model,
           logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
-          window_size=args.window_size,
-          hop_size=args.hop_size,
-          sample_rate=args.sample_rate,
-          clip_length=args.clip_length,
-          fmin=args.fmin,
-          fmax=args.fmax,
-          mel_bins=args.mel_bins,
           augmentation=args.augmentation,
           mixup_alpha=args.mixup_alpha,
           batch_size=args.batch_size,
@@ -301,5 +279,4 @@ if __name__ == '__main__':
           resume_checkpoint_path=args.resume_checkpoint_path,
           iter_max=args.iter_max,
           cuda=args.cuda,
-          classes_num=args.classes_num,
           num_workers=args.num_workers)
