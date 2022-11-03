@@ -64,11 +64,6 @@ def train(*, hdf5_files_path_train,
     :raises ValueError: if resume_iteration is non-zero, but no resume_checkpoint_path given
     """
 
-    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
-
-    if resume_iteration > 0 and resume_checkpoint_path is None:
-        raise ValueError("resume_iteration is greater than 0, but no resume_checkpoint_path was given.")
-
     # Paths
     workspace = os.getcwd()
     if checkpoints_dir is None:
@@ -83,14 +78,7 @@ def train(*, hdf5_files_path_train,
         logs_dir = os.path.join(workspace, 'logs')
     create_logging(logs_dir, filemode='w')
     
-    if 'cuda' in str(device):
-        logging.info('Using GPU.')
-        logging.info('GPU number: {}'.format(torch.cuda.device_count()))
-    else:
-        logging.info('Using CPU. Set --cuda flag to use GPU.')
-
-    # Dataset will be used by DataLoader later. Dataset takes a meta as input
-    # and return a waveform and a target.
+    # Dataset
     train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
     eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
 
@@ -118,24 +106,21 @@ def train(*, hdf5_files_path_train,
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=0.,
                            amsgrad=True)
 
-    # Resume training
-    if resume_iteration > 0:
-        logging.info('Loading checkpoint {}'.format(resume_checkpoint_path))
-        checkpoint = torch.load(resume_checkpoint_path)
-        model.load_state_dict(checkpoint['model'])
-        statistics = checkpoint['statistics']
-        statistics = {k:v for k, v in statistics.items() if k < resume_iteration}
-        iteration = checkpoint['iteration']
-
-    else:
-        iteration = 0
-        statistics = {}
-    
     # Parallel
-    model = torch.nn.DataParallel(model)
+    device = (torch.device('cuda') if (cuda and torch.cuda.is_available())
+              else torch.device('cpu'))
 
-    if device == 'cuda':
-        model.to(device)
+    model = torch.nn.DataParallel(model)
+    model.to(device)
+
+    if 'cuda' in str(device):
+        logging.info('Using GPU.')
+        logging.info('GPU number: {}'.format(torch.cuda.device_count()))
+    else:
+        logging.info('Using CPU. Set --cuda flag to use GPU.')
+
+    iteration = 0
+    statistics = {}
 
     for data, target in train_loader:
         # Mixup lambda
@@ -175,24 +160,24 @@ def train(*, hdf5_files_path_train,
                 f'--- Iteration: {iteration}, validate time:'
                 f' {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
 
-        
-        # Save model/Stop learning
+        # Save model/Stop training
         if iteration % 100000 == 0 or iteration == iter_max:
             # Save model
-            checkpoint = {
-                'iteration': iteration, 
-                'model': model.module.state_dict(), 
-                'statistics': statistics}
-
             checkpoint_name = f"checkpoint_iteration={iteration}.pth"
             checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
-                
-            torch.save(checkpoint, checkpoint_path)
+            torch.save(model.module.state_dict(), checkpoint_path)
+            logging.info(f'--- Iteration: {iteration}, Model saved to'
+                         f' {checkpoint_path}')
+
+            # Save statistics
             statistics_name = f"statistics_iteration={iteration}.pickle"
             statistics_path = os.path.join(statistics_dir, statistics_name)
             pickle.dump(statistics, open(statistics_path, 'wb'))
-            logging.info(f'Model saved to {checkpoint_path}')
-            if iteration == iter_max: break # Stop learning
+            logging.info(f'--- Iteration: {iteration}, Statistics saved to'
+                         f' {statistics_path}')
+
+            # Stop training
+            if iteration == iter_max: break
 
         iteration += 1
         
@@ -236,8 +221,6 @@ if __name__ == '__main__':
                         help="Batch size to use for training/evaluation (default 32)")
     parser.add_argument('--learning_rate', type=float, default=1e-3,
                         help="Learning rate to use in training (default 1e-3)")
-    parser.add_argument('--resume_iteration', type=int, default=0,
-                        help="If greater than 0, load a checkpoint and resume traning from this iteration")
     parser.add_argument('--resume_checkpoint_path', type=str, default=None,
                         help="If --resume_iteration  is greater than zero, read a checkpoint from this path")
     parser.add_argument('--iter_max', type=int, default=1000000,
@@ -254,7 +237,8 @@ if __name__ == '__main__':
     model = panns.models.load_model(args.model_type, args.sample_rate,
                                     args.window_size, args.hop_size,
                                     args.mel_bins, args.fmin, args.fmax,
-                                    args.classes_num)
+                                    args.classes_num,
+                                    args.resume_checkpoint_path)
 
     train(hdf5_files_path_train=args.hdf5_files_path_train,
           target_weak_path_train=args.target_weak_path_train,

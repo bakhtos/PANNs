@@ -1,16 +1,12 @@
+import torch
+
 import panns.models.models
 
 __all__ = ['load_model']
 
 
-def load_model(model,
-               sample_rate,
-               win_length,
-               hop_length,
-               n_mels,
-               f_min,
-               f_max,
-               classes_num):
+def load_model(model, sample_rate, win_length, hop_length, n_mels, f_min, f_max,
+               classes_num, checkpoint=None):
 
     if model in panns.models.__all__:
         model = eval("panns.models."+model)
@@ -20,5 +16,8 @@ def load_model(model,
     model = model(sample_rate=sample_rate, window_size=win_length,
                   hop_size=hop_length, mel_bins=n_mels, fmin=f_min, fmax=f_max,
                   classes_num=classes_num)
+
+    if checkpoint is not None:
+        model.load_state_dict(torch.load(checkpoint))
 
     return model
