@@ -154,7 +154,7 @@ def train(*, hdf5_files_path_train,
         """clipwise_output: (batch_size, classes_num)"""
 
         target = mixup(target, mixup_lambda) if augmentation else target
-
+        target = torch.tensor(target, device=device)
         # Loss
         loss = F.binary_cross_entropy(clipwise_output, target)
 
