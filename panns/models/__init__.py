@@ -1,5 +1,6 @@
 from .models import *
 from .blocks import *
+from .loader import *
 __all__ = ['Cnn14',
           'Cnn14_no_specaug',
           'Cnn14_no_dropout',
@@ -35,4 +36,5 @@ __all__ = ['Cnn14',
           'ConvBlock5x5',
           'AttBlock',
           'DropStripes',
-          'SpecAugmentation']
+          'SpecAugmentation',
+          'load_model']
