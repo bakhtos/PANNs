@@ -69,7 +69,8 @@ def inference(*, hdf5_files_path_eval,
     else:
         print('Using CPU.')
 
-    dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
+    dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval,
+                              device)
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,
                                               batch_size=batch_size,
                                               shuffle=False,
