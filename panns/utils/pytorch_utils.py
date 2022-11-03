@@ -1,31 +1,10 @@
 import torch
 import torch.nn as nn
 
-__all__ = ['move_data_to_device',
-           'append_to_dict',
-           'interpolate',
+__all__ = ['interpolate',
            'pad_framewise_output',
            'count_parameters',
            'count_flops']
-
-def move_data_to_device(x, device):
-    if x is None: return x
-
-    if 'float' in str(x.dtype):
-        x = torch.Tensor(x)
-    elif 'int' in str(x.dtype):
-        x = torch.LongTensor(x)
-    else:
-        return x
-
-    return x.to(device)
-
-
-def append_to_dict(d, key, value):
-    if key in d:
-        d[key].append(value)
-    else:
-        d[key] = [value]
 
 
 def interpolate(x, ratio):
