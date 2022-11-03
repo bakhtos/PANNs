@@ -1,30 +1,37 @@
-from sklearn import metrics
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 from .forward import forward
 
+
 def evaluate(model, data_loader):
-    """Forward evaluation data and calculate statistics.
+    """Forward evaluation data to the model and calculate AP and AUC metrics.
 
-    Args:
-      data_loader: object
+    Parameters
+    __________
 
-    Returns:
-      statistics: dict, 
-          {'average_precision': (classes_num,), 'auc': (classes_num,)}
+    model : torch.nn.Module subclass,
+        Torch model to be evaluated
+    data_loader: torch.utils.data.Dataloader,
+        Data loader for the evaluation data
+
+    Returns
+    _______
+
+    average_precision : float,
+        Average precision score metric result from sklearn
+    auc: float,
+        Area under curve metric result from sklearn
     """
 
     # Forward
-    output_dict = forward(
-        model=model, 
-        generator=data_loader, 
-        return_target=True)
+    clipwise_output, _, _, target = forward(model=model, generator=data_loader,
+                                            return_target=True)
+    clipwise_output = clipwise_output.numpy(force=True)
+    target = target.numpy(force=True)
 
-    clipwise_output = output_dict['clipwise_output']    # (audios_num, classes_num)
-    target = output_dict['target']    # (audios_num, classes_num)
+    average_precision = average_precision_score(target, clipwise_output,
+                                                average=None)
 
-    average_precision = metrics.average_precision_score(
-        target, clipwise_output, average=None)
-
-    auc = metrics.roc_auc_score(target, clipwise_output, average=None)
+    auc = roc_auc_score(target, clipwise_output, average=None)
     
     return average_precision, auc
