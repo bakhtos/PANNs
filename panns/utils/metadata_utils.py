@@ -81,12 +81,12 @@ def get_weak_target(data_path, class_ids):
     audio_names : numpy.array[str],
         List of all files from data_path, index in this list corresponds
         to the index in the target array.
-    target : numpy.array[int],
+    target : numpy.array[float],
         Target array of weak labels with shape (videos, classes).
     """
 
     class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
-    zero_vector = [0] * len(class_ids)
+    zero_vector = [0.0] * len(class_ids)
     target = []
     audio_names = []
     count = 0
@@ -109,7 +109,7 @@ def get_weak_target(data_path, class_ids):
         video_ix = video_id_to_ix[video_id]
         class_ix = class_id_to_ix[label]
 
-        target[video_ix][class_ix] = 1
+        target[video_ix][class_ix] = 1.0
     file.close()
 
     return np.array(audio_names), np.array(target)
