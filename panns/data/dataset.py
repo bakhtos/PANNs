@@ -1,5 +1,4 @@
 from torch.utils.data import Dataset
-import torch
 import numpy as np
 import h5py
 
@@ -8,7 +7,7 @@ __all__ = ['AudioSetDataset']
 
 class AudioSetDataset(Dataset):
     """Class that returns an AudioSet segment audiofile and target from hdf5 file."""
-    def __init__(self, hdf5_path, target_path, device='cpu'):
+    def __init__(self, hdf5_path, target_path):
         """Initialize the dataset loading.
 
            Parameters
@@ -22,7 +21,6 @@ class AudioSetDataset(Dataset):
         """
         self._hdf5_data = h5py.File(hdf5_path, 'r')
         self._target = np.load(target_path)
-        self._device = device
 
     def __del__(self):
         self._hdf5_data.close()
@@ -32,9 +30,8 @@ class AudioSetDataset(Dataset):
         return self._target.shape[0]
 
     def __getitem__(self, i):
-        waveform = torch.tensor(self._hdf5_data['waveform'][i],
-                                device=self._device)
-        target = torch.tensor(self._target[i, :], device=self._device)
+        waveform = self._hdf5_data['waveform'][i]
+        target = self._target[i, :]
 
         return waveform, target
 

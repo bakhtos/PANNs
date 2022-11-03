@@ -64,6 +64,7 @@ def train(*, hdf5_files_path_train,
     :raises ValueError: if resume_iteration is non-zero, but no resume_checkpoint_path given
     """
 
+    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
 
     if resume_iteration > 0 and resume_checkpoint_path is None:
         raise ValueError("resume_iteration is greater than 0, but no resume_checkpoint_path was given.")
@@ -81,21 +82,19 @@ def train(*, hdf5_files_path_train,
     if logs_dir is None:
         logs_dir = os.path.join(workspace, 'logs')
     create_logging(logs_dir, filemode='w')
-
-    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
-
+    
     if 'cuda' in str(device):
         logging.info('Using GPU.')
         logging.info('GPU number: {}'.format(torch.cuda.device_count()))
+        device = 'cuda'
     else:
         logging.info('Using CPU. Set --cuda flag to use GPU.')
-
+        device = 'cpu'
+    
     # Dataset will be used by DataLoader later. Dataset takes a meta as input
     # and return a waveform and a target.
-    train_dataset = AudioSetDataset(hdf5_files_path_train,
-                                    target_weak_path_train, device)
-    eval_dataset = AudioSetDataset(hdf5_files_path_eval,
-                                   target_weak_path_eval, device)
+    train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
+    eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
 
     # TODO add parameter pin_memory_device when torch 1.13 is supported
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
@@ -138,7 +137,8 @@ def train(*, hdf5_files_path_train,
     # Parallel
     model = torch.nn.DataParallel(model)
 
-    model.to(device)
+    if device == 'cuda':
+        model.to(device)
     
     
     for data, target in train_loader:
