@@ -6,7 +6,6 @@ import time
 import logging
 
 import torch
-import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
@@ -16,6 +15,7 @@ from panns.data.mixup import mixup_coefficients, mixup
 import panns.models
 from panns.evaluate import evaluate
 from panns.data.dataset import AudioSetDataset
+
 
 def train(*, hdf5_files_path_train,
           target_weak_path_train,
@@ -115,9 +115,8 @@ def train(*, hdf5_files_path_train,
     
     # Optimizer
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, 
-        betas=(0.9, 0.999), eps=1e-08, weight_decay=0., amsgrad=True)
-
-    train_bgn_time = time.time()
+                           betas=(0.9, 0.999), eps=1e-08, weight_decay=0.,
+                           amsgrad=True)
 
     # Resume training
     if resume_iteration > 0:
@@ -137,21 +136,16 @@ def train(*, hdf5_files_path_train,
 
     if device == 'cuda':
         model.to(device)
-    
-    
-    for data, target in train_loader:
 
+    for data, target in train_loader:
         # Mixup lambda
         mixup_lambda = next(mixup_augmenter) if augmentation else None
 
         # Forward
-        train_bgn_time = time.time()
         model.train()
+        train_bgn_time = time.time()
 
-        # 'embedding' is either embedding or framewise output, depends on model
-        clipwise_output, embedding = model(data, mixup_lambda)
-
-        """clipwise_output: (batch_size, classes_num)"""
+        clipwise_output, _ = model(data, mixup_lambda)
 
         target = mixup(target, mixup_lambda) if augmentation else target
         target = torch.tensor(target, device=device)
@@ -160,25 +154,26 @@ def train(*, hdf5_files_path_train,
 
         # Backward
         loss.backward()
-        logging.info(f"--- Iteration: {iteration}, training loss: {loss.item()}")
-        
+
         optimizer.step()
         optimizer.zero_grad()
         
-        train_fin_time = time.time()
+        train_time = time.time() - train_bgn_time
+        logging.info(f'--- Iteration: {iteration}, training time: '
+                     f'{train_time:.3f} s, training loss: {loss.item()}')
 
         if iteration > 0 and iteration % 2000 == 0:
             # Evaluate
-
+            val_begin_time = time.time()
             eval_average_precision, eval_auc = evaluate(model, eval_loader)
                             
             statistics[iteration] = (eval_average_precision, eval_auc)
 
-            train_time = train_fin_time - train_bgn_time
-            validate_time = time.time() - train_fin_time
+            validate_time = time.time() - val_begin_time
 
             logging.info(
-                f'--- Iteration: {iteration}, training time: {train_time:.3f} s, validate time: {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
+                f'--- Iteration: {iteration}, validate time:'
+                f' {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
 
         
         # Save model/Stop learning
