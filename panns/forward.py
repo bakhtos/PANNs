@@ -22,6 +22,7 @@ def forward(model, data_loader, return_data=False,
 
     Returns
     _______
+
     clipwise_output : torch.Tensor,
         First output of the model, tensor of shape (audios_num, classes_num)
     second_output : torch.Tensor,
