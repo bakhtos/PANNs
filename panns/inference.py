@@ -4,17 +4,24 @@ import torch
 import torch.utils.data
 import numpy as np
 
-from panns.data.loaders import AudioSetDataset, EvaluateSampler, collate_fn
+from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
 from panns.utils.metadata_utils import get_labels
 import panns.models
 
 __all__ = ['inference', 'detect_events']
 
-def inference(*, eval_indexes_hdf5_path,
+def inference(*, hdf5_files_path_eval,
+                 target_weak_path_eval,
                  checkpoint_path,
-                 model,
+                 model_type,
+                 window_size=1024,
+                 hop_size=320,
+                 sample_rate=32000,
+                 mel_bins=64,
+                 fmin=50, fmax=14000,
                  cuda=False,
+                 classes_num=110,
                  sed=False,
                  num_workers=8, batch_size=32):
     '''Obtain audio tagging or sound event detection results from a model.
@@ -26,9 +33,17 @@ def inference(*, eval_indexes_hdf5_path,
     :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
     :param str checkpoint_path: Path to the saved checkpoint of the model
                                 (as created by panns.train)
-    :param torch.nn.Module model: Type of the model saved in checkpoint
+    :param str model_type: Name of the model saved in checkpoint
                            (must be one of classes defined in panns.models.models.py)
+    :param int window_size: Window size of filter used in training (default 1024)
+    :param int hop_size: Hop size of filter used in training (default 320)
+    :param int sample_rate: Sample rate of the used audio clips; supported values
+                            are 32000, 16000, 8000 (default 32000)
+    :param int mel_bins: Amount of mel filters used in the model
+    :param int fmin: Minimum frequency used in Logmel filterbank of the model
+    :param int fmax: Maximum frequency used in Logmel filterbank of the model
     :param bool cuda: If True, try to use GPU for inference (default False)
+    :param int classes_num: Amount of classes used in the dataset (default 110)
     :param bool sed: If True, perform Sound Event Detection, otherwise Audio Tagging
                      (default False)
     :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
@@ -36,15 +51,22 @@ def inference(*, eval_indexes_hdf5_path,
     :param int batch_size: Batch size to use for evaluation (default 32)
     :return: result - Array of either clipwise or framewise output
     :rtype: numpy.ndarray
-    :return: audio_names - Names of audios used in the provided eval dataset
-    :rtype: numpy.ndarray
     :raises ValueError: if model_type not found in panns.models.models.py
     '''
 
 
+    # Model
+    if model_type in panns.models.__all__:
+        Model = eval("panns.models."+model_type)
+    else:
+        raise ValueError(f"'{model_type}' is not among the defined models.")
+
+    model = Model(sample_rate=sample_rate, window_size=window_size,
+                  hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax,
+                  classes_num=classes_num)
+
     if sed and not model.sed_model:
-        print(f"Warning! Asked to perform SED but given model is not a SED "
-              f"model."
+        print(f"Warning! Asked to perform SED but {model_type} is not a SED model."
               "Performing Audio Tagging instead.")
         sed = False
 
@@ -59,27 +81,28 @@ def inference(*, eval_indexes_hdf5_path,
         sed_model = model.sed_model
         model = torch.nn.DataParallel(model)
         model.sed_model = sed_model
+        device = 'cuda'
     else:
         print('Using CPU.')
+        device = 'cpu'
 
-    dataset = AudioSetDataset()
-    # Evaluate sampler
-    eval_sampler = EvaluateSampler(
-        hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)
+    dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,
-        batch_sampler=eval_sampler, collate_fn=collate_fn,
-        num_workers=num_workers, pin_memory=True)
+                                              batch_size=batch_size,
+                                              shuffle=False,
+                                              num_workers=num_workers,
+                                              persistent_workers=True,
+                                              pin_memory=True,
+                                              pin_memory_device=device)
 
-    output_dict = forward(model, eval_loader)
-
-    audio_names = output_dict['audio_name']
+    clipwise_output, second_output, _, _ = forward(model, eval_loader)
 
     if sed:
-        result = output_dict['framewise_output']
+        result = second_output
     else:
-        result = output_dict['clipwise_output']
+        result = clipwise_output
 
-    return result, audio_names
+    return result
 
 
 def detect_events(*, frame_probabilities,
@@ -163,14 +186,19 @@ def detect_events(*, frame_probabilities,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--eval_indexes_hdf5_path', type=str, required=True,
-                        help="Path to hdf5 index of the evaluation set")
+    parser.add_argument('--hdf5_files_path_eval', type=str, required=True,
+                        help="Path to hdf5 file of the eval split")
+    parser.add_argument('--target_weak_path_eval', type=str, required=True,
+                        help="Path to the weak target array of the eval split")
+    parser.add_argument('--audio_names_path', type=str, required=True,
+                        help='Path to .npy file to load audio filenames to be packed in this order')
     parser.add_argument('--model_type', type=str, required=True,
                         help="Name of model to train")
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help="File to load the NN checkpoint from")
     parser.add_argument('--selected_classes_path', type=str, required=True,
-                        help="Dataset class labels in tsv format (as in 'Reformatted' dataset)")
+                        help="Dataset class labels in tsv format (as in "
+                             "'Reformatted' dataset)")
     parser.add_argument('--class_labels_path', type=str, required=True,
                         help='List of selected classes that were used in training'
                         '/are used in the model, one per line')
@@ -187,7 +215,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', type=int, default=32,
                         help="Batch size to use for training/evaluation (default 32)")
     parser.add_argument('--cuda', action='store_true', default=False,
-                        help="If set, try to use GPU for traning")
+                        help="If set, try to use GPU for training")
     parser.add_argument('--sed', action='store_true', default=False,
                         help='If set, perform Sound Event Detection, otherwise Audio Tagging')
     parser.add_argument('--classes_num', type=int, default=110,
@@ -205,19 +233,25 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    model = panns.models.load_model(args.model_type, args.sample_rate,
-                                    args.window_size, args.hop_size,
-                                    args.mel_bins, args.fmin, args.fmax,
-                                    args.classes_num)
+    results = inference(
+            hdf5_files_path_eval=args.hdf5_files_path_eval,
+            target_weak_path_eval=args.target_weak_path_eval,
+            model_type=args.model_type,
+            checkpoint_path=args.checkpoint_path,
+            window_size=args.window_size,
+            hop_size=args.hop_size,
+            sample_rate=args.sample_rate,
+            fmin=args.fmin, fmax=args.fmax,
+            mel_bins=args.mel_bins,
+            batch_size=args.batch_size,
+            cuda=args.cuda, sed=args.sed,
+            classes_num=args.classes_num,
+            num_workers=args.num_workers)
 
-    results, audio_names = inference(eval_indexes_hdf5_path=args.eval_indexes_hdf5_path,
-                                     model=model,
-                                     checkpoint_path=args.checkpoint_path,
-                                     batch_size=args.batch_size,
-                                     cuda=args.cuda, sed=args.sed,
-                                     num_workers=args.num_workers)
+    audio_names = np.load(args.audio_names_path)
 
-    ids,_,_,_ = get_labels(args.class_labels_path, args.selected_classes_path)
+    ids, _, _, _ = get_labels(args.class_labels_path,
+                              args.selected_classes_path)
     detect_events(frame_probabilities=results,
                   label_id_list=ids,
                   filenames=audio_names,
