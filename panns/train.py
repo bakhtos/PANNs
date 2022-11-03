@@ -26,8 +26,8 @@ def train(*, hdf5_files_path_train,
           checkpoints_dir=None,
           statistics_dir=None,
           augmentation=False, mixup_alpha=1.0,
-          batch_size=32, learning_rate=1e-3, resume_iteration=0,
-          resume_checkpoint_path=None, iter_max=1000000,
+          batch_size=32, learning_rate=1e-3,
+          iter_max=1000000,
           cuda=False, num_workers=8):
     """Train AudioSet tagging model. 
 
@@ -38,27 +38,16 @@ def train(*, hdf5_files_path_train,
         * sampler: state_dict of the sampler
         * statistics: list of statistics (average_precision and auc) for evaluation set at each iteration
 
-    :param str model_type: Name of model to train (one of the model classes defined in models.py)
+    :param str model: Model to train (one of the model classes defined in models.py)
     :param str logs_dir: Directory to save the logs into (will be created if doesn't exist already), if None a directory 'logs' will be created in CWD  (default None)
     :param str checkpoints_dir: Directory to save neural net's checkpoints into (will be created if doesn't exist already), if None a directory 'checkpoints' will be created in CWD (default None)
     :param str statistics_dir: Directory to save evaluation statistics into (will be created if doesn't exist already), if None a directory 'statistics' will be created in CWD (default None) NOTE: statistics are also saved into checkpoints
-    :param int window_size: Window size of filter to be used in training (default 1024)
-    :param int hop_size: Hop size of filter to be used in traning (default 320)
-    :param int sample_rate: Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)
-    :param int clip_length: Length (in ms) of Audio clips user in dataset (default 10000)
-    :param int fmin: Minimum frequency to be used when creating Logmel filterbank (default 50)
-    :param int fmax: Maximum frequency to be used when creating Logmel filterbank (default 14000)
-    :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
-    :param str sampler: The sampler for the dataset to use for training ('TrainSampler' (default)|'BalancedTrainSampler'|'AlternateTrainSampler')
     :param bool augmentation: If True, use Mixup for data augmentation (default False)
     :param float mixup_alpha: If using augmentation, use this as alpha parameter for Mixup (default 1.0)
     :param int batch_size: Batch size to use for training/evaluation (default 32)
     :param float learning_rate: Learning rate to use in training (default 1e-3)
-    :param int resume_iteration: If greater than 0, load a checkpoint and resume traning from this iteration (default 0)
-    :param str resume_checkpoint_path: If resume_iteration is greater than 0, read a checkpoint to be resumed from this path (default None)
-    :param int iter_max: Train until this iteration (default 1000000) 
+    :param int iter_max: Train until this iteration (default 1000000)
     :param bool cuda: If True, try to use GPU for traning (default False)
-    :param int classes_num: Amount of classes used in the dataset (default 110)
     :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
     :raises ValueError: if model_type or sampler not found among defined ones
     :raises ValueError: if resume_iteration is non-zero, but no resume_checkpoint_path given
@@ -248,8 +237,6 @@ if __name__ == '__main__':
           mixup_alpha=args.mixup_alpha,
           batch_size=args.batch_size,
           learning_rate=args.learning_rate,
-          resume_iteration=args.resume_iteration,
-          resume_checkpoint_path=args.resume_checkpoint_path,
           iter_max=args.iter_max,
           cuda=args.cuda,
           num_workers=args.num_workers)
