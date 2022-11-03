@@ -116,21 +116,20 @@ augmentation={augmentation},batch_size={batch_size}"""
     train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
     eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
 
+    # TODO add parameter pin_memory_device when torch 1.13 is supported
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=batch_size,
                                                shuffle=True,
                                                num_workers=num_workers,
                                                persistent_workers=True,
-                                               pin_memory=True,
-                                               pin_memory_device=device)
+                                               pin_memory=True)
 
     eval_loader = torch.utils.data.DataLoader(dataset=eval_dataset,
                                               batch_size=batch_size,
                                               shuffle=False,
                                               num_workers=num_workers,
                                               persistent_workers=True,
-                                              pin_memory=True,
-                                              pin_memory_device=device)
+                                              pin_memory=True)
 
     if augmentation:
         mixup_augmenter = mixup_coefficients(mixup_alpha=mixup_alpha,
