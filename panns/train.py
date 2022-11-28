@@ -149,8 +149,6 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, 
         betas=(0.9, 0.999), eps=1e-08, weight_decay=0., amsgrad=True)
 
-    train_bgn_time = time.time()
-    
     # Resume training
     if resume_iteration > 0:
         logging.info('Loading checkpoint {}'.format(resume_checkpoint_path))
@@ -210,12 +208,14 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
 
         # Backward
         loss.backward()
-        logging.info(f"--- Iteration: {iteration}, training loss: {loss.item()}")
-        
+
         optimizer.step()
         optimizer.zero_grad()
-        
+
         train_fin_time = time.time()
+        logging.info(f"--- Iteration: {iteration}, train time = "
+                     f"{train_fin_time-train_bgn_time:.3f} s, training loss:"
+                     f" {loss.item()}")
 
         if iteration > 0 and iteration % 2000 == 0:
             # Evaluate
@@ -224,11 +224,10 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
                             
             statistics[iteration] = (eval_average_precision, eval_auc)
 
-            train_time = train_fin_time - train_bgn_time
             validate_time = time.time() - train_fin_time
 
             logging.info(
-                f'--- Iteration: {iteration}, training time: {train_time:.3f} s, validate time: {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
+                f'--- Iteration: {iteration}, validate time: {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
 
         
         # Save model/Stop learning
