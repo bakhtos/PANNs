@@ -74,7 +74,7 @@ def train(*, hdf5_files_path_train,
     # TODO add parameter pin_memory_device when torch 1.13 is supported
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
                                                batch_size=batch_size,
-                                               shuffle=True,
+                                               shuffle=False,
                                                num_workers=num_workers,
                                                persistent_workers=True,
                                                pin_memory=True)
