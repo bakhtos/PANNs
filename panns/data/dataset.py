@@ -34,5 +34,3 @@ class AudioSetDataset(Dataset):
         target = self._target[i, :]
 
         return waveform, target
-
-# TODO - add Balanced Sampler
