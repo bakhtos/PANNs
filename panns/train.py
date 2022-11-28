@@ -126,12 +126,12 @@ sampler={sampler},augmentation={augmentation},batch_size={batch_size}"""
         raise ValueError(f"'{sampler}' is not among the defined samplers.")
      
     train_sampler = Sampler(
-        indexes_hdf5_path=train_indexes_hdf5_path, 
+        hdf5_index_path=train_indexes_hdf5_path,
         batch_size=batch_size * 2 if augmentation else batch_size)
     
     # Evaluate sampler
     eval_sampler = panns.data.loaders.EvaluateSampler(
-        indexes_hdf5_path=eval_indexes_hdf5_path, batch_size=batch_size)
+        hdf5_index_path=eval_indexes_hdf5_path, batch_size=batch_size)
 
     # Data loader
     train_loader = torch.utils.data.DataLoader(dataset=dataset, 
