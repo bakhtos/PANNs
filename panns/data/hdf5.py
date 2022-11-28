@@ -58,10 +58,10 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
         # Pack waveform & target of several audio clips to a single hdf5 file
         for n in range(audios_num):
+            start_time_file = time.time()
             audio_path = os.path.join(audios_dir, "Y"+audio_names[n]+".wav")
 
             if os.path.isfile(audio_path):
-                logging.info(f'{n} - {audio_path}')
                 (audio, _) = librosa.core.load(audio_path, sr=sample_rate, mono=True, dtype=np.float32)
                 if len(audio) >= clip_samples: audio2 = audio[:clip_samples]
                 if len(audio) < clip_samples:
@@ -69,6 +69,9 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
                     audio2[:len(audio)] = audio
 
                 hf['waveform'][n] = audio2
+                fin_time_file = time.time()
+                logging.info(f'{n} - {audio_path} packed in '
+                             f'{fin_time_file-start_time_file:.3f} s')
             else:
                 logging.info(f'{n} - File does not exist: {audio_path}')
 
