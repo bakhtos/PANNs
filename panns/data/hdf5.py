@@ -54,7 +54,8 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
     start_time = time.time()
 
     with h5py.File(hdf5_path, 'w') as hf:
-        hf.create_dataset('waveform', shape=(audios_num, clip_samples), dtype=np.float32)
+        hf.create_dataset('waveform', shape=(audios_num, clip_samples),
+                          dtype=np.float32)
 
         # Pack waveform & target of several audio clips to a single hdf5 file
         for n in range(audios_num):
@@ -62,7 +63,8 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
             audio_path = os.path.join(audios_dir, "Y"+audio_names[n]+".wav")
 
             if os.path.isfile(audio_path):
-                (audio, _) = librosa.core.load(audio_path, sr=sample_rate, mono=True, dtype=np.float32)
+                (audio, _) = librosa.core.load(audio_path, sr=sample_rate,
+                                               mono=True, dtype=np.float32)
                 if len(audio) >= clip_samples: audio2 = audio[:clip_samples]
                 if len(audio) < clip_samples:
                     audio2 = np.zeros(clip_samples)
