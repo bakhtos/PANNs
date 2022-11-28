@@ -40,12 +40,8 @@ def forward(model, generator, return_input=False,
         append_to_dict(output_dict, 'clipwise_output', 
             clipwise_output.data.cpu().numpy())
 
-        if model.sed_model:
-            append_to_dict(output_dict, 'framewise_output',
-                           second_output.data.cpu().numpy())
-        else:
-            append_to_dict(output_dict, 'embedding',
-                           second_output.data.cpu().numpy())
+        append_to_dict(output_dict, 'second_output',
+                       second_output.data.cpu().numpy())
             
         if return_input:
             append_to_dict(output_dict, 'waveform', batch_data_dict['waveform'])
