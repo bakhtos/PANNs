@@ -49,12 +49,6 @@ def inference(*, hdf5_files_path_eval,
     :raises ValueError: if model_type not found in panns.models.models.py
     """
 
-    if sed and not model.sed_model:
-        print(f"Warning! Asked to perform SED but given model is not a SED "
-              f"model."
-              "Performing Audio Tagging instead.")
-        sed = False
-
     device = torch.device('cuda') if (cuda and torch.cuda.is_available()) \
         else torch.device('cpu')
 
