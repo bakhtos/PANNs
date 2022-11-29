@@ -1,8 +1,8 @@
 import os
 import logging
 
-
 __all__ = ['create_logging']
+
 
 def create_logging(log_dir, filemode):
     os.makedirs(log_dir, exist_ok=True)
