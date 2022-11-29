@@ -8,7 +8,7 @@ __all__ = ['load_model']
 def load_model(model, sample_rate, win_length, hop_length, n_mels, f_min, f_max,
                classes_num, checkpoint=None):
 
-    if model in panns.models.__all__:
+    if model in panns.models.models.__all__:
         model = eval("panns.models."+model)
     else:
         raise ValueError(f"'{model}' is not among the defined models.")
