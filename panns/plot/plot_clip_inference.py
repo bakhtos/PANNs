@@ -7,8 +7,6 @@ import matplotlib.pyplot as plt
 import torch
 
 from panns.models import *
-from panns.utils.pytorch_utils import move_data_to_device
-from panns.utils.metadata_utils import get_labels_metadata
 
 
 def inference(*, audio_path,

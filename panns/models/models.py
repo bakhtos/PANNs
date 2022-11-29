@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torchlibrosa.stft import Spectrogram, LogmelFilterBank
 
-from panns.utils.pytorch_utils import interpolate, pad_framewise_output
 from panns.data.mixup import mixup
 from .blocks import *
 
