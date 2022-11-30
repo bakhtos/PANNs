@@ -84,9 +84,6 @@ class Cnn6(nn.Module):
         self.fc1 = nn.Linear(512, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -175,9 +172,6 @@ class Cnn10(nn.Module):
         self.fc1 = nn.Linear(512, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -269,9 +263,6 @@ class Cnn14(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -360,9 +351,6 @@ class Cnn14_no_specaug(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -455,9 +443,6 @@ class Cnn14_no_dropout(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -554,9 +539,6 @@ class Cnn14_16k(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -659,9 +641,6 @@ class Cnn14_8k(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -757,9 +736,6 @@ class Cnn14_mixup_time_domain(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -857,9 +833,6 @@ class Cnn14_mel32(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -955,9 +928,6 @@ class Cnn14_mel128(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1054,9 +1024,6 @@ class Cnn14_DecisionLevelMax(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1162,9 +1129,6 @@ class Cnn14_DecisionLevelAvg(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1270,9 +1234,6 @@ class Cnn14_DecisionLevelAtt(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.att_block = AttBlock(2048, classes_num, activation='sigmoid')
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
 
@@ -1377,9 +1338,6 @@ class Cnn14_emb512(nn.Module):
         self.fc1 = nn.Linear(2048, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1475,9 +1433,6 @@ class Cnn14_emb128(nn.Module):
         self.fc1 = nn.Linear(2048, 128, bias=True)
         self.fc_audioset = nn.Linear(128, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1573,9 +1528,6 @@ class Cnn14_emb32(nn.Module):
         self.fc1 = nn.Linear(2048, 32, bias=True)
         self.fc_audioset = nn.Linear(32, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1656,9 +1608,6 @@ class Wavegram_Cnn14(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.pre_conv0)
         init_bn(self.pre_bn0)
         init_bn(self.bn0)
@@ -1762,9 +1711,6 @@ class Wavegram_Logmel_Cnn14(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.pre_conv0)
         init_bn(self.pre_bn0)
         init_bn(self.bn0)
@@ -1885,9 +1831,6 @@ class Wavegram_Logmel128_Cnn14(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.pre_conv0)
         init_bn(self.pre_bn0)
         init_bn(self.bn0)
@@ -2000,9 +1943,6 @@ class ResNet22(nn.Module):
         self.fc1 = nn.Linear(2048, 2048)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weights()
-
-    def init_weights(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -2094,9 +2034,6 @@ class ResNet38(nn.Module):
         self.fc1 = nn.Linear(2048, 2048)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weights()
-
-    def init_weights(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -2188,9 +2125,6 @@ class ResNet54(nn.Module):
         self.fc1 = nn.Linear(2048, 2048)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weights()
-
-    def init_weights(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -2249,9 +2183,6 @@ class Res1dNet31(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.conv0)
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -2296,9 +2227,6 @@ class Res1dNet51(nn.Module):
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.conv0)
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -2413,9 +2341,6 @@ class MobileNetV1(nn.Module):
         self.fc1 = nn.Linear(1024, 1024, bias=True)
         self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
 
-        self.init_weights()
-
-    def init_weights(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -2551,9 +2476,6 @@ class MobileNetV2(nn.Module):
         self.fc1 = nn.Linear(1280, 1024, bias=True)
         self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_bn(self.bn0)
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -2610,9 +2532,6 @@ class LeeNet11(nn.Module):
         self.fc1 = nn.Linear(256, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
 
@@ -2665,9 +2584,6 @@ class LeeNet24(nn.Module):
         self.fc1 = nn.Linear(1024, 1024, bias=True)
         self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
 
@@ -2726,9 +2642,6 @@ class DaiNet19(nn.Module):
         self.fc1 = nn.Linear(512, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.conv0)
         init_bn(self.bn0)
         init_layer(self.fc1)
