@@ -11,15 +11,15 @@ from panns.utils.metadata_utils import get_labels
 
 
 @torch.no_grad()
-def inference(*, model,
-              audio_path,
-              labels,
-              win_length=1024,
-              hop_length=320,
-              sample_rate=32000,
-              top_k=10,
-              cuda=False,
-              sed=False):
+def plot_clip_inference(*, model,
+                        audio_path,
+                        labels,
+                        win_length=1024,
+                        hop_length=320,
+                        sample_rate=32000,
+                        top_k=10,
+                        cuda=False,
+                        sed=False):
     """Perform Audio Tagging or Sound Event Detection of an audio clip with a pre-trained model.
 
     The figure of top classes' detections drawn on top of spectrogram is
@@ -155,11 +155,11 @@ if __name__ == '__main__':
                                     f_min=args.fmin, f_max=args.fmax,
                                     classes_num=args.classes_num,
                                     checkpoint=args.checkpoint_path)
-    inference(model=model,
-              audio_path=args.audio_path,
-              label=labels,
-              win_length=args.window_size,
-              hop_length=args.hop_size,
-              sample_rate=args.sample_rate,
-              cuda=args.cuda,
-              sed=args.sed, verbose=args.verbose)
+    plot_clip_inference(model=model,
+                        audio_path=args.audio_path,
+                        label=labels,
+                        win_length=args.window_size,
+                        hop_length=args.hop_size,
+                        sample_rate=args.sample_rate,
+                        cuda=args.cuda,
+                        sed=args.sed, verbose=args.verbose)
