@@ -317,8 +317,8 @@ class Cnn14(nn.Module):
         if self.mixup_time and self.training and mixup_lambda is not None:
             x = mixup(x, mixup_lambda)
 
-        x = self.spectrogram_extractor(x) # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
+        x = self.spectrogram_extractor(x)  # (batch_size,1,time_steps,freq_bins)
+        x = self.logmel_extractor(x)  # (batch_size,1,time_steps,mel_bins)
 
         x = x.transpose(1, 3)
         x = self.bn0(x)
