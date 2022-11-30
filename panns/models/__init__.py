@@ -5,7 +5,6 @@ from .loader import *
 __all__ = ['Cnn6',
            'Cnn10',
            'Cnn14',
-           'Cnn14NoSpecaug',
            'Cnn14NoDropout',
            'Cnn14MixupTimeDomain',
            'Cnn14Mel32',

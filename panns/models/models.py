@@ -9,7 +9,6 @@ from .blocks import *
 __all__ = ['Cnn6',
            'Cnn10',
            'Cnn14',
-           'Cnn14NoSpecaug',
            'Cnn14NoDropout',
            'Cnn14MixupTimeDomain',
            'Cnn14Mel32',
@@ -241,8 +240,7 @@ class Cnn10(nn.Module):
 
 class Cnn14(nn.Module):
     def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num, **kwargs):
-
+                 fmax, classes_num, spec_aug=True, **kwargs):
         """
 
         Args:
@@ -281,10 +279,12 @@ class Cnn14(nn.Module):
                                                                    None),
                                                  freeze_parameters=True)
         # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
+        self.spec_aug = spec_aug
+        if spec_aug:
+            self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
+                                                    time_stripes_num=2,
+                                                    freq_drop_width=8,
+                                                    freq_stripes_num=2)
 
         self.bn0 = nn.BatchNorm2d(64)
 
@@ -314,105 +314,8 @@ class Cnn14(nn.Module):
         x = self.bn0(x)
         x = x.transpose(1, 3)
 
-        if self.training:
+        if self.training and self.spec_aug:
             x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
-
-        x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = torch.mean(x, dim=3)
-
-        (x1, _) = torch.max(x, dim=2)
-        x2 = torch.mean(x, dim=2)
-        x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu_(self.fc1(x))
-        embedding = F.dropout(x, p=0.5, training=self.training)
-        clipwise_output = torch.sigmoid(self.fc_audioset(x))
-
-        return clipwise_output, embedding
-
-
-class Cnn14NoSpecaug(nn.Module):
-    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num, **kwargs):
-        """
-
-        Args:
-            sample_rate:
-            window_size:
-            hop_size:
-            mel_bins:
-            fmin:
-            fmax:
-            classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
-                'ref', 'amin', 'top_db' for LogmelFilterbank
-        """
-        super().__init__()
-
-        # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=window_size,
-                                                 hop_length=hop_size,
-                                                 win_length=window_size,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
-
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=window_size,
-                                                 n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
-        self.bn0 = nn.BatchNorm2d(64)
-
-        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
-
-        self.fc1 = nn.Linear(2048, 2048, bias=True)
-        self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
-
-        init_bn(self.bn0)
-        init_layer(self.fc1)
-        init_layer(self.fc_audioset)
-
-    def forward(self, batch, mixup_lambda=None):
-        """
-        Input: (batch_size, data_length)"""
-
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
-
-        x = x.transpose(1, 3)
-        x = self.bn0(x)
-        x = x.transpose(1, 3)
 
         # Mixup on spectrogram
         if self.training and mixup_lambda is not None:
