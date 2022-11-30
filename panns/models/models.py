@@ -37,32 +37,45 @@ __all__ = ['Cnn6',
 
 
 class Cnn6(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
 
         # Spec augmenter
@@ -125,32 +138,45 @@ class Cnn6(nn.Module):
 
 
 class Cnn10(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
 
         # Spec augmenter
@@ -214,34 +240,46 @@ class Cnn10(nn.Module):
 
 
 class Cnn14(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
 
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -309,33 +347,45 @@ class Cnn14(nn.Module):
 
 
 class Cnn14NoSpecaug(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
-        super().__init__()
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
 
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
+        super().__init__()
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         self.bn0 = nn.BatchNorm2d(64)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
@@ -394,32 +444,45 @@ class Cnn14NoSpecaug(nn.Module):
 
 
 class Cnn14NoDropout(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
 
         # Spec augmenter
@@ -483,34 +546,46 @@ class Cnn14NoDropout(nn.Module):
 
 
 class Cnn14MixupTimeDomain(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -580,34 +655,46 @@ class Cnn14MixupTimeDomain(nn.Module):
 
 
 class Cnn14Mel32(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -675,34 +762,46 @@ class Cnn14Mel32(nn.Module):
 
 
 class Cnn14Mel128(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -770,35 +869,48 @@ class Cnn14Mel128(nn.Module):
 
 
 class Cnn14DecisionLevelMax(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
 
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
         self.interpolate_ratio = 32  # Downsampled ratio
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -875,35 +987,48 @@ class Cnn14DecisionLevelMax(nn.Module):
 
 
 class Cnn14DecisionLevelAvg(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
 
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
         self.interpolate_ratio = 32  # Downsampled ratio
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -980,35 +1105,48 @@ class Cnn14DecisionLevelAvg(nn.Module):
 
 
 class Cnn14DecisionLevelAtt(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
 
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
         self.interpolate_ratio = 32  # Downsampled ratio
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -1085,34 +1223,46 @@ class Cnn14DecisionLevelAtt(nn.Module):
 
 
 class Cnn14Emb512(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -1180,34 +1330,46 @@ class Cnn14Emb512(nn.Module):
 
 
 class Cnn14Emb128(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -1275,34 +1437,46 @@ class Cnn14Emb128(nn.Module):
 
 
 class Cnn14Emb32(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -1370,8 +1544,7 @@ class Cnn14Emb32(nn.Module):
 
 
 class Cnn14Wavegram(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, classes_num, **kwargs):
         super().__init__()
 
         self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -1449,17 +1622,23 @@ class Cnn14Wavegram(nn.Module):
 
 
 class Cnn14WavegramLogmel(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num, multiplier=1):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, multiplier=1, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         self.multiplier = multiplier
         self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -1475,18 +1654,24 @@ class Cnn14WavegramLogmel(nn.Module):
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -1571,34 +1756,46 @@ class Cnn14WavegramLogmel(nn.Module):
 
 
 class ResNet22(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
-
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
@@ -1662,32 +1859,45 @@ class ResNet22(nn.Module):
 
 
 class ResNet38(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
 
         # Spec augmenter
@@ -1753,32 +1963,45 @@ class ResNet38(nn.Module):
 
 
 class ResNet54(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
 
         # Spec augmenter
@@ -1844,8 +2067,7 @@ class ResNet54(nn.Module):
 
 
 class Res1dNet31(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, classes_num, **kwargs):
         super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
@@ -1888,8 +2110,7 @@ class Res1dNet31(nn.Module):
 
 
 class Res1dNet51(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, classes_num, **kwargs):
         super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
@@ -1932,32 +2153,45 @@ class Res1dNet51(nn.Module):
 
 
 class MobileNetV1(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
 
         # Spec augmenter
@@ -2054,32 +2288,45 @@ class MobileNetV1(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
+                 fmax, classes_num, **kwargs):
+        """
+
+        Args:
+            sample_rate:
+            window_size:
+            hop_size:
+            mel_bins:
+            fmin:
+            fmax:
+            classes_num:
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+                'ref', 'amin', 'top_db' for LogmelFilterbank
+        """
 
         super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
                                                  hop_length=hop_size,
                                                  win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
+                                                 window=kwargs.get('window',
+                                                                   'hann'),
+                                                 center=kwargs.get('center',
+                                                                   True),
+                                                 pad_mode=kwargs.get(
+                                                         'pad_mode', 'reflect'),
                                                  freeze_parameters=True)
 
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=window_size,
                                                  n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
+                                                 fmax=fmax,
+                                                 ref=kwargs.get('ref', 1.0),
+                                                 amin=kwargs.get('amin', 1e-10),
+                                                 top_db=kwargs.get('top_db',
+                                                                   None),
                                                  freeze_parameters=True)
 
         # Spec augmenter
@@ -2189,8 +2436,7 @@ class MobileNetV2(nn.Module):
 
 
 class LeeNet11(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, classes_num, **kwargs):
         super().__init__()
 
         self.conv_block1 = _LeeNetConvBlock(1, 64, 3, 3)
@@ -2241,8 +2487,7 @@ class LeeNet11(nn.Module):
 
 
 class LeeNet24(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, classes_num, **kwargs):
         super().__init__()
 
         self.conv_block1 = _LeeNetConvBlock2(1, 64, 3, 3)
@@ -2301,8 +2546,7 @@ class LeeNet24(nn.Module):
 
 
 class DaiNet19(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+    def __init__(self, *, classes_num, **kwargs):
         super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=80,
