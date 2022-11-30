@@ -110,17 +110,15 @@ def train(*, hdf5_files_path_train,
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=0.,
                            amsgrad=True)
 
-    # Parallel
-    device = (torch.device('cuda') if (cuda and torch.cuda.is_available())
-              else torch.device('cpu'))
-
-    model = torch.nn.DataParallel(model)
-    model.to(device)
-
-    if 'cuda' in str(device):
+    # Device
+    if cuda:
+        device = torch.device('cuda')
         logging.info('Using GPU.')
         logging.info('GPU number: {}'.format(torch.cuda.device_count()))
+        model = torch.nn.DataParallel(model)
+        model.to(device)
     else:
+        device = torch.device('cpu')
         logging.info('Using CPU. Set --cuda flag to use GPU.')
 
     iteration = 0
