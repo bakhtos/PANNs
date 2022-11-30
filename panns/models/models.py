@@ -22,7 +22,6 @@ __all__ = ['Cnn6',
            'Cnn14Emb32',
            'Cnn14Wavegram',
            'Cnn14WavegramLogmel',
-           'Cnn14WavegramLogmel128',
            'ResNet22',
            'ResNet38',
            'ResNet54',
@@ -1451,7 +1450,7 @@ class Cnn14Wavegram(nn.Module):
 
 class Cnn14WavegramLogmel(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
+                 fmax, classes_num, multiplier=1):
 
         super().__init__()
 
@@ -1462,13 +1461,14 @@ class Cnn14WavegramLogmel(nn.Module):
         amin = 1e-10
         top_db = None
 
+        self.multiplier = multiplier
         self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
                                    kernel_size=11, stride=5, padding=5,
                                    bias=False)
         self.pre_bn0 = nn.BatchNorm1d(64)
         self.pre_block1 = _ConvPreWavBlock(64, 64)
         self.pre_block2 = _ConvPreWavBlock(64, 128)
-        self.pre_block3 = _ConvPreWavBlock(128, 128)
+        self.pre_block3 = _ConvPreWavBlock(128, 128*multiplier)
         self.pre_block4 = ConvBlock(in_channels=4, out_channels=64)
 
         # Spectrogram extractor
@@ -1490,10 +1490,10 @@ class Cnn14WavegramLogmel(nn.Module):
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
                                                 time_stripes_num=2,
-                                                freq_drop_width=8,
+                                                freq_drop_width=8*multiplier,
                                                 freq_stripes_num=2)
 
-        self.bn0 = nn.BatchNorm2d(64)
+        self.bn0 = nn.BatchNorm2d(64*multiplier)
 
         self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
         self.conv_block2 = ConvBlock(in_channels=128, out_channels=128)
@@ -1520,127 +1520,8 @@ class Cnn14WavegramLogmel(nn.Module):
         a1 = self.pre_block1(a1, pool_size=4)
         a1 = self.pre_block2(a1, pool_size=4)
         a1 = self.pre_block3(a1, pool_size=4)
-        a1 = a1.reshape((a1.shape[0], -1, 32, a1.shape[-1])).transpose(2, 3)
-        a1 = self.pre_block4(a1, pool_size=(2, 1))
-
-        # Log mel spectrogram
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
-
-        x = x.transpose(1, 3)
-        x = self.bn0(x)
-        x = x.transpose(1, 3)
-
-        if self.training:
-            x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
-            a1 = mixup(a1, mixup_lambda)
-
-        x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
-
-        # Concatenate Wavegram and Log mel spectrogram along the channel dimension
-        x = torch.cat((x, a1), dim=1)
-
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
-        x = torch.mean(x, dim=3)
-
-        (x1, _) = torch.max(x, dim=2)
-        x2 = torch.mean(x, dim=2)
-        x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu_(self.fc1(x))
-        embedding = F.dropout(x, p=0.5, training=self.training)
-        clipwise_output = torch.sigmoid(self.fc_audioset(x))
-
-        return clipwise_output, embedding
-
-
-class Cnn14WavegramLogmel128(nn.Module):
-    def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num):
-
-        super().__init__()
-
-        window = 'hann'
-        center = True
-        pad_mode = 'reflect'
-        ref = 1.0
-        amin = 1e-10
-        top_db = None
-
-        self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
-                                   kernel_size=11, stride=5, padding=5,
-                                   bias=False)
-        self.pre_bn0 = nn.BatchNorm1d(64)
-        self.pre_block1 = _ConvPreWavBlock(64, 64)
-        self.pre_block2 = _ConvPreWavBlock(64, 128)
-        self.pre_block3 = _ConvPreWavBlock(128, 256)
-        self.pre_block4 = ConvBlock(in_channels=4, out_channels=64)
-
-        # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=window_size,
-                                                 hop_length=hop_size,
-                                                 win_length=window_size,
-                                                 window=window, center=center,
-                                                 pad_mode=pad_mode,
-                                                 freeze_parameters=True)
-
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=window_size,
-                                                 n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax, ref=ref, amin=amin,
-                                                 top_db=top_db,
-                                                 freeze_parameters=True)
-
-        # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=16,
-                                                freq_stripes_num=2)
-
-        self.bn0 = nn.BatchNorm2d(128)
-
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=128, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
-
-        self.fc1 = nn.Linear(2048, 2048, bias=True)
-        self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
-
-        init_layer(self.pre_conv0)
-        init_bn(self.pre_bn0)
-        init_bn(self.bn0)
-        init_layer(self.fc1)
-        init_layer(self.fc_audioset)
-
-    def forward(self, batch, mixup_lambda=None):
-        """
-        Input: (batch_size, data_length)"""
-
-        # Wavegram
-        a1 = F.relu_(self.pre_bn0(self.pre_conv0(batch[:, None, :])))
-        a1 = self.pre_block1(a1, pool_size=4)
-        a1 = self.pre_block2(a1, pool_size=4)
-        a1 = self.pre_block3(a1, pool_size=4)
-        a1 = a1.reshape((a1.shape[0], -1, 64, a1.shape[-1])).transpose(2, 3)
+        a1 = a1.reshape((a1.shape[0], -1, 32*self.multiplier,
+                        a1.shape[-1])).transpose(2, 3)
         a1 = self.pre_block4(a1, pool_size=(2, 1))
 
         # Log mel spectrogram
