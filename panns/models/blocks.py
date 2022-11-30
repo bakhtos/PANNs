@@ -774,7 +774,7 @@ class _DropStripes(nn.Module):
 class _SpecAugmentation(nn.Module):
     def __init__(self, time_drop_width, time_stripes_num, freq_drop_width,
                  freq_stripes_num):
-        """Spec augmetation.
+        """Spec augmentation.
         [ref] Park, D.S., Chan, W., Zhang, Y., Chiu, C.C., Zoph, B., Cubuk, E.D.
         and Le, Q.V., 2019. Specaugment: A simple data augmentation method
         for automatic speech recognition. arXiv preprint arXiv:1904.08779.
