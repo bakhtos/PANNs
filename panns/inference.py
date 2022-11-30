@@ -17,7 +17,6 @@ def inference(*, hdf5_files_path_eval,
               checkpoint_path,
               model,
               cuda=False,
-              sed=False,
               num_workers=8, batch_size=32):
     """Obtain audio tagging or sound event detection results from a model.
 
@@ -39,8 +38,6 @@ def inference(*, hdf5_files_path_eval,
     :param int fmax: Maximum frequency used in Logmel filterbank of the model
     :param bool cuda: If True, try to use GPU for inference (default False)
     :param int classes_num: Amount of classes used in the dataset (default 110)
-    :param bool sed: If True, perform Sound Event Detection, otherwise Audio Tagging
-                     (default False)
     :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
                             (default 8)
     :param int batch_size: Batch size to use for evaluation (default 32)
@@ -72,12 +69,7 @@ def inference(*, hdf5_files_path_eval,
 
     clipwise_output, second_output, _, _ = forward(model, eval_loader)
 
-    if sed:
-        result = second_output
-    else:
-        result = clipwise_output
-
-    return result
+    return clipwise_output, second_output
 
 
 def detect_events(*, frame_probabilities,
@@ -199,8 +191,6 @@ if __name__ == '__main__':
                         help="Batch size to use for training/evaluation (default 32)")
     parser.add_argument('--cuda', action='store_true', default=False,
                         help="If set, try to use GPU for training")
-    parser.add_argument('--sed', action='store_true', default=False,
-                        help='If set, perform Sound Event Detection, otherwise Audio Tagging')
     parser.add_argument('--classes_num', type=int, default=110,
                         help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
@@ -219,19 +209,19 @@ if __name__ == '__main__':
                                     args.window_size, args.hop_size,
                                     args.mel_bins, args.fmin, args.fmax,
                                     args.classes_num)
-    results = inference(
-            hdf5_files_path_eval=args.hdf5_files_path_eval,
-            target_weak_path_eval=args.target_weak_path_eval,
-            model=model,
-            checkpoint_path=args.checkpoint_path,
-            batch_size=args.batch_size,
-            cuda=args.cuda, sed=args.sed,
-            num_workers=args.num_workers)
+    _, results = inference(hdf5_files_path_eval=args.hdf5_files_path_eval,
+                           target_weak_path_eval=args.target_weak_path_eval,
+                           model=model,
+                           checkpoint_path=args.checkpoint_path,
+                           batch_size=args.batch_size,
+                           cuda=args.cuda,
+                           num_workers=args.num_workers)
 
     audio_names = np.load(args.audio_names_path)
 
     ids, _, _, _ = get_labels(args.class_labels_path,
                               args.selected_classes_path)
+
     detect_events(frame_probabilities=results,
                   label_id_list=ids,
                   filenames=audio_names,
