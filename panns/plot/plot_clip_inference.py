@@ -2,73 +2,53 @@ import os
 import argparse
 
 import numpy as np
-import librosa.load, librosa.stft
+import librosa
 import matplotlib.pyplot as plt
 import torch
 
-from panns.models import *
+import panns.models
+from panns.utils.metadata_utils import get_labels
 
 
-def inference(*, audio_path,
-                 checkpoint_path,
-                 model_type,
-                 window_size=1024,
-                 hop_size=320,
-                 sample_rate=32000,
-                 mel_bins=64,
-                 fmin=50, fmax=14000,
-                 cuda=False,
-                 classes_num=110,
-                 sed=False, verbose=False):
+@torch.no_grad()
+def inference(*, model,
+              audio_path,
+              labels,
+              win_length=1024,
+              hop_length=320,
+              sample_rate=32000,
+              top_k=10,
+              cuda=False,
+              sed=False):
     """Perform Audio Tagging or Sound Event Detection of an audio clip with a pre-trained model.
 
-    If trying to perform SED on a non-SED model, prints a warning and performs
-    Audio Tagging instead.
-    If used with verbose=True, will also print the top-10 classes and save a figure
-    of SED results in './figures/AUDIO_NAME.png', otherwise simply returns
-    the model output and list of class labels.
+    The figure of top classes' detections drawn on top of spectrogram is
+    saved next to the audio.
 
-    :param str audio_path: WAV audiofile to be used for inference
-    :param str checkpoint_path: Read a checkpoint to be used for inference from this path
-    :param str model_type: Name of model to train (one of the model classes defined in models.py)
-    :param int window_size: Window size of filter to be used in training (default 1024)
-    :param int hop_size: Hop size of filter to be used in traning (default 320)
-    :param int sample_rate: Sample rate of the used audio clips (default 32000)
-    :param int mel_bins: Amount of mel filters to use in the filterbank (default 64)
-    :param int fmin: Minimum frequency to be used when creating Logmel filterbank (default 50)
-    :param int fmax: Maximum frequency to be used when creating Logmel filterbank (default 14000)
-    :param bool cuda: If True, try to use GPU for traning (default False)
-    :param int classes_num: Amount of classes used in the dataset (default 110)
-    :param bool sed: If True, perform SED, otherwise Audio Tagging (default False)
-    :param bool verbose: If True, print top 10 classes and save a SED figure (default False)
-    :return result: Either clipwise or framewise output of the model (for AT/SED respectively)
-    :rtype numpy.ndarray:
-    :return labels: List of labels in order used in the resulting matrix
-    :rtype list[str]:
-    :raises ValueError: If model_type not found in defined models
+    Parameters
+    __________
+    model : torch.nn.Module subclass,
+        Model object to use
+    audio_path : str,
+        WAV audiofile to be used for inference
+    labels: numpy.ndarray,
+        Array of class labels in the same order they are store in model
+    win_length : int,
+        Length of the Hanning window used for spectrogram extraction
+    hop_length : int,
+        Hop length of the Hanning window used for spectrogram extraction
+    sample_rate : int,
+        Sample rate of the used audio clips (default 32000)
+    top_k : int,
+        Use that much top-rated classes in outputs
+    cuda : bool,
+        If True, try to use GPU for training (default False)
+    sed : bool,
+        If True, perform SED, otherwise Audio Tagging (default False)
     """
-    
-    _,labels,_,_,_,_ = get_labels_metadata()
 
-    # Model
-    if model_type in panns.models.__all__:
-        Model = eval(model_type)
-    else:
-        raise ValueError(f"'{model_type}' is not among the defined models.")
-
-    model = Model(sample_rate=sample_rate, window_size=window_size, 
-        hop_size=hop_size, mel_bins=mel_bins, fmin=fmin, fmax=fmax, 
-        classes_num=classes_num)
-
-    if sed and not model.sed_model:
-        print(f"Warning! Asked to perform SED but {model_type} is not a SED model."
-              "Performing Audio Tagging instead.")
-        sed = False
-    
-    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) else torch.device('cpu')
-
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint['model'])
+    device = torch.device('cuda') if (
+                cuda and torch.cuda.is_available()) else torch.device('cpu')
 
     # Parallel
     if device.type == 'cuda':
@@ -77,68 +57,68 @@ def inference(*, audio_path,
         model = torch.nn.DataParallel(model)
     else:
         print('Using CPU.')
-    
+
     # Load audio
     waveform, _ = librosa.load(audio_path, sr=sample_rate, mono=True)
 
-    waveform = waveform[None, :]    # (1, audio_length)
-    waveform = move_data_to_device(waveform, device)
+    model_input = torch.Tensor(waveform[None, :], device=device)
 
     # Forward
-    with torch.no_grad():
-        model.eval()
-        # framewise_output can be 'embedding' if non-sed model is used
-        clipwise_output, framewise_output = model(waveform, None)
+    model.eval()
+    # framewise_output can be 'embedding' if non-sed model is used
+    clipwise_output, framewise_output = model(model_input, None)
 
     if sed:
-        result = framewise_output.data.cpu().numpy()[0] # shape = (time_steps, classes_num)
-        if verbose:
-            sorted_indexes = np.argsort(np.max(result, axis=0))[::-1]
-            top_result_mat = result[:, sorted_indexes[0:10]]
-            stft = librosa.stft(y=waveform[0].data.cpu().numpy(), n_fft=window_size,
-                hop_length=hop_size, window='hann', center=True)
-            frames_num = stft.shape[-1]
-            frames_per_second = sample_rate // hop_size
+        result = framewise_output.data.cpu().numpy()[
+            0]  # shape = (time_steps, classes_num)
+        sorted_indexes = np.argsort(np.max(result, axis=0))[::-1]
+        top_result_mat = result[:, sorted_indexes[0:top_k]]
+        stft = librosa.stft(y=waveform, n_fft=win_length,
+                            hop_length=hop_length, window='hann', center=True)
+        frames_num = stft.shape[-1]
+        frames_per_second = sample_rate // hop_length
 
+        fig, axs = plt.subplots(2, 1, sharex=True, figsize=(10, 4))
+        axs[0].matshow(np.log(np.abs(stft)), origin='lower', aspect='auto',
+                       cmap='jet')
+        axs[0].set_ylabel('Frequency bins')
+        axs[0].set_title('Log spectrogram')
+        axs[1].matshow(top_result_mat.T, origin='upper', aspect='auto',
+                       cmap='jet', vmin=0, vmax=1)
+        axs[1].xaxis.set_ticks(np.arange(0, frames_num, frames_per_second))
+        axs[1].xaxis.set_ticklabels(
+            np.arange(0, frames_num / frames_per_second))
+        axs[1].yaxis.set_ticks(np.arange(0, top_k))
+        axs[1].yaxis.set_ticklabels(np.array(labels)[sorted_indexes[0: top_k]])
+        axs[1].yaxis.grid(color='k', linestyle='solid', linewidth=0.3,
+                          alpha=0.3)
+        axs[1].set_xlabel('Seconds')
+        axs[1].xaxis.set_ticks_position('bottom')
+        plt.tight_layout()
 
-            fig, axs = plt.subplots(2, 1, sharex=True, figsize=(10, 4))
-            axs[0].matshow(np.log(np.abs(stft)), origin='lower', aspect='auto', cmap='jet')
-            axs[0].set_ylabel('Frequency bins')
-            axs[0].set_title('Log spectrogram')
-            axs[1].matshow(top_result_mat.T, origin='upper', aspect='auto', cmap='jet', vmin=0, vmax=1)
-            axs[1].xaxis.set_ticks(np.arange(0, frames_num, frames_per_second))
-            axs[1].xaxis.set_ticklabels(np.arange(0, frames_num / frames_per_second))
-            axs[1].yaxis.set_ticks(np.arange(0, top_k))
-            axs[1].yaxis.set_ticklabels(np.array(labels)[sorted_indexes[0 : top_k]])
-            axs[1].yaxis.grid(color='k', linestyle='solid', linewidth=0.3, alpha=0.3)
-            axs[1].set_xlabel('Seconds')
-            axs[1].xaxis.set_ticks_position('bottom')
-            plt.tight_layout()
-            os.makedirs('figures', exist_ok=True)
-
-            fig_name = os.path.splitext(os.path.split(audio_path)) + '.png'
-            fig_path = os.path.join('figures', fig_name)
-            print(f'Save sound event detection visualization of {audio_path} to {fig_path}.')
-            plt.savefig(fig_path)
+        fig_path = os.path.splitext(audio_path)[1] + '.png'
+        print('Save sound event detection visualization' 
+              f'of {audio_path} to {fig_path}.')
+        plt.savefig(fig_path)
 
     else:
-        result = clipwise_output.data.cpu().numpy()[0] # shape = (classes_num,)
-        if verbose:
-            sorted_indexes = np.argsort(result)[::-1]
-            # Print audio tagging top probabilities
-            for k in range(10):
-                print(labels[sorted_indexes[k]], f"{result[sorted_indexes[k]]}:.3f")
-
-    return result, labels
+        result = clipwise_output.data.cpu().numpy()[0]  # shape = (classes_num,)
+        sorted_indexes = np.argsort(result)[::-1]
+        # Print audio tagging top probabilities
+        for k in range(top_k):
+            print(labels[sorted_indexes[k]], f"{result[sorted_indexes[k]]}:.3f")
 
 
 if __name__ == '__main__':
-
     parser = argparse.ArgumentParser()
     parser.add_argument('--audio_path', type=str, required=True,
                         help='WAV audiofile to be analyzed.')
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help='Model checkpoint to use for inference.')
+    parser.add_argument('--class_labels_path', type=str, required=True,
+                        help="Dataset labels in tsv format (in 'Reformatted' format)")
+    parser.add_argument('--selected_classes_path', type=str, required=True,
+                        help="List of class ids selected for training, one per line")
     parser.add_argument('--model_type', type=str, required=True,
                         help='Name of class which model is used.')
     parser.add_argument('--window_size', type=int, default=1024,
@@ -164,14 +144,22 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    inference(audio_path=args.audio_path,
-              checkpoint_path=args.checkpoint_path,
-              model_type=args.model_type,
-              window_size=args.window_size,
-              hop_size=args.hop_size,
+    _, labels, _, _ = get_labels(args.class_labels_path,
+                                 args.selected_classes_path)
+
+    model = panns.models.load_model(model=args.model_type,
+                                    win_length=args.window_size,
+                                    hop_length=args.hop_size,
+                                    sample_rate=args.sample_rate,
+                                    n_mels=args.mel_bins,
+                                    f_min=args.fmin, f_max=args.fmax,
+                                    classes_num=args.classes_num,
+                                    checkpoint=args.checkpoint_path)
+    inference(model=model,
+              audio_path=args.audio_path,
+              label=labels,
+              win_length=args.window_size,
+              hop_length=args.hop_size,
               sample_rate=args.sample_rate,
-              mel_bins=args.mel_bins,
-              fmin=args.fmin, fmax=args.fmax,
               cuda=args.cuda,
-              classes_num=args.classes_num,
               sed=args.sed, verbose=args.verbose)
