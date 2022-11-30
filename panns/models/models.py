@@ -9,22 +9,22 @@ from .blocks import *
 __all__ = ['Cnn6',
            'Cnn10',
            'Cnn14',
-           'Cnn14_no_specaug',
-           'Cnn14_no_dropout',
+           'Cnn14NoSpecaug',
+           'Cnn14NoDropout',
            'Cnn14_16k',
            'Cnn14_8k',
-           'Cnn14_mixup_time_domain',
-           'Cnn14_mel32',
-           'Cnn14_mel128',
-           'Cnn14_DecisionLevelMax',
-           'Cnn14_DecisionLevelAvg',
-           'Cnn14_DecisionLevelAtt',
-           'Cnn14_emb512',
-           'Cnn14_emb128',
-           'Cnn14_emb32',
-           'Wavegram_Cnn14',
-           'Wavegram_Logmel_Cnn14',
-           'Wavegram_Logmel128_Cnn14',
+           'Cnn14MixupTimeDomain',
+           'Cnn14Mel32',
+           'Cnn14Mel128',
+           'Cnn14DecisionLevelMax',
+           'Cnn14DecisionLevelAvg',
+           'Cnn14DecisionLevelAtt',
+           'Cnn14Emb512',
+           'Cnn14Emb128',
+           'Cnn14Emb32',
+           'Cnn14Wavegram',
+           'Cnn14WavegramLogmel',
+           'Cnn14WavegramLogmel128',
            'ResNet22',
            'ResNet38',
            'ResNet54',
@@ -43,7 +43,7 @@ class Cnn6(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn6, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -131,7 +131,7 @@ class Cnn10(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn10, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -220,7 +220,7 @@ class Cnn14(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -311,10 +311,10 @@ class Cnn14(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_no_specaug(nn.Module):
+class Cnn14NoSpecaug(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
-        super(Cnn14_no_specaug, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -396,11 +396,11 @@ class Cnn14_no_specaug(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_no_dropout(nn.Module):
+class Cnn14NoDropout(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_no_dropout, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -489,7 +489,7 @@ class Cnn14_16k(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin, fmax,
                  classes_num):
 
-        super(Cnn14_16k, self).__init__()
+        super().__init__()
 
         assert sample_rate == 16000
         assert window_size == 512
@@ -591,7 +591,7 @@ class Cnn14_8k(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin, fmax,
                  classes_num):
 
-        super(Cnn14_8k, self).__init__()
+        super().__init__()
 
         assert sample_rate == 8000
         assert window_size == 256
@@ -689,11 +689,11 @@ class Cnn14_8k(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_mixup_time_domain(nn.Module):
+class Cnn14MixupTimeDomain(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_mixup_time_domain, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -786,11 +786,11 @@ class Cnn14_mixup_time_domain(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_mel32(nn.Module):
+class Cnn14Mel32(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_mel32, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -881,11 +881,11 @@ class Cnn14_mel32(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_mel128(nn.Module):
+class Cnn14Mel128(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_mel128, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -976,11 +976,11 @@ class Cnn14_mel128(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_DecisionLevelMax(nn.Module):
+class Cnn14DecisionLevelMax(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_DecisionLevelMax, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1081,11 +1081,11 @@ class Cnn14_DecisionLevelMax(nn.Module):
         return clipwise_output, framewise_output
 
 
-class Cnn14_DecisionLevelAvg(nn.Module):
+class Cnn14DecisionLevelAvg(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_DecisionLevelAvg, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1186,11 +1186,11 @@ class Cnn14_DecisionLevelAvg(nn.Module):
         return clipwise_output, framewise_output
 
 
-class Cnn14_DecisionLevelAtt(nn.Module):
+class Cnn14DecisionLevelAtt(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_DecisionLevelAtt, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1291,11 +1291,11 @@ class Cnn14_DecisionLevelAtt(nn.Module):
         return clipwise_output, framewise_output
 
 
-class Cnn14_emb512(nn.Module):
+class Cnn14Emb512(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_emb512, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1386,11 +1386,11 @@ class Cnn14_emb512(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_emb128(nn.Module):
+class Cnn14Emb128(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_emb128, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1481,11 +1481,11 @@ class Cnn14_emb128(nn.Module):
         return clipwise_output, embedding
 
 
-class Cnn14_emb32(nn.Module):
+class Cnn14Emb32(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Cnn14_emb32, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1576,10 +1576,10 @@ class Cnn14_emb32(nn.Module):
         return clipwise_output, embedding
 
 
-class Wavegram_Cnn14(nn.Module):
+class Cnn14Wavegram(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
-        super(Wavegram_Cnn14, self).__init__()
+        super().__init__()
 
         self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
                                    kernel_size=11, stride=5, padding=5,
@@ -1655,11 +1655,11 @@ class Wavegram_Cnn14(nn.Module):
         return clipwise_output, embedding
 
 
-class Wavegram_Logmel_Cnn14(nn.Module):
+class Cnn14WavegramLogmel(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Wavegram_Logmel_Cnn14, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1775,11 +1775,11 @@ class Wavegram_Logmel_Cnn14(nn.Module):
         return clipwise_output, embedding
 
 
-class Wavegram_Logmel128_Cnn14(nn.Module):
+class Cnn14WavegramLogmel128(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(Wavegram_Logmel128_Cnn14, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1899,7 +1899,7 @@ class ResNet22(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(ResNet22, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -1990,7 +1990,7 @@ class ResNet38(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(ResNet38, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -2081,7 +2081,7 @@ class ResNet54(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(ResNet54, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -2171,7 +2171,7 @@ class ResNet54(nn.Module):
 class Res1dNet31(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
-        super(Res1dNet31, self).__init__()
+        super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
@@ -2215,7 +2215,7 @@ class Res1dNet31(nn.Module):
 class Res1dNet51(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
-        super(Res1dNet51, self).__init__()
+        super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
@@ -2260,7 +2260,7 @@ class MobileNetV1(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(MobileNetV1, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -2382,7 +2382,7 @@ class MobileNetV2(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
 
-        super(MobileNetV2, self).__init__()
+        super().__init__()
 
         window = 'hann'
         center = True
@@ -2517,7 +2517,7 @@ class MobileNetV2(nn.Module):
 class LeeNet11(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
-        super(LeeNet11, self).__init__()
+        super().__init__()
 
         self.conv_block1 = _LeeNetConvBlock(1, 64, 3, 3)
         self.conv_block2 = _LeeNetConvBlock(64, 64, 3, 1)
@@ -2569,7 +2569,7 @@ class LeeNet11(nn.Module):
 class LeeNet24(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
-        super(LeeNet24, self).__init__()
+        super().__init__()
 
         self.conv_block1 = _LeeNetConvBlock2(1, 64, 3, 3)
         self.conv_block2 = _LeeNetConvBlock2(64, 96, 3, 1)
@@ -2629,7 +2629,7 @@ class LeeNet24(nn.Module):
 class DaiNet19(nn.Module):
     def __init__(self, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num):
-        super(DaiNet19, self).__init__()
+        super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=80,
                                stride=4, padding=0, bias=False)
