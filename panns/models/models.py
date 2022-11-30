@@ -723,12 +723,6 @@ class Cnn14Wavegram(nn.Module):
         self.pre_block3 = _ConvPreWavBlock(128, 128)
         self.pre_block4 = _ConvBlock(in_channels=4, out_channels=64)
 
-        # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
-
         self.bn0 = nn.BatchNorm2d(64)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
