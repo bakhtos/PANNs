@@ -4,9 +4,9 @@ import torch.nn.functional as F
 
 __all__ = ['init_layer',
            'init_bn',
-           'ConvBlock',
-           'ConvBlock5x5',
-           'AttBlock',
+           '_ConvBlock',
+           '_ConvBlock5x5',
+           '_AttBlock',
            '_resnet_conv3x3',
            '_resnet_conv1x1',
            '_ResnetBasicBlock',
@@ -44,10 +44,10 @@ def init_bn(bn):
     bn.weight.data.fill_(1.)
 
 
-class ConvBlock(nn.Module):
+class _ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
 
-        super(ConvBlock, self).__init__()
+        super().__init__()
 
         self.conv1 = nn.Conv2d(in_channels=in_channels,
                                out_channels=out_channels,
@@ -88,10 +88,16 @@ class ConvBlock(nn.Module):
         return x
 
 
-class ConvBlock5x5(nn.Module):
+class _ConvBlock5x5(nn.Module):
     def __init__(self, in_channels, out_channels):
+        """
 
-        super(ConvBlock5x5, self).__init__()
+        Args:
+            in_channels:
+            out_channels:
+        """
+
+        super().__init__()
 
         self.conv1 = nn.Conv2d(in_channels=in_channels,
                                out_channels=out_channels,
@@ -123,9 +129,17 @@ class ConvBlock5x5(nn.Module):
         return x
 
 
-class AttBlock(nn.Module):
+class _AttBlock(nn.Module):
     def __init__(self, n_in, n_out, activation='linear', temperature=1.):
-        super(AttBlock, self).__init__()
+        """
+
+        Args:
+            n_in:
+            n_out:
+            activation: 'linear' or 'sigmoid'
+            temperature: default 1.0
+        """
+        super().__init__()
 
         self.activation = activation
         self.temperature = temperature
@@ -172,7 +186,7 @@ class _ResnetBasicBlock(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
-        super(_ResnetBasicBlock, self).__init__()
+        super().__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
@@ -238,7 +252,7 @@ class _ResnetBottleneck(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
-        super(_ResnetBottleneck, self).__init__()
+        super().__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         width = int(planes * (base_width / 64.)) * groups
@@ -303,7 +317,20 @@ class _ResNet(nn.Module):
                  groups=1, width_per_group=64,
                  replace_stride_with_dilation=None,
                  norm_layer=None):
-        super(_ResNet, self).__init__()
+        """
+
+        Args:
+            block:
+            layers:
+            zero_init_residual:
+            groups:
+            width_per_group:
+            replace_stride_with_dilation: 3-tuple of bools;
+                indicates whether to replace stride with dilation in
+                each of the three layers (default (False, False, False))
+            norm_layer:
+        """
+        super().__init__()
 
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
@@ -380,7 +407,7 @@ class _ResNet(nn.Module):
 
 class _InvertedResidual(nn.Module):
     def __init__(self, inp, oup, stride, expand_ratio):
-        super(_InvertedResidual, self).__init__()
+        super().__init__()
         self.stride = stride
         assert stride in [1, 2]
 
@@ -434,7 +461,7 @@ class _InvertedResidual(nn.Module):
 
 class _LeeNetConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
-        super(_LeeNetConvBlock, self).__init__()
+        super().__init__()
 
         self.conv1 = nn.Conv1d(in_channels=in_channels,
                                out_channels=out_channels,
@@ -464,7 +491,7 @@ class _LeeNetConvBlock(nn.Module):
 
 class _LeeNetConvBlock2(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
-        super(_LeeNetConvBlock2, self).__init__()
+        super().__init__()
 
         self.conv1 = nn.Conv1d(in_channels=in_channels,
                                out_channels=out_channels,
@@ -504,7 +531,7 @@ class _LeeNetConvBlock2(nn.Module):
 class _DaiNetResBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size):
 
-        super(_DaiNetResBlock, self).__init__()
+        super().__init__()
 
         self.conv1 = nn.Conv1d(in_channels=in_channels,
                                out_channels=out_channels,
@@ -589,7 +616,7 @@ class _ResnetBasicBlockWav1d(nn.Module):
 
     def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
-        super(_ResnetBasicBlockWav1d, self).__init__()
+        super().__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm1d
         if groups != 1 or base_width != 64:
@@ -655,7 +682,20 @@ class _ResNetWav1d(nn.Module):
                  groups=1, width_per_group=64,
                  replace_stride_with_dilation=None,
                  norm_layer=None):
-        super(_ResNetWav1d, self).__init__()
+        """
+
+        Args:
+            block:
+            layers:
+            zero_init_residual:
+            groups:
+            width_per_group:
+            replace_stride_with_dilation: 3-tuple of bools;
+                indicates whether to replace stride with dilation in
+                each of the three layers
+            norm_layer:
+        """
+        super().__init__()
 
         if norm_layer is None:
             norm_layer = nn.BatchNorm1d
@@ -736,7 +776,7 @@ class _ResNetWav1d(nn.Module):
 
 class _ConvPreWavBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super(_ConvPreWavBlock, self).__init__()
+        super().__init__()
 
         self.conv1 = nn.Conv1d(in_channels=in_channels,
                                out_channels=out_channels,
@@ -783,7 +823,7 @@ class _DropStripes(nn.Module):
           :param int drop_width: Maximum width of stripes to drop
           :param int stripes_num: How many stripes to drop
         """
-        super(_DropStripes, self).__init__()
+        super().__init__()
 
         assert dim in [2, 3]  # dim 2: time; dim 3: frequency
 
@@ -841,7 +881,7 @@ class _SpecAugmentation(nn.Module):
           freq_stripes_num: int
         """
 
-        super(_SpecAugmentation, self).__init__()
+        super().__init__()
 
         self.time_dropper = _DropStripes(dim=2, drop_width=time_drop_width,
                                          stripes_num=time_stripes_num)

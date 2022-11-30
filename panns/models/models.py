@@ -73,10 +73,10 @@ class Cnn6(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock5x5(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock5x5(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock5x5(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock5x5(in_channels=256, out_channels=512)
+        self.conv_block1 = _ConvBlock5x5(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock5x5(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock5x5(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock5x5(in_channels=256, out_channels=512)
 
         self.fc1 = nn.Linear(512, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
@@ -161,10 +161,10 @@ class Cnn10(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
 
         self.fc1 = nn.Linear(512, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
@@ -250,12 +250,12 @@ class Cnn14(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -338,12 +338,12 @@ class Cnn14NoSpecaug(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -430,12 +430,12 @@ class Cnn14NoDropout(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -519,12 +519,12 @@ class Cnn14MixupTimeDomain(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -616,12 +616,12 @@ class Cnn14Mel32(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(32)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -711,12 +711,12 @@ class Cnn14Mel128(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(128)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -807,12 +807,12 @@ class Cnn14DecisionLevelMax(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -912,12 +912,12 @@ class Cnn14DecisionLevelAvg(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -1017,15 +1017,15 @@ class Cnn14DecisionLevelAtt(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
-        self.att_block = AttBlock(2048, classes_num, activation='sigmoid')
+        self.att_block = _AttBlock(2048, classes_num, activation='sigmoid')
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1121,12 +1121,12 @@ class Cnn14Emb512(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 512, bias=True)
         self.fc_audioset = nn.Linear(512, classes_num, bias=True)
@@ -1216,12 +1216,12 @@ class Cnn14Emb128(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 128, bias=True)
         self.fc_audioset = nn.Linear(128, classes_num, bias=True)
@@ -1311,12 +1311,12 @@ class Cnn14Emb32(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 32, bias=True)
         self.fc_audioset = nn.Linear(32, classes_num, bias=True)
@@ -1381,7 +1381,7 @@ class Cnn14Wavegram(nn.Module):
         self.pre_block1 = _ConvPreWavBlock(64, 64)
         self.pre_block2 = _ConvPreWavBlock(64, 128)
         self.pre_block3 = _ConvPreWavBlock(128, 128)
-        self.pre_block4 = ConvBlock(in_channels=4, out_channels=64)
+        self.pre_block4 = _ConvBlock(in_channels=4, out_channels=64)
 
         # Spec augmenter
         self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
@@ -1391,12 +1391,12 @@ class Cnn14Wavegram(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -1469,7 +1469,7 @@ class Cnn14WavegramLogmel(nn.Module):
         self.pre_block1 = _ConvPreWavBlock(64, 64)
         self.pre_block2 = _ConvPreWavBlock(64, 128)
         self.pre_block3 = _ConvPreWavBlock(128, 128*multiplier)
-        self.pre_block4 = ConvBlock(in_channels=4, out_channels=64)
+        self.pre_block4 = _ConvBlock(in_channels=4, out_channels=64)
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=window_size,
@@ -1495,12 +1495,12 @@ class Cnn14WavegramLogmel(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64*multiplier)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = ConvBlock(in_channels=128, out_channels=128)
-        self.conv_block3 = ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = ConvBlock(in_channels=1024, out_channels=2048)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=128, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -1607,13 +1607,13 @@ class ResNet22(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
         # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
         self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[2, 2, 2, 2],
                               zero_init_residual=True)
 
-        self.conv_block_after1 = ConvBlock(in_channels=512, out_channels=2048)
+        self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -1698,13 +1698,13 @@ class ResNet38(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
         # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
         self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[3, 4, 6, 3],
                               zero_init_residual=True)
 
-        self.conv_block_after1 = ConvBlock(in_channels=512, out_channels=2048)
+        self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -1789,13 +1789,13 @@ class ResNet54(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(64)
 
-        self.conv_block1 = ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
         # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
         self.resnet = _ResNet(block=_ResnetBottleneck, layers=[3, 4, 6, 3],
                               zero_init_residual=True)
 
-        self.conv_block_after1 = ConvBlock(in_channels=2048, out_channels=2048)
+        self.conv_block_after1 = _ConvBlock(in_channels=2048, out_channels=2048)
 
         self.fc1 = nn.Linear(2048, 2048)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -2181,7 +2181,6 @@ class MobileNetV2(nn.Module):
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        # x = F.dropout(x, p=0.5, training=self.training)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
