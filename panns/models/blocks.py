@@ -157,13 +157,13 @@ class AttBlock(nn.Module):
 
 
 def _resnet_conv3x3(in_planes, out_planes):
-    #3x3 convolution with padding
+    # 3x3 convolution with padding
     return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=1,
                      padding=1, groups=1, bias=False, dilation=1)
 
 
 def _resnet_conv1x1(in_planes, out_planes):
-    #1x1 convolution
+    # 1x1 convolution
     return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=1, bias=False)
 
 
@@ -176,9 +176,11 @@ class _ResnetBasicBlock(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         if groups != 1 or base_width != 64:
-            raise ValueError('_ResnetBasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                '_ResnetBasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in _ResnetBasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in _ResnetBasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
 
         self.stride = stride
@@ -298,7 +300,8 @@ class _ResnetBottleneck(nn.Module):
 
 class _ResNet(nn.Module):
     def __init__(self, block, layers, zero_init_residual=False,
-                 groups=1, width_per_group=64, replace_stride_with_dilation=None,
+                 groups=1, width_per_group=64,
+                 replace_stride_with_dilation=None,
                  norm_layer=None):
         super(_ResNet, self).__init__()
 
@@ -314,7 +317,8 @@ class _ResNet(nn.Module):
             replace_stride_with_dilation = [False, False, False]
         if len(replace_stride_with_dilation) != 3:
             raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
+                             "or a 3-element tuple, got {}".format(
+                replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
 
@@ -336,7 +340,8 @@ class _ResNet(nn.Module):
         if stride != 1 or self.inplanes != planes * block.expansion:
             if stride == 1:
                 downsample = nn.Sequential(
-                        _resnet_conv1x1(self.inplanes, planes * block.expansion),
+                        _resnet_conv1x1(self.inplanes,
+                                        planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[0])
@@ -344,19 +349,22 @@ class _ResNet(nn.Module):
             elif stride == 2:
                 downsample = nn.Sequential(
                         nn.AvgPool2d(kernel_size=2),
-                        _resnet_conv1x1(self.inplanes, planes * block.expansion),
+                        _resnet_conv1x1(self.inplanes,
+                                        planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[1])
                 init_bn(downsample[2])
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, self.groups,
-                            self.base_width, previous_dilation, norm_layer))
+        layers.append(
+            block(self.inplanes, planes, stride, downsample, self.groups,
+                  self.base_width, previous_dilation, norm_layer))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes, groups=self.groups,
-                                base_width=self.base_width, dilation=self.dilation,
+                                base_width=self.base_width,
+                                dilation=self.dilation,
                                 norm_layer=norm_layer))
 
         return nn.Sequential(*layers)
@@ -381,7 +389,8 @@ class _InvertedResidual(nn.Module):
 
         if expand_ratio == 1:
             _layers = [
-                nn.Conv2d(hidden_dim, hidden_dim, 3, 1, 1, groups=hidden_dim, bias=False),
+                nn.Conv2d(hidden_dim, hidden_dim, 3, 1, 1, groups=hidden_dim,
+                          bias=False),
                 nn.AvgPool2d(stride),
                 nn.BatchNorm2d(hidden_dim),
                 nn.ReLU6(inplace=True),
@@ -399,7 +408,8 @@ class _InvertedResidual(nn.Module):
                 nn.Conv2d(inp, hidden_dim, 1, 1, 0, bias=False),
                 nn.BatchNorm2d(hidden_dim),
                 nn.ReLU6(inplace=True),
-                nn.Conv2d(hidden_dim, hidden_dim, 3, 1, 1, groups=hidden_dim, bias=False),
+                nn.Conv2d(hidden_dim, hidden_dim, 3, 1, 1, groups=hidden_dim,
+                          bias=False),
                 nn.AvgPool2d(stride),
                 nn.BatchNorm2d(hidden_dim),
                 nn.ReLU6(inplace=True),
@@ -424,7 +434,6 @@ class _InvertedResidual(nn.Module):
 
 class _LeeNetConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
-
         super(_LeeNetConvBlock, self).__init__()
 
         self.conv1 = nn.Conv1d(in_channels=in_channels,
@@ -455,7 +464,6 @@ class _LeeNetConvBlock(nn.Module):
 
 class _LeeNetConvBlock2(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, stride):
-
         super(_LeeNetConvBlock2, self).__init__()
 
         self.conv1 = nn.Conv1d(in_channels=in_channels,
@@ -550,15 +558,15 @@ class _DaiNetResBlock(nn.Module):
         nn.init.constant_(self.bn4.weight, 0)
         init_bn(self.bn_downsample)
 
-    def forward(self, input, pool_size=1):
-        x = F.relu_(self.bn1(self.conv1(input)))
+    def forward(self, data, pool_size=1):
+        x = F.relu_(self.bn1(self.conv1(data)))
         x = F.relu_(self.bn2(self.conv2(x)))
         x = F.relu_(self.bn3(self.conv3(x)))
         x = self.bn4(self.conv4(x))
-        if input.shape == x.shape:
-            x = F.relu_(x + input)
+        if data.shape == x.shape:
+            x = F.relu_(x + data)
         else:
-            x = F.relu(x + self.bn_downsample(self.downsample(input)))
+            x = F.relu(x + self.bn_downsample(self.downsample(data)))
 
         if pool_size != 1:
             x = F.max_pool1d(x, kernel_size=pool_size, padding=pool_size // 2)
@@ -566,13 +574,13 @@ class _DaiNetResBlock(nn.Module):
 
 
 def _resnet_conv3x1_wav1d(in_planes, out_planes, dilation):
-    #3x3 convolution with padding
+    # 3x3 convolution with padding
     return nn.Conv1d(in_planes, out_planes, kernel_size=3, stride=1,
                      padding=dilation, groups=1, bias=False, dilation=dilation)
 
 
 def _resnet_conv1x1_wav1d(in_planes, out_planes):
-    #1x1 convolution
+    # 1x1 convolution
     return nn.Conv1d(in_planes, out_planes, kernel_size=1, stride=1, bias=False)
 
 
@@ -585,9 +593,11 @@ class _ResnetBasicBlockWav1d(nn.Module):
         if norm_layer is None:
             norm_layer = nn.BatchNorm1d
         if groups != 1 or base_width != 64:
-            raise ValueError('_ResnetBasicBlock only supports groups=1 and base_width=64')
+            raise ValueError(
+                '_ResnetBasicBlock only supports groups=1 and base_width=64')
         if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not supported in _ResnetBasicBlock")
+            raise NotImplementedError(
+                "Dilation > 1 not supported in _ResnetBasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
 
         self.stride = stride
@@ -642,7 +652,8 @@ class _ResnetBasicBlockWav1d(nn.Module):
 
 class _ResNetWav1d(nn.Module):
     def __init__(self, block, layers, zero_init_residual=False,
-                 groups=1, width_per_group=64, replace_stride_with_dilation=None,
+                 groups=1, width_per_group=64,
+                 replace_stride_with_dilation=None,
                  norm_layer=None):
         super(_ResNetWav1d, self).__init__()
 
@@ -658,7 +669,8 @@ class _ResNetWav1d(nn.Module):
             replace_stride_with_dilation = [False, False, False]
         if len(replace_stride_with_dilation) != 3:
             raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(replace_stride_with_dilation))
+                             "or a 3-element tuple, got {}".format(
+                replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
 
@@ -680,7 +692,8 @@ class _ResNetWav1d(nn.Module):
         if stride != 1 or self.inplanes != planes * block.expansion:
             if stride == 1:
                 downsample = nn.Sequential(
-                        _resnet_conv1x1_wav1d(self.inplanes, planes * block.expansion),
+                        _resnet_conv1x1_wav1d(self.inplanes,
+                                              planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[0])
@@ -688,19 +701,22 @@ class _ResNetWav1d(nn.Module):
             else:
                 downsample = nn.Sequential(
                         nn.AvgPool1d(kernel_size=stride),
-                        _resnet_conv1x1_wav1d(self.inplanes, planes * block.expansion),
+                        _resnet_conv1x1_wav1d(self.inplanes,
+                                              planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[1])
                 init_bn(downsample[2])
 
         layers = []
-        layers.append(block(self.inplanes, planes, stride, downsample, self.groups,
-                            self.base_width, previous_dilation, norm_layer))
+        layers.append(
+            block(self.inplanes, planes, stride, downsample, self.groups,
+                  self.base_width, previous_dilation, norm_layer))
         self.inplanes = planes * block.expansion
         for _ in range(1, blocks):
             layers.append(block(self.inplanes, planes, groups=self.groups,
-                                base_width=self.base_width, dilation=self.dilation,
+                                base_width=self.base_width,
+                                dilation=self.dilation,
                                 norm_layer=norm_layer))
 
         return nn.Sequential(*layers)
@@ -720,7 +736,6 @@ class _ResNetWav1d(nn.Module):
 
 class _ConvPreWavBlock(nn.Module):
     def __init__(self, in_channels, out_channels):
-
         super(_ConvPreWavBlock, self).__init__()
 
         self.conv1 = nn.Conv1d(in_channels=in_channels,
@@ -750,10 +765,7 @@ class _ConvPreWavBlock(nn.Module):
         init_bn(self.bn1)
         init_bn(self.bn2)
 
-
-    def forward(self, input, pool_size):
-
-        x = input
+    def forward(self, x, pool_size):
         x = F.relu_(self.bn1(self.conv1(x)))
         x = F.relu_(self.bn2(self.conv2(x)))
         x = F.max_pool1d(x, kernel_size=pool_size)
@@ -832,10 +844,10 @@ class _SpecAugmentation(nn.Module):
         super(_SpecAugmentation, self).__init__()
 
         self.time_dropper = _DropStripes(dim=2, drop_width=time_drop_width,
-                                        stripes_num=time_stripes_num)
+                                         stripes_num=time_stripes_num)
 
         self.freq_dropper = _DropStripes(dim=3, drop_width=freq_drop_width,
-                                        stripes_num=freq_stripes_num)
+                                         stripes_num=freq_stripes_num)
 
     def forward(self, x):
         x = self.time_dropper(x)
@@ -1002,7 +1014,7 @@ def _count_flops(model, audio_length):
     model(data)
 
     total_flops = sum(list_conv2d) + sum(list_conv1d) + sum(list_linear) + \
-                  sum(list_bn) + sum(list_relu) + sum(list_pooling2d) + sum(
-            list_pooling1d)
+                  sum(list_bn) + sum(list_relu) + sum(list_pooling2d) +\
+                  sum(list_pooling1d)
 
     return total_flops
