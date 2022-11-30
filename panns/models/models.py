@@ -35,6 +35,7 @@ __all__ = ['Cnn6',
            'LeeNet11',
            'LeeNet24',
            'DaiNet19',
+           'TransferModel'
            ]
 
 
@@ -2759,5 +2760,33 @@ class DaiNet19(nn.Module):
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
+
+        return clipwise_output, embedding
+
+
+class TransferModel(nn.Module):
+    def __init__(self, model, classes_num_new, freeze_base=True):
+
+        """Classifier for a new task using pretrained model as a submodule. """
+        super().__init__()
+
+        self.base = model
+
+        # Transfer to another task layer
+        self.fc_transfer = nn.Linear(2048, classes_num_new, bias=True)
+
+        if freeze_base:
+            # Freeze AudioSet pretrained layers
+            for param in self.base.parameters():
+                param.requires_grad = False
+
+        init_layer(self.fc_transfer)
+
+    def forward(self, data, mixup_lambda=None):
+        """Data: (batch_size, data_length)
+        """
+        _, embedding = self.base(data, mixup_lambda)
+
+        clipwise_output = torch.log_softmax(self.fc_transfer(embedding), dim=-1)
 
         return clipwise_output, embedding
