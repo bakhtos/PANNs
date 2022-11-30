@@ -25,7 +25,7 @@ def train(*, hdf5_files_path_train,
           logs_dir=None,
           checkpoints_dir=None,
           statistics_dir=None,
-          augmentation=False, mixup_alpha=1.0,
+          mixup_alpha=None,
           batch_size=32, learning_rate=1e-3,
           iter_max=1000000,
           cuda=False, num_workers=8):
@@ -52,10 +52,8 @@ def train(*, hdf5_files_path_train,
     statistics_dir : str, optional (default None)
         Directory to save evaluation statistics into (will be created if doesn't exist);
         if None a directory 'statistics' will be created in CWD (default None)
-    augmentation : bool, optional (default False)
-        If True, use Mixup for data augmentation
-    mixup_alpha : float, optional (default 1.0)
-        If using augmentation, use this as alpha parameter for Mixup
+    mixup_alpha : float, optional (default None)
+        Alpha parameter for Mixup (if None, mixup not used)
     batch_size : int, optional (default 32)
         Batch size to use for training/evaluation
     learning_rate : float, optional (default 1e-3)
@@ -67,6 +65,9 @@ def train(*, hdf5_files_path_train,
     num_workers : int, optional (default 32)
         Amount of workers to pass to torch.utils.data.DataLoader()
     """
+
+    # Augmentation
+    aug = mixup_alpha is not None
 
     # Paths
     workspace = os.getcwd()
@@ -101,9 +102,8 @@ def train(*, hdf5_files_path_train,
                                               persistent_workers=True,
                                               pin_memory=True)
 
-    if augmentation:
-        mixup_augmenter = mixup_coefficients(mixup_alpha=mixup_alpha,
-                                             batch_size=batch_size)
+    mixup_augmenter = mixup_coefficients(mixup_alpha=mixup_alpha,
+                                         batch_size=batch_size) if aug else None
     
     # Optimizer
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, 
@@ -128,8 +128,8 @@ def train(*, hdf5_files_path_train,
 
     for data, target in train_loader:
         # Data augmentation
-        mixup_lambda = next(mixup_augmenter) if augmentation else None
-        target = mixup(target, mixup_lambda) if augmentation else target
+        mixup_lambda = next(mixup_augmenter) if aug else None
+        target = mixup(target, mixup_lambda) if aug else target
         target = torch.tensor(target, device=device)
 
         train_bgn_time = time.time()
@@ -213,9 +213,7 @@ if __name__ == '__main__':
                         help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
     parser.add_argument('--mel_bins', type=int, default=64,
                         help="Amount of mel filters to use in the filterbank (default 64)")
-    parser.add_argument('--augmentation', action='store_true', default=False,
-                        help="If set, use Mixup for data augmentation")
-    parser.add_argument('--mixup_alpha', type=float, default=1.0,
+    parser.add_argument('--mixup_alpha', type=float, default=None,
                         help="If using augmentation, use this as alpha parameter for Mixup (default 1.0)")
     parser.add_argument('--batch_size', type=int, default=32,
                         help="Batch size to use for training/evaluation (default 32)")
@@ -248,7 +246,6 @@ if __name__ == '__main__':
           logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
-          augmentation=args.augmentation,
           mixup_alpha=args.mixup_alpha,
           batch_size=args.batch_size,
           learning_rate=args.learning_rate,
