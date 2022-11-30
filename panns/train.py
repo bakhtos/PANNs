@@ -31,26 +31,41 @@ def train(*, hdf5_files_path_train,
           cuda=False, num_workers=8):
     """Train AudioSet tagging model. 
 
-    Models are saved to and loaded from 'checkpoints' using torch.save/torch.load respectively.
-    A checkpoint is a dictionary containng following keys:
-        * iteration: counter of the iteration correponding to the checkpoint
-        * model: state_dict of the model
-        * sampler: state_dict of the sampler
-        * statistics: list of statistics (average_precision and auc) for evaluation set at each iteration
-
-    :param str model: Model to train (one of the model classes defined in models.py)
-    :param str logs_dir: Directory to save the logs into (will be created if doesn't exist already), if None a directory 'logs' will be created in CWD  (default None)
-    :param str checkpoints_dir: Directory to save neural net's checkpoints into (will be created if doesn't exist already), if None a directory 'checkpoints' will be created in CWD (default None)
-    :param str statistics_dir: Directory to save evaluation statistics into (will be created if doesn't exist already), if None a directory 'statistics' will be created in CWD (default None) NOTE: statistics are also saved into checkpoints
-    :param bool augmentation: If True, use Mixup for data augmentation (default False)
-    :param float mixup_alpha: If using augmentation, use this as alpha parameter for Mixup (default 1.0)
-    :param int batch_size: Batch size to use for training/evaluation (default 32)
-    :param float learning_rate: Learning rate to use in training (default 1e-3)
-    :param int iter_max: Train until this iteration (default 1000000)
-    :param bool cuda: If True, try to use GPU for traning (default False)
-    :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
-    :raises ValueError: if model_type or sampler not found among defined ones
-    :raises ValueError: if resume_iteration is non-zero, but no resume_checkpoint_path given
+    hdf5_files_path_train : str,
+        Path to hdf5 compression of the train split of the dataset
+    target_weak_path_train : str,
+        Path to the .npy file containing weak target array of the
+        train split of the dataset
+    hdf5_files_path_eval : str,
+        Path to hdf5 compression of the evaluation split of the dataset
+    target_weak_path_eval : str,
+        Path to the .npy file containing weak target array of the
+        evaluation split of the dataset
+    model : torch.nn.Module,
+        Model to train (one of the model classes defined in panns.models.models)
+    logs_dir : str, optional (default None)
+        Directory to save the logs into (will be created if doesn't exist );
+        if None, a directory 'logs' will be created in CWD
+    checkpoints_dir : str, optional (default None)
+        Directory to save model's checkpoints into (will be created if doesn't exist);
+        if None a directory 'checkpoints' will be created in CWD
+    statistics_dir : str, optional (default None)
+        Directory to save evaluation statistics into (will be created if doesn't exist);
+        if None a directory 'statistics' will be created in CWD (default None)
+    augmentation : bool, optional (default False)
+        If True, use Mixup for data augmentation
+    mixup_alpha : float, optional (default 1.0)
+        If using augmentation, use this as alpha parameter for Mixup
+    batch_size : int, optional (default 32)
+        Batch size to use for training/evaluation
+    learning_rate : float, optional (default 1e-3)
+        Learning rate to use in training
+    iter_max : bool, optional (default 100000)
+        Train until this iteration
+    cuda : bool, optional (default False)
+        If True, use GPU for training
+    num_workers : int, optional (default 32)
+        Amount of workers to pass to torch.utils.data.DataLoader()
     """
 
     # Paths
