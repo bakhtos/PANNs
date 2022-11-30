@@ -7,69 +7,9 @@ import numpy as np
 from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
 from panns.utils.metadata_utils import get_labels
-import panns.models
+from panns.models.loader import load_model
 
-__all__ = ['inference', 'detect_events']
-
-
-def inference(*, hdf5_files_path_eval,
-              target_weak_path_eval,
-              checkpoint_path,
-              model,
-              cuda=False,
-              num_workers=8, batch_size=32):
-    """Obtain audio tagging or sound event detection results from a model.
-
-    Return either a clipwise_output or framewise_output of a model after
-    going through the entire provided dataset. If SED was requested for a model
-    that cannot provide framewise_output, automatically switches to AT.
-
-    :param str eval_indexes_hdf5_path: Path to hdf5 index of the evaluation set
-    :param str checkpoint_path: Path to the saved checkpoint of the model
-                                (as created by panns.train)
-    :param str model_type: Name of the model saved in checkpoint
-                           (must be one of classes defined in panns.models.models.py)
-    :param int window_size: Window size of filter used in training (default 1024)
-    :param int hop_size: Hop size of filter used in training (default 320)
-    :param int sample_rate: Sample rate of the used audio clips; supported values
-                            are 32000, 16000, 8000 (default 32000)
-    :param int mel_bins: Amount of mel filters used in the model
-    :param int fmin: Minimum frequency used in Logmel filterbank of the model
-    :param int fmax: Maximum frequency used in Logmel filterbank of the model
-    :param bool cuda: If True, try to use GPU for inference (default False)
-    :param int classes_num: Amount of classes used in the dataset (default 110)
-    :param int num_workers: Amount of workers to pass to torch.utils.data.DataLoader()
-                            (default 8)
-    :param int batch_size: Batch size to use for evaluation (default 32)
-    :return: result - Array of either clipwise or framewise output
-    :rtype: numpy.ndarray
-    :raises ValueError: if model_type not found in panns.models.models.py
-    """
-
-    device = torch.device('cuda') if (cuda and torch.cuda.is_available()) \
-        else torch.device('cpu')
-
-    checkpoint = torch.load(checkpoint_path, map_location=device)
-    model.load_state_dict(checkpoint['model'])
-    # Parallel
-    model.to(device)
-    model = torch.nn.DataParallel(model)
-    if device.type == 'cuda':
-        print(f'Using GPU. GPU number: {torch.cuda.device_count()}')
-    else:
-        print('Using CPU.')
-
-    dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
-    eval_loader = torch.utils.data.DataLoader(dataset=dataset,
-                                              batch_size=batch_size,
-                                              shuffle=False,
-                                              num_workers=num_workers,
-                                              persistent_workers=True,
-                                              pin_memory=True)
-
-    clipwise_output, second_output, _, _ = forward(model, eval_loader)
-
-    return clipwise_output, second_output
+__all__ = ['detect_events']
 
 
 def detect_events(*, frame_probabilities,
@@ -122,8 +62,7 @@ def detect_events(*, frame_probabilities,
                 # If the last element of activity_array is True, add the length of the array
                 event_activity = np.r_[event_activity, activity_array.shape[1]]
 
-            event_activity = event_activity.reshape(
-                    (-1, 2)) * hop_length_seconds
+            event_activity = event_activity.reshape((-1, 2)) * hop_length_seconds
 
             # Store events
             if event_activity.size != 0:
@@ -159,9 +98,9 @@ def detect_events(*, frame_probabilities,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--hdf5_files_path_eval', type=str, required=True,
+    parser.add_argument('--hdf5_files_path', type=str, required=True,
                         help="Path to hdf5 file of the eval split")
-    parser.add_argument('--target_weak_path_eval', type=str, required=True,
+    parser.add_argument('--target_weak_path', type=str, required=True,
                         help="Path to the weak target array of the eval split")
     parser.add_argument('--audio_names_path', type=str, required=True,
                         help='Path to .npy file to load audio filenames to be packed in this order')
@@ -205,24 +144,40 @@ if __name__ == '__main__':
                              " than this are joined together (default 0.1)")
 
     args = parser.parse_args()
-    model = panns.models.load_model(args.model_type, args.sample_rate,
-                                    args.window_size, args.hop_size,
-                                    args.mel_bins, args.fmin, args.fmax,
-                                    args.classes_num)
-    _, results = inference(hdf5_files_path_eval=args.hdf5_files_path_eval,
-                           target_weak_path_eval=args.target_weak_path_eval,
-                           model=model,
-                           checkpoint_path=args.checkpoint_path,
-                           batch_size=args.batch_size,
-                           cuda=args.cuda,
-                           num_workers=args.num_workers)
+
+    model = load_model(args.model_type, args.sample_rate,
+                       args.window_size, args.hop_size,
+                       args.mel_bins, args.fmin, args.fmax,
+                       args.classes_num,
+                       checkpoint=args.checkpoint_path)
+
+    device = torch.device('cuda') if (args.cuda and torch.cuda.is_available()) \
+        else torch.device('cpu')
+
+    # Parallel
+    if device.type == 'cuda':
+        print(f'Using GPU. GPU number: {torch.cuda.device_count()}')
+        model.to(device)
+        model = torch.nn.DataParallel(model)
+    else:
+        print('Using CPU.')
+
+    dataset = AudioSetDataset(args.hdf5_files_path, args.target_weak_path)
+    eval_loader = torch.utils.data.DataLoader(dataset=dataset,
+                                              batch_size=args.batch_size,
+                                              shuffle=False,
+                                              num_workers=args.num_workers,
+                                              persistent_workers=True,
+                                              pin_memory=True)
+
+    clipwise_output, second_output, _, _ = forward(model, eval_loader)
 
     audio_names = np.load(args.audio_names_path)
 
     ids, _, _, _ = get_labels(args.class_labels_path,
                               args.selected_classes_path)
 
-    detect_events(frame_probabilities=results,
+    detect_events(frame_probabilities=second_output,
                   label_id_list=ids,
                   filenames=audio_names,
                   threshold=args.threshold,
