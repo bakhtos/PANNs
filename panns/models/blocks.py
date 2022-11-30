@@ -62,9 +62,6 @@ class _ConvBlock(nn.Module):
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.conv1)
         init_layer(self.conv2)
         init_bn(self.bn1)
@@ -106,9 +103,6 @@ class _ConvBlock5x5(nn.Module):
 
         self.bn1 = nn.BatchNorm2d(out_channels)
 
-        self.init_weight()
-
-    def init_weight(self):
         init_layer(self.conv1)
         init_bn(self.bn1)
 
@@ -149,9 +143,7 @@ class _AttBlock(nn.Module):
                              kernel_size=1, stride=1, padding=0, bias=True)
 
         self.bn_att = nn.BatchNorm1d(n_out)
-        self.init_weights()
 
-    def init_weights(self):
         init_layer(self.att)
         init_layer(self.cla)
         init_bn(self.bn_att)
@@ -159,15 +151,10 @@ class _AttBlock(nn.Module):
     def forward(self, x):
         # x: (n_samples, n_in, n_time)
         norm_att = torch.softmax(torch.clamp(self.att(x), -10, 10), dim=-1)
-        cla = self.nonlinear_transform(self.cla(x))
+        cla = torch.sigmoid(x) if self.activation == 'sigmoid'\
+            else x
         x = torch.sum(norm_att * cla, dim=2)
         return x, norm_att, cla
-
-    def nonlinear_transform(self, x):
-        if self.activation == 'linear':
-            return x
-        elif self.activation == 'sigmoid':
-            return torch.sigmoid(x)
 
 
 def _resnet_conv3x3(in_planes, out_planes):
@@ -184,7 +171,7 @@ def _resnet_conv1x1(in_planes, out_planes):
 class _ResnetBasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
         super().__init__()
         if norm_layer is None:
@@ -199,7 +186,7 @@ class _ResnetBasicBlock(nn.Module):
 
         self.stride = stride
 
-        self.conv1 = _resnet_conv3x3(inplanes, planes)
+        self.conv1 = _resnet_conv3x3(in_planes, planes)
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = _resnet_conv3x3(planes, planes)
@@ -207,15 +194,6 @@ class _ResnetBasicBlock(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-        self.init_weights()
-
-        self._sed_model = False
-
-    @property
-    def sed_model(self):
-        return self._sed_model
-
-    def init_weights(self):
         init_layer(self.conv1)
         init_bn(self.bn1)
         init_layer(self.conv2)
@@ -250,7 +228,7 @@ class _ResnetBasicBlock(nn.Module):
 class _ResnetBottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
         super().__init__()
         if norm_layer is None:
@@ -258,7 +236,7 @@ class _ResnetBottleneck(nn.Module):
         width = int(planes * (base_width / 64.)) * groups
         self.stride = stride
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = _resnet_conv1x1(inplanes, width)
+        self.conv1 = _resnet_conv1x1(in_planes, width)
         self.bn1 = norm_layer(width)
         self.conv2 = _resnet_conv3x3(width, width)
         self.bn2 = norm_layer(width)
@@ -268,15 +246,6 @@ class _ResnetBottleneck(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-        self.init_weights()
-
-        self._sed_model = False
-
-    @property
-    def sed_model(self):
-        return self._sed_model
-
-    def init_weights(self):
         init_layer(self.conv1)
         init_bn(self.bn1)
         init_layer(self.conv2)
@@ -315,7 +284,7 @@ class _ResnetBottleneck(nn.Module):
 class _ResNet(nn.Module):
     def __init__(self, block, layers, zero_init_residual=False,
                  groups=1, width_per_group=64,
-                 replace_stride_with_dilation=None,
+                 replace_stride_with_dilation=(False, False, False),
                  norm_layer=None):
         """
 
@@ -336,16 +305,8 @@ class _ResNet(nn.Module):
             norm_layer = nn.BatchNorm2d
         self._norm_layer = norm_layer
 
-        self.inplanes = 64
+        self.in_planes = 64
         self.dilation = 1
-        if replace_stride_with_dilation is None:
-            # each element in the tuple indicates if we should replace
-            # the 2x2 stride with a dilated convolution instead
-            replace_stride_with_dilation = [False, False, False]
-        if len(replace_stride_with_dilation) != 3:
-            raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(
-                replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
 
@@ -364,10 +325,10 @@ class _ResNet(nn.Module):
         if dilate:
             self.dilation *= stride
             stride = 1
-        if stride != 1 or self.inplanes != planes * block.expansion:
+        if stride != 1 or self.in_planes != planes * block.expansion:
             if stride == 1:
                 downsample = nn.Sequential(
-                        _resnet_conv1x1(self.inplanes,
+                        _resnet_conv1x1(self.in_planes,
                                         planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
@@ -376,20 +337,18 @@ class _ResNet(nn.Module):
             elif stride == 2:
                 downsample = nn.Sequential(
                         nn.AvgPool2d(kernel_size=2),
-                        _resnet_conv1x1(self.inplanes,
+                        _resnet_conv1x1(self.in_planes,
                                         planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[1])
                 init_bn(downsample[2])
 
-        layers = []
-        layers.append(
-            block(self.inplanes, planes, stride, downsample, self.groups,
-                  self.base_width, previous_dilation, norm_layer))
-        self.inplanes = planes * block.expansion
+        layers = [block(self.in_planes, planes, stride, downsample, self.groups,
+                  self.base_width, previous_dilation, norm_layer)]
+        self.in_planes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, groups=self.groups,
+            layers.append(block(self.in_planes, planes, groups=self.groups,
                                 base_width=self.base_width,
                                 dilation=self.dilation,
                                 norm_layer=norm_layer))
@@ -470,15 +429,6 @@ class _LeeNetConvBlock(nn.Module):
 
         self.bn1 = nn.BatchNorm1d(out_channels)
 
-        self.init_weight()
-
-        self._sed_model = False
-
-    @property
-    def sed_model(self):
-        return self._sed_model
-
-    def init_weight(self):
         init_layer(self.conv1)
         init_bn(self.bn1)
 
@@ -506,15 +456,6 @@ class _LeeNetConvBlock2(nn.Module):
         self.bn1 = nn.BatchNorm1d(out_channels)
         self.bn2 = nn.BatchNorm1d(out_channels)
 
-        self.init_weight()
-
-        self._sed_model = False
-
-    @property
-    def sed_model(self):
-        return self._sed_model
-
-    def init_weight(self):
         init_layer(self.conv1)
         init_layer(self.conv2)
         init_bn(self.bn1)
@@ -564,15 +505,6 @@ class _DaiNetResBlock(nn.Module):
         self.bn4 = nn.BatchNorm1d(out_channels)
         self.bn_downsample = nn.BatchNorm1d(out_channels)
 
-        self.init_weight()
-
-        self._sed_model = False
-
-    @property
-    def sed_model(self):
-        return self._sed_model
-
-    def init_weight(self):
         init_layer(self.conv1)
         init_layer(self.conv2)
         init_layer(self.conv3)
@@ -614,7 +546,7 @@ def _resnet_conv1x1_wav1d(in_planes, out_planes):
 class _ResnetBasicBlockWav1d(nn.Module):
     expansion = 1
 
-    def __init__(self, inplanes, planes, stride=1, downsample=None, groups=1,
+    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
                  base_width=64, dilation=1, norm_layer=None):
         super().__init__()
         if norm_layer is None:
@@ -629,7 +561,7 @@ class _ResnetBasicBlockWav1d(nn.Module):
 
         self.stride = stride
 
-        self.conv1 = _resnet_conv3x1_wav1d(inplanes, planes, dilation=1)
+        self.conv1 = _resnet_conv3x1_wav1d(in_planes, planes, dilation=1)
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
         self.conv2 = _resnet_conv3x1_wav1d(planes, planes, dilation=2)
@@ -637,15 +569,6 @@ class _ResnetBasicBlockWav1d(nn.Module):
         self.downsample = downsample
         self.stride = stride
 
-        self.init_weights()
-
-        self._sed_model = False
-
-    @property
-    def sed_model(self):
-        return self._sed_model
-
-    def init_weights(self):
         init_layer(self.conv1)
         init_bn(self.bn1)
         init_layer(self.conv2)
@@ -680,7 +603,7 @@ class _ResnetBasicBlockWav1d(nn.Module):
 class _ResNetWav1d(nn.Module):
     def __init__(self, block, layers, zero_init_residual=False,
                  groups=1, width_per_group=64,
-                 replace_stride_with_dilation=None,
+                 replace_stride_with_dilation=(False, False, False),
                  norm_layer=None):
         """
 
@@ -701,16 +624,8 @@ class _ResNetWav1d(nn.Module):
             norm_layer = nn.BatchNorm1d
         self._norm_layer = norm_layer
 
-        self.inplanes = 64
+        self.in_planes = 64
         self.dilation = 1
-        if replace_stride_with_dilation is None:
-            # each element in the tuple indicates if we should replace
-            # the 2x2 stride with a dilated convolution instead
-            replace_stride_with_dilation = [False, False, False]
-        if len(replace_stride_with_dilation) != 3:
-            raise ValueError("replace_stride_with_dilation should be None "
-                             "or a 3-element tuple, got {}".format(
-                replace_stride_with_dilation))
         self.groups = groups
         self.base_width = width_per_group
 
@@ -729,10 +644,10 @@ class _ResNetWav1d(nn.Module):
         if dilate:
             self.dilation *= stride
             stride = 1
-        if stride != 1 or self.inplanes != planes * block.expansion:
+        if stride != 1 or self.in_planes != planes * block.expansion:
             if stride == 1:
                 downsample = nn.Sequential(
-                        _resnet_conv1x1_wav1d(self.inplanes,
+                        _resnet_conv1x1_wav1d(self.in_planes,
                                               planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
@@ -741,20 +656,18 @@ class _ResNetWav1d(nn.Module):
             else:
                 downsample = nn.Sequential(
                         nn.AvgPool1d(kernel_size=stride),
-                        _resnet_conv1x1_wav1d(self.inplanes,
+                        _resnet_conv1x1_wav1d(self.in_planes,
                                               planes * block.expansion),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[1])
                 init_bn(downsample[2])
 
-        layers = []
-        layers.append(
-            block(self.inplanes, planes, stride, downsample, self.groups,
-                  self.base_width, previous_dilation, norm_layer))
-        self.inplanes = planes * block.expansion
+        layers = [block(self.in_planes, planes, stride, downsample, self.groups,
+                  self.base_width, previous_dilation, norm_layer)]
+        self.in_planes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.inplanes, planes, groups=self.groups,
+            layers.append(block(self.in_planes, planes, groups=self.groups,
                                 base_width=self.base_width,
                                 dilation=self.dilation,
                                 norm_layer=norm_layer))
@@ -791,15 +704,6 @@ class _ConvPreWavBlock(nn.Module):
         self.bn1 = nn.BatchNorm1d(out_channels)
         self.bn2 = nn.BatchNorm1d(out_channels)
 
-        self.init_weight()
-
-        self._sed_model = False
-
-    @property
-    def sed_model(self):
-        return self._sed_model
-
-    def init_weight(self):
         init_layer(self.conv1)
         init_layer(self.conv2)
         init_bn(self.bn1)
