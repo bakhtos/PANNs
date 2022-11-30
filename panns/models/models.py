@@ -842,7 +842,7 @@ class Cnn14WavegramLogmel(nn.Module):
         self.bn0 = nn.BatchNorm2d(64*multiplier)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = _ConvBlock(in_channels=128, out_channels=128)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
         self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
         self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
         self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
