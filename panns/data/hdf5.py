@@ -11,29 +11,26 @@ from panns.utils.logging_utils import create_logging
 __all__ = ['wav_to_hdf5']
 
 
-def wav_to_hdf5(*, audios_dir, hdf5_path,
-                audio_names, logs_dir=None,
-                clip_length=10000, sample_rate=32000,
-                mini_data=0):
+def wav_to_hdf5(*, audios_dir: str, hdf5_path: str,
+                audio_names: np.ndarray, logs_dir: str = None,
+                clip_length:int = 10000, sample_rate:int = 32000,
+                mini_data:int = 0):
     """Pack waveform of several audio clips to a single hdf5 file.
 
-       Parameters
-       __________
-
-       audios_dir : str,
-            Path to the directory containing files to be packed
-       hdf5_path : str,
-            Path to save the hdf5-packed file
-       audio_names : numpy.ndarray,
-            Array of file names in the dataset, in the same order as in target
-       logs_dir : str, optional (default None)
-            Directory to save logs into, if None creates a directory 'logs' in CWD
-       clip_length : int, optional (default 10000)
-            Length (in ms) of audio clips used in the dataset
-       sample_rate : int, optional (default 32000)
-            Sample rate of packed audios
-       mini_data : int, optional (default 0)
-            If greater than 0, use only this many first files
+        Args:
+            audios_dir: str,
+                Path to the directory containing files to be packed
+            hdf5_path: str,
+                Path to save the hdf5-packed file
+            audio_names: numpy.ndarray,
+                Array of file names in the dataset, in the same order as in target
+            logs_dir: str, Directory to save logs into,
+                if None creates a directory 'logs' in CWD (default None)
+            clip_length: int, Length (in ms) of audio clips used in the dataset
+                (default 10000)
+            sample_rate: int, Sample rate of packed audios (default 32000)
+            mini_data: int, If greater than 0, use only this many first files
+                (default 0)
     """
 
     clip_samples = sample_rate * clip_length // 1000
@@ -86,19 +83,22 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--audios_dir', type=str, required=True,
-                        help='Directory with the downloaded audio')
+                        help="Directory with the downloaded audio")
     parser.add_argument('--audio_names_path', type=str, required=True,
-                        help='Path to .npy file to load audio filenames to be packed in this order')
+                        help="Path to .npy file to load audio filenames to be "
+                             "packed in this order")
     parser.add_argument('--hdf5_path', type=str, required=True,
-                        help='Path to save packed hdf5')
+                        help="Path to save packed hdf5")
     parser.add_argument('--sample_rate', type=int, default=32000,
-                        help='Sample rate of the used audios (default 32000)')
+                        help="Sample rate of the used audios (default 32000)")
     parser.add_argument('--mini_data', type=int, default=0,
-                        help='If specified, use only this many audios')
+                        help="If specified, use only this many audios")
     parser.add_argument('--clip_length', type=int, default=10000,
-                        help='Length (in ms) of audio clips used in the dataset (default 10000)')
+                        help="Length (in ms) of audio clips used in the "
+                             "dataset (default 10000)")
     parser.add_argument('--logs_dir', type=str, default=None,
-                        help="Directory to save logs into (defaults to 'logs' in CWD")
+                        help="Directory to save logs into "
+                             "(defaults to 'logs' in CWD)")
     args = parser.parse_args()
 
     audio_names = np.load(args.audio_names_path)
