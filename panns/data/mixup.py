@@ -1,3 +1,5 @@
+from typing import Iterator
+
 import numpy as np
 
 __all__ = ['mixup_coefficients',
@@ -5,7 +7,7 @@ __all__ = ['mixup_coefficients',
 
 
 def mixup_coefficients(mixup_alpha: float, batch_size: int = 32,
-                       random_seed: int = 1234) -> np.ndarray:
+                       random_seed: int = 1234) -> Iterator[np.ndarray]:
     """Sample lambda coefficients for mixup from beta distribution.
 
     Args:
