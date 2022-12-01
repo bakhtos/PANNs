@@ -1,12 +1,14 @@
 import argparse
+import os
+import logging
 
-import torch
 import torch.utils.data
 import numpy as np
 
 from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
 from panns.utils.metadata_utils import get_labels
+from panns.utils.logging_utils import create_logging
 from panns.models.loader import load_model
 
 __all__ = ['detect_events']
@@ -49,8 +51,14 @@ def detect_events(*, frame_probabilities: np.ndarray,
         Writes detected events for each file into output file.
     """
 
+    logging.info(f"Detecting events with parameters threshold={threshold}, "
+                 f"minimum_event_length={minimum_event_length}, "
+                 f"minimum_event_gap={minimum_event_gap}i, hop_size="
+                 f"{hop_size}, sample_rate={sample_rate}.")
+
     event_file = open(output, 'w')
     event_file.write('filename\tevent_label\tonset\toffset\n')
+    logging.info(f"Created file {output}.")
 
     hop_length_seconds = hop_size / sample_rate
     activity_array = frame_probabilities >= threshold
@@ -59,6 +67,7 @@ def detect_events(*, frame_probabilities: np.ndarray,
 
     for file_ix in range(frame_probabilities.shape[0]):
         filename = filenames[file_ix]
+        logging.info(f"Processing file {filename}...")
         for event_ix, event_id in enumerate(label_id_list):
             event_activity = change_indices[file_ix, :, event_ix].nonzero()[
                                  0] + 1
@@ -101,6 +110,7 @@ def detect_events(*, frame_probabilities: np.ndarray,
                 event_file.write(f'{filename}\t{event_id}\t{current_onset}'
                                  f'\t{current_offset}\n')
 
+    logging.info("Detection finished.")
     event_file.close()
 
 
@@ -116,6 +126,7 @@ if __name__ == '__main__':
                         help="Name of model to train")
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help="File to load the NN checkpoint from")
+    parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
     parser.add_argument('--selected_classes_path', type=str, required=True,
                         help="Dataset class labels in tsv format (as in "
                              "'Reformatted' dataset)")
@@ -153,6 +164,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    logs_dir = args.logs_dir
+    if logs_dir is None:
+        logs_dir = os.path.join(os.getcwd(), 'logs')
+    create_logging(logs_dir, filemode='w')
+
     model = load_model(args.model_type, args.sample_rate,
                        args.window_size, args.hop_size,
                        args.mel_bins, args.fmin, args.fmax,
@@ -164,11 +180,11 @@ if __name__ == '__main__':
 
     # Parallel
     if device.type == 'cuda':
-        print(f'Using GPU. GPU number: {torch.cuda.device_count()}')
+        logging.info(f'Using GPU. GPU number: {torch.cuda.device_count()}')
         model.to(device)
         model = torch.nn.DataParallel(model)
     else:
-        print('Using CPU.')
+        logging.info('Using CPU.')
 
     dataset = AudioSetDataset(args.hdf5_files_path, args.target_weak_path)
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,
