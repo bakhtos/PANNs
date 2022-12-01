@@ -1,10 +1,10 @@
 import os
 import pickle
-import numpy as np
 import argparse
 import time
 import logging
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
