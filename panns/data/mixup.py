@@ -6,8 +6,8 @@ __all__ = ['mixup_coefficients',
            'mixup']
 
 
-def mixup_coefficients(mixup_alpha: float, batch_size: int = 32,
-                       random_seed: int = 1234) -> Iterator[np.ndarray]:
+def mixup_coefficients(mixup_alpha, batch_size=32,
+                       random_seed=1234):
     """Sample lambda coefficients for mixup from beta distribution.
 
     Args:

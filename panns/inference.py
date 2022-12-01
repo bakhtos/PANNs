@@ -14,15 +14,15 @@ from panns.models.loader import load_model
 __all__ = ['detect_events']
 
 
-def detect_events(*, frame_probabilities: np.ndarray,
-                  label_id_list: list,
-                  filenames: np.ndarray,
-                  output: str = 'events.txt',
-                  threshold: float = 0.5,
-                  minimum_event_length: float = 0.1,
-                  minimum_event_gap: float = 0.1,
-                  sample_rate: int = 32000,
-                  hop_size: int = 320) -> None:
+def detect_events(*, frame_probabilities,
+                  label_id_list,
+                  filenames,
+                  output='events.txt',
+                  threshold=0.5,
+                  minimum_event_length=0.1,
+                  minimum_event_gap=0.1,
+                  sample_rate=32000,
+                  hop_size=320):
     """Detect Sound Events using a given framewise probability array.
 
     Args:

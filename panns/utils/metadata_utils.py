@@ -7,8 +7,7 @@ __all__ = ['get_labels',
            'get_weak_target']
 
 
-def get_labels(class_labels_path: str, selected_classes_path: str) -> tuple[
-               list[str], list[str], dict[str, str], dict[str, str]]:
+def get_labels(class_labels_path, selected_classes_path):
 
     """ Map selected labels from label to id and index and vice versa.
 
@@ -58,8 +57,7 @@ def get_labels(class_labels_path: str, selected_classes_path: str) -> tuple[
     return ids, labels, lb_to_id, id_to_lb
 
 
-def get_weak_target(data_path: str, class_ids: list[str]) -> tuple[
-                    np.ndarray[str], np.ndarray[float]]:
+def get_weak_target(data_path, class_ids):
     """ Create weak labels target numpy array.
 
     Args:

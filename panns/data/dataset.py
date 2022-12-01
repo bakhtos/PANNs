@@ -7,7 +7,7 @@ __all__ = ['AudioSetDataset']
 
 class AudioSetDataset(Dataset):
     """Class that returns an AudioSet segment audiofile and target."""
-    def __init__(self, hdf5_path: str, target_path: str):
+    def __init__(self, hdf5_path, target_path):
         """Initialize the dataset loading.
 
         Args:
@@ -26,7 +26,7 @@ class AudioSetDataset(Dataset):
     def __len__(self) -> int:
         return self._target.shape[0]
 
-    def __getitem__(self, i: int) -> tuple[np.ndarray, np.ndarray]:
+    def __getitem__(self, i):
         waveform = self._hdf5_data['waveform'][i]
         target = self._target[i, :]
 

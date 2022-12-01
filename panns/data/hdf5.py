@@ -11,10 +11,10 @@ from panns.utils.logging_utils import create_logging
 __all__ = ['wav_to_hdf5']
 
 
-def wav_to_hdf5(*, audios_dir: str, hdf5_path: str,
-                audio_names: np.ndarray, logs_dir: str = None,
-                clip_length:int = 10000, sample_rate:int = 32000,
-                mini_data:int = 0):
+def wav_to_hdf5(*, audios_dir, hdf5_path,
+                audio_names, logs_dir=None,
+                clip_length=10000, sample_rate=32000,
+                mini_data=0):
     """Pack waveform of several audio clips to a single hdf5 file.
 
         Args:
