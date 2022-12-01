@@ -7,30 +7,25 @@ __all__ = ['get_labels',
            'get_weak_target']
 
 
-def get_labels(class_labels_path, selected_classes_path):
+def get_labels(class_labels_path: str, selected_classes_path: str) -> tuple[
+               list[str], list[str], dict[str, str], dict[str, str]]:
+
     """ Map selected labels from label to id and index and vice versa.
 
-    Parameters
-    __________
+    Args:
+        class_labels_path : str,
+            Dataset labels in tsv format (in 'Reformatted' format).
+        selected_classes_path : str,
+            List of class ids selected for training, one per line.
 
-    class_labels_path : str,
-        Dataset labels in tsv format (in 'Reformatted' format).
-    selected_classes_path : str,
-        List of class ids selected for training, one per line.
-
-    Returns
-    _______
-
-    ids : list,
-        List of all selected classes' ids,
-        in the order they were given in 'selected_classes_path'.
-    labels : list,
-        List of all selected classes' labels,
-        in the order they were given in 'selected_classes_path'.
-    lb_to_id : dict[str] -> int,
-        Map from selected classes' labels to their ids.
-    id_to_lb : dict[str] -> int,
-        Map from selected classes' ids to their labels.
+    Returns:
+        ids, labels, lb_to_id, id_to_lb
+            -List of all selected classes' ids,
+            in the order they were given in 'selected_classes_path'.
+            -List of all selected classes' labels,
+            in the order they were given in 'selected_classes_path'.
+            -Map from selected classes' labels to their ids.
+            -Map from selected classes' ids to their labels.
     """
 
     selected_classes_file = open(selected_classes_path, 'r')
@@ -63,26 +58,22 @@ def get_labels(class_labels_path, selected_classes_path):
     return ids, labels, lb_to_id, id_to_lb
 
 
-def get_weak_target(data_path, class_ids):
+def get_weak_target(data_path: str, class_ids: list[str]) -> tuple[
+                    np.ndarray[str], np.ndarray[float]]:
     """ Create weak labels target numpy array.
 
-    Parameters
-    __________
+    Args:
+        data_path : str,
+            Dataset file to create weak target from (in 'Reformatted' format).
+        class_ids : list[str],
+            List of class ids, index in the list will correspond to the index
+            in the target array.
 
-    data_path : str,
-        Dataset file to create weak target from (in 'Reformatted' format).
-    class_ids : list[str],
-        List of class ids, index in the list will correspond to the index
-        in the target array.
-
-    Returns
-    _______
-
-    audio_names : numpy.array[str],
-        List of all files from data_path, index in this list corresponds
-        to the index in the target array.
-    target : numpy.array[float],
-        Target array of weak labels with shape (videos, classes).
+    Returns:
+        audio_names, target
+            -List of all files from data_path, index in this list corresponds
+            to the index in the target array.
+            -Target array of weak labels with shape (videos, classes).
     """
 
     class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
@@ -119,11 +110,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--class_labels_path', type=str, required=True,
-                        help="Dataset labels in tsv format (in 'Reformatted' format)")
+                        help="Dataset labels in tsv format (in 'Reformatted' "
+                             "format)")
     parser.add_argument('--selected_classes_path', type=str, required=True,
-                        help="List of class ids selected for training, one per line")
+                        help="List of class ids selected for training, "
+                             "one per line")
     parser.add_argument('--data_path', type=str, required=True,
-                        help="Dataset file to create weak target from (in 'Reformatted' format)")
+                        help="Dataset file to create weak target from (in "
+                             "'Reformatted' format)")
     parser.add_argument('--audio_names_path', type=str, default='audio_names.npy',
                         help="Path to save the audio_names numpy array"
                              " (defaults to 'audio_names.npy' in CWD)")
