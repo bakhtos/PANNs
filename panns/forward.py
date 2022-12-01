@@ -8,32 +8,24 @@ def forward(model, data_loader, return_data=False,
             return_target=False):
     """Forward data to a model.
 
-    Parameters
-    __________
+    Args:
+        model : torch.nn.Module subclass, Model to forward the data to.
+        data_loader: torch.utils.data.Dataloader,
+            Data loader that provides data and target to the model
+        return_data: bool, If True, third returned argument will be
+            collated input data (default False)
+        return_target: bool, If True, fourth returned argument will be
+            collated target (default False)
 
-    model : torch.nn.Module subclass,
-        Model to forward the data to.
-    data_loader: torch.utils.data.Dataloader,
-        Data loader that provides data and target to the model
-    return_data: bool, optional (default False)
-        If True, third returned argument will be collated input data
-    return_target: bool, optional (default False)
-        If, True, fourth returned argument will be collated target
-
-    Returns
-    _______
-
-    clipwise_output : torch.Tensor,
-        First output of the model, tensor of shape (audios_num, classes_num)
-    second_output : torch.Tensor,
-        Either segmentwise or framewise output,
-        tensor of shape(audios_num, segments_num or frames_num, classes_num)
-    data : torch.Tensor,
-        If return_data is True, tensor of shape (audios_num, clip_samples),
-        otherwise None
-    target: torch.Tensor,
-        If return_target is True, tensor of shape (audios_num, classes_num),
-        otherwise None
+    Returns:
+        clipwise_output, second_output, data, target
+            -First output of the model, tensor of shape (audios_num, classes_num)
+            -Either segmentwise or framewise output,
+            tensor of shape(audios_num, segments_num or frames_num, classes_num)
+            -If return_data is True, tensor of shape (audios_num, clip_samples),
+            otherwise None
+            -If return_target is True, tensor of shape (audios_num, classes_num),
+            otherwise None
     """
 
     # Forward data to a model in mini-batches
