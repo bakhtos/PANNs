@@ -12,32 +12,41 @@ from panns.models.loader import load_model
 __all__ = ['detect_events']
 
 
-def detect_events(*, frame_probabilities,
-                  label_id_list,
-                  filenames,
-                  output='events.txt',
-                  threshold=0.5,
-                  minimum_event_length=0.1,
-                  minimum_event_gap=0.1,
-                  sample_rate=32000,
-                  hop_size=320):
+def detect_events(*, frame_probabilities: np.ndarray,
+                  label_id_list: list,
+                  filenames: np.ndarray,
+                  output: str = 'events.txt',
+                  threshold: float = 0.5,
+                  minimum_event_length: float = 0.1,
+                  minimum_event_gap: float = 0.1,
+                  sample_rate: int = 32000,
+                  hop_size: int = 320) -> None:
     """Detect Sound Events using a given framewise probability array.
 
-    :param numpy.ndarray frame_probabilities: A two-dimensional array of framewise probablities of classes. First dimension corresponds to the classes,
-        second to the frames of the audio clip
-    :param dict label_id_list:
-        List of class ids used to index the frame_probabilities tensor
-    :param numpy.ndarray filenames: Name of the audio clip to which the
-    frame_probabilities correspond.
-    :param str output: Filename to write detected events into (default 'events.txt')
-    :param float threshold: Threshold used to binarize the frame_probabilites.
-        Values higher than the threshold are considered as 'event detected' (default 0.5)
-    :param int minimum_event_length: Minimum length (in seconds) of detetected event
-        to be considered really present
-    :param int minimum_event_gap: Minimum length (in seconds) of a gap between
-        two events to distinguish them, if the gap is smaller events are merged
-    :param int sample_rate: Sample rate of audio clips used in the dataset (default 32000)
-    :param int hop_size: Hop length which was used to obtain the frame_probabilities (default 320)
+    Args:
+        frame_probabilities: numpy.ndarray, A two-dimensional array of
+            framewise probabilities of classes. First dimension corresponds
+            to the classes, second to the frames of the audio clip
+        label_id_list: list, List of class ids used to index the
+            frame_probabilities tensor
+        filenames: numpy.ndarray, Name of the audio clip to which the
+            frame_probabilities correspond.
+        output: str, Filename to write detected events into (default 'events.txt')
+        threshold: float, Threshold used to binarize the frame_probabilities.
+            Values higher than the threshold are considered as 'event detected'
+            (default 0.5)
+        minimum_event_length: float, Minimum length (in seconds) of detected event
+            to be considered really present (default 0.1)
+        minimum_event_gap: float, Minimum length (in seconds) of a gap between
+            two events to distinguish them, if the gap is smaller events are merged
+            (default 0.1)
+        sample_rate: int, Sample rate of audio clips used in the dataset
+            (default 32000)
+        hop_size: int, Hop length which was used to obtain the frame_probabilities
+            (default 320)
+
+    Returns:
+        Writes detected events for each file into output file.
     """
 
     event_file = open(output, 'w')
@@ -87,9 +96,8 @@ def detect_events(*, frame_probabilities,
                             f'{filename}\t{event_id}\t{onset_write}\t{offset_write}\n')
 
             if (minimum_event_gap is not None and event_activity.size != 0
-                    and (
-                            minimum_event_length is None or current_offset - current_onset >
-                            minimum_event_length)):
+                    and (minimum_event_length is None or current_offset - current_onset >
+                         minimum_event_length)):
                 event_file.write(f'{filename}\t{event_id}\t{current_onset}'
                                  f'\t{current_offset}\n')
 
