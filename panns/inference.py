@@ -204,14 +204,15 @@ if __name__ == '__main__':
                                               persistent_workers=True,
                                               pin_memory=True)
 
-    clipwise_output, second_output, _, _ = forward(model, eval_loader)
+    clipwise_output, framewise_output, _, _ = forward(model, eval_loader)
 
+    framewise_output = framewise_output.cpu()
     audio_names = np.load(args.audio_names_path)
 
     ids, _, _, _ = get_labels(args.class_labels_path,
                               args.selected_classes_path)
 
-    detect_events(frame_probabilities=second_output,
+    detect_events(frame_probabilities=framewise_output,
                   label_id_list=ids,
                   filenames=audio_names,
                   threshold=args.threshold,
