@@ -31,39 +31,36 @@ def train(*, hdf5_files_path_train,
           cuda=False, num_workers=8):
     """Train AudioSet tagging model. 
 
-    hdf5_files_path_train : str,
-        Path to hdf5 compression of the train split of the dataset
-    target_weak_path_train : str,
-        Path to the .npy file containing weak target array of the
-        train split of the dataset
-    hdf5_files_path_eval : str,
-        Path to hdf5 compression of the evaluation split of the dataset
-    target_weak_path_eval : str,
-        Path to the .npy file containing weak target array of the
-        evaluation split of the dataset
-    model : torch.nn.Module,
-        Model to train (one of the model classes defined in panns.models.models)
-    logs_dir : str, optional (default None)
-        Directory to save the logs into (will be created if doesn't exist );
-        if None, a directory 'logs' will be created in CWD
-    checkpoints_dir : str, optional (default None)
-        Directory to save model's checkpoints into (will be created if doesn't exist);
-        if None a directory 'checkpoints' will be created in CWD
-    statistics_dir : str, optional (default None)
-        Directory to save evaluation statistics into (will be created if doesn't exist);
-        if None a directory 'statistics' will be created in CWD (default None)
-    mixup_alpha : float, optional (default None)
-        Alpha parameter for Mixup (if None, mixup not used)
-    batch_size : int, optional (default 32)
-        Batch size to use for training/evaluation
-    learning_rate : float, optional (default 1e-3)
-        Learning rate to use in training
-    iter_max : bool, optional (default 100000)
-        Train until this iteration
-    cuda : bool, optional (default False)
-        If True, use GPU for training
-    num_workers : int, optional (default 32)
-        Amount of workers to pass to torch.utils.data.DataLoader()
+    Args:
+        hdf5_files_path_train : str,
+            Path to hdf5 compression of the train split of the dataset
+        target_weak_path_train : str,
+            Path to the .npy file containing weak target array of the
+            train split of the dataset
+        hdf5_files_path_eval : str,
+            Path to hdf5 compression of the evaluation split of the dataset
+        target_weak_path_eval : str,
+            Path to the .npy file containing weak target array of the
+            evaluation split of the dataset
+        model : torch.nn.Module,
+            Model to train (one of the model classes defined in panns.models.models)
+        logs_dir : str,
+            Directory to save the logs into (will be created if doesn't exist);
+            if None, a directory 'logs' will be created in CWD (default None)
+        checkpoints_dir : str,
+            Directory to save model's checkpoints into (will be created if doesn't exist);
+            if None a directory 'checkpoints' will be created in CWD (default None)
+        statistics_dir : str,
+            Directory to save evaluation statistics into (will be created if doesn't exist);
+            if None a directory 'statistics' will be created in CWD (default None)
+        mixup_alpha : float, Alpha parameter for Mixup;
+            if None, mixup not used (default None)
+        batch_size : int, Batch size to use for training/evaluation (default 32)
+        learning_rate : float, Learning rate to use in training (default 1e-3)
+        iter_max : bool, Train until this iteration (default 100000)
+        cuda : bool, If True, use GPU for training (default False)
+        num_workers : int, Amount of workers to pass to
+            torch.utils.data.DataLoader() (default 32)
     """
 
     # Augmentation
@@ -196,33 +193,43 @@ if __name__ == '__main__':
     parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
     parser.add_argument('--checkpoints_dir', type=str,
                         help="Directory to save neural net's checkpoints into")
-    parser.add_argument('--statistics_dir', type=str, help="Directory to save evaluation statistics into")
+    parser.add_argument('--statistics_dir', type=str,
+                        help="Directory to save evaluation statistics into")
     parser.add_argument('--window_size', type=int, default=1024,
-                        help="Window size of filter to be used in training (default 1024)")
+                        help="Window size of filter to be used in training ("
+                             "default 1024)")
     parser.add_argument('--hop_size', type=int, default=320,
-                        help="Hop size of filter to be used in traning (default 320)")
+                        help="Hop size of filter to be used in training ("
+                             "default 320)")
     parser.add_argument('--sample_rate', type=int, default=32000,
-                        help="Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)")
+                        help="Sample rate of the used audio clips; supported "
+                             "values are 32000, 16000, 8000 (default 32000)")
     parser.add_argument('--clip_length', type=int, default=10000,
-                        help="Length (in ms) of audio clips used in the dataset (default 10000)")
+                        help="Length (in ms) of audio clips used in the "
+                             "dataset (default 10000)")
     parser.add_argument('--fmin', type=int, default=50,
-                        help="Minimum frequency to be used when creating Logmel filterbank (default 50)")
+                        help="Minimum frequency to be used when creating "
+                             "Logmel filterbank (default 50)")
     parser.add_argument('--fmax', type=int, default=14000,
-                        help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
+                        help="Maximum frequency to be used when creating "
+                             "Logmel filterbank (default 14000)")
     parser.add_argument('--mel_bins', type=int, default=64,
-                        help="Amount of mel filters to use in the filterbank (default 64)")
+                        help="Amount of mel filters to use in the filterbank "
+                             "(default 64)")
     parser.add_argument('--mixup_alpha', type=float, default=None,
-                        help="If using augmentation, use this as alpha parameter for Mixup (default 1.0)")
+                        help="If using augmentation, use this as alpha "
+                             "parameter for Mixup (default 1.0)")
     parser.add_argument('--batch_size', type=int, default=32,
-                        help="Batch size to use for training/evaluation (default 32)")
+                        help="Batch size to use for training/evaluation ("
+                             "default 32)")
     parser.add_argument('--learning_rate', type=float, default=1e-3,
                         help="Learning rate to use in training (default 1e-3)")
     parser.add_argument('--resume_checkpoint_path', type=str, default=None,
-                        help="If --resume_iteration  is greater than zero, read a checkpoint from this path")
+                        help="Read a checkpoint from this path")
     parser.add_argument('--iter_max', type=int, default=1000000,
                         help="Train until this iteration (default 1000000)")
     parser.add_argument('--cuda', action='store_true', default=False,
-                        help="If set, try to use GPU for traning")
+                        help="If set, try to use GPU for training")
     parser.add_argument('--classes_num', type=int, default=110,
                         help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
