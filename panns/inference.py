@@ -121,7 +121,8 @@ if __name__ == '__main__':
     parser.add_argument('--target_weak_path', type=str, required=True,
                         help="Path to the weak target array of the eval split")
     parser.add_argument('--audio_names_path', type=str, required=True,
-                        help='Path to .npy file to load audio filenames to be packed in this order')
+                        help='Path to .npy file to load audio filenames '
+                             'to be packed in this order')
     parser.add_argument('--model_type', type=str, required=True,
                         help="Name of model to train")
     parser.add_argument('--checkpoint_path', type=str, required=True,
@@ -131,31 +132,40 @@ if __name__ == '__main__':
                         help="Dataset class labels in tsv format (as in "
                              "'Reformatted' dataset)")
     parser.add_argument('--class_labels_path', type=str, required=True,
-                        help='List of selected classes that were used in training'
-                             '/are used in the model, one per line')
+                        help="List of selected classes that were used in "
+                             "training are used in the model, one per line")
     parser.add_argument('--window_size', type=int, default=1024,
-                        help="Window size of filter to be used in training (default 1024)")
+                        help="Window size of filter to be used in training ("
+                             "default 1024)")
     parser.add_argument('--hop_size', type=int, default=320,
-                        help="Hop size of filter to be used in traning (default 320)")
+                        help="Hop size of filter to be used in training ("
+                             "default 320)")
     parser.add_argument('--sample_rate', type=int, default=32000,
-                        help="Sample rate of the used audio clips; supported values are 32000, 16000, 8000 (default 32000)")
+                        help="Sample rate of the used audio clips; supported "
+                             "values are 32000, 16000, 8000 (default 32000)")
     parser.add_argument('--fmin', type=int, default=50,
-                        help="Minimum frequency to be used when creating Logmel filterbank (default 50)")
+                        help="Minimum frequency to be used when creating "
+                             "Logmel filterbank (default 50)")
     parser.add_argument('--fmax', type=int, default=14000,
-                        help="Maximum frequency to be used when creating Logmel filterbank (default 14000)")
+                        help="Maximum frequency to be used when creating "
+                             "Logmel filterbank (default 14000)")
     parser.add_argument('--mel_bins', type=int, default=64,
-                        help="Amount of mel filters to use in the filterbank (default 64)")
+                        help="Amount of mel filters to use in the filterbank "
+                             "(default 64)")
     parser.add_argument('--batch_size', type=int, default=32,
-                        help="Batch size to use for training/evaluation (default 32)")
+                        help="Batch size to use for training/evaluation ("
+                             "default 32)")
     parser.add_argument('--cuda', action='store_true', default=False,
                         help="If set, try to use GPU for training")
     parser.add_argument('--classes_num', type=int, default=110,
                         help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
-                        help="Amount of workers to pass to torch.utils.data.DataLoader (default 8)")
+                        help="Amount of workers to pass to "
+                             "torch.utils.data.DataLoader (default 8)")
     parser.add_argument('--threshold', type=float, default=0.5,
-                        help="Threshold for frame activity tensor, values above the threshold"
-                             " are interpreted as 'event present' (default 0.5)")
+                        help="Threshold for frame activity tensor, values "
+                             "above the threshold are interpreted as'event "
+                             "present' (default 0.5)")
     parser.add_argument('--minimum_event_length', type=float, default=0.1,
                         help="Events shorter than this ae filtered out (default 0.1)")
     parser.add_argument('--minimum_event_gap', type=float, default=0.1,
