@@ -69,6 +69,7 @@ def detect_events(*, frame_probabilities,
         filename = filenames[file_ix]
         logging.info(f"Processing file {filename}...")
         for event_ix, event_id in enumerate(label_id_list):
+            logging.info(f"Processing event {event_id}...")
             event_activity = change_indices[file_ix, :, event_ix].nonzero()[
                                  0] + 1
 
