@@ -124,6 +124,8 @@ if __name__ == '__main__':
     parser.add_argument('--audio_names_path', type=str, required=True,
                         help='Path to .npy file to load audio filenames '
                              'to be packed in this order')
+    parser.add_argument('--output_path', type=str, default='events.txt',
+                        help="File to save detected events")
     parser.add_argument('--model_type', type=str, required=True,
                         help="Name of model to train")
     parser.add_argument('--checkpoint_path', type=str, required=True,
@@ -217,6 +219,7 @@ if __name__ == '__main__':
                   label_id_list=ids,
                   filenames=audio_names,
                   threshold=args.threshold,
+                  output=args.output_path,
                   minimum_event_length=args.minimum_event_length,
                   minimum_event_gap=args.minimum_event_gap,
                   sample_rate=args.sample_rate,
