@@ -206,7 +206,7 @@ if __name__ == '__main__':
 
     clipwise_output, framewise_output, _, _ = forward(model, eval_loader)
 
-    framewise_output = framewise_output.cpu()
+    framewise_output = framewise_output.cpu().numpy()
     audio_names = np.load(args.audio_names_path)
 
     ids, _, _, _ = get_labels(args.class_labels_path,
