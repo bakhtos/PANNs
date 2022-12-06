@@ -79,7 +79,24 @@ def train(*, hdf5_files_path_train,
     if logs_dir is None:
         logs_dir = os.path.join(workspace, 'logs')
     create_logging(logs_dir, filemode='w')
-    
+
+    def save_model(model, statistics, iteration,
+                   checkpoints_dir=checkpoints_dir,
+                   statistics_dir=statistics_dir):
+        # Save model
+        checkpoint_name = f"checkpoint_iteration={iteration}.pth"
+        checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
+        torch.save(model.module.state_dict(), checkpoint_path)
+        logging.info(f'--- Iteration: {iteration}, Model saved to'
+                     f' {checkpoint_path}')
+
+        # Save statistics
+        statistics_name = f"statistics_iteration={iteration}.pickle"
+        statistics_path = os.path.join(statistics_dir, statistics_name)
+        pickle.dump(statistics, open(statistics_path, 'wb'))
+        logging.info(f'--- Iteration: {iteration}, Statistics saved to'
+                     f' {statistics_path}')
+
     # Dataset
     train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
     eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
@@ -156,23 +173,11 @@ def train(*, hdf5_files_path_train,
                 f' {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
 
         # Save model/Stop training
-        if iteration % 100000 == 0 or iteration == iter_max:
-            # Save model
-            checkpoint_name = f"checkpoint_iteration={iteration}.pth"
-            checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
-            torch.save(model.module.state_dict(), checkpoint_path)
-            logging.info(f'--- Iteration: {iteration}, Model saved to'
-                         f' {checkpoint_path}')
-
-            # Save statistics
-            statistics_name = f"statistics_iteration={iteration}.pickle"
-            statistics_path = os.path.join(statistics_dir, statistics_name)
-            pickle.dump(statistics, open(statistics_path, 'wb'))
-            logging.info(f'--- Iteration: {iteration}, Statistics saved to'
-                         f' {statistics_path}')
-
-            # Stop training
-            if iteration == iter_max: break
+        if iteration == iter_max:
+            save_model(model, statistics, iteration)
+            break
+        elif iteration % 100000 == 0:
+            save_model(model, statistics, iteration)
 
         iteration += 1
         
