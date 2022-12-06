@@ -164,15 +164,42 @@ if __name__ == '__main__':
     parser.add_argument('--data_path', type=str, required=True,
                         help="Dataset file to create weak target from (in "
                              "'Reformatted' format)")
+    parser.add_argument('--target_type', type=str, required=False, choices=[
+                        'weak', 'strong'], default='weak',
+                        help='Whether to create a weak or '
+                        'strong label tensor (strong also requires '
+                        'sample_rate, hop_length and clip-length parameters)')
+    parser.add_argument('--hop_length', type=int, default=None, required=False,
+                        help="Hop size of filter to be used in training")
+    parser.add_argument('--sample_rate', type=int, default=None, required=False,
+                        help="Sample rate of the used audio clips")
+    parser.add_argument('--clip_length', type=int, default=None, required=False,
+                        help="Length (in ms) of audio clips used in the "
+                             "dataset")
     parser.add_argument('--audio_names_path', type=str, default='audio_names.npy',
                         help="Path to save the audio_names numpy array"
                              " (defaults to 'audio_names.npy' in CWD)")
-    parser.add_argument('--target_weak_path', type=str, default='target_weak.npy',
-                        help="Path to dave the weak target numpy array"
-                             " (defaults to 'target_weak.npy' in CWD)")
+    parser.add_argument('--target_path', type=str, default='target.npy',
+                        help="Path to save the target numpy array"
+                             " (defaults to 'target.npy' in CWD)")
     args = parser.parse_args()
 
     ids, _, _, _ = get_labels(args.class_labels_path, args.selected_classes_path)
-    audio_names, target_weak = get_weak_target(args.data_path, ids)
+    if args.target_type == 'strong':
+        if args.sample_rate is None:
+            raise AttributeError("Strong label target was requested, but no"
+                                 "sample_rate given")
+        if args.hop_length is None:
+            raise AttributeError("Strong label target was requested, but no"
+                                 "hop_length given")
+        if args.clip_length is None:
+            raise AttributeError("Strong label target was requested, but no"
+                                 "clip_length given")
+        audio_names, target = get_strong_target(args.data_path, ids,
+                                                args.sample_rate,
+                                                args.hop_length,
+                                                args.clip_length)
+    else:
+        audio_names, target = get_weak_target(args.data_path, ids)
     np.save(args.audio_names_path, audio_names)
-    np.save(args.target_weak_path, target_weak)
+    np.save(args.target_path, target)
