@@ -88,7 +88,7 @@ python -m panns.utils.metadata_utils --class_labels_path=$CLASS_LABELS_PATH,
 
 ### Pack waveforms into hdf5 files
 
-For training and evaluation, the actual audio files need to be packed into an [hdf5](https://hdfgroup.org/) object
+For training and evaluation, the actual audio files need to be packed into a [hdf5](https://hdfgroup.org/) object
 using the `panns.data.hdf5` module, which relies on the [h5py](https://www.h5py.org/) package.
 
 The audio arrays will be made to match the length `CLIP_LENGTH*SAMPLE_RATE/1000` either by truncating or zero-padding.
@@ -125,38 +125,44 @@ python -m panns.data.hdf5  --audios_dir=$AUDIOS_DIR_EVAL\
 
 ## Training
 The Neural Networks are defined in [panns/models/models.py](panns/models/models.py),
-some auxilary classes are defined in [panns/models/blocks.py](panns/models/blocks.py).
+some auxiliary classes are defined in [panns/models/blocks.py]
+(panns/models/blocks.py).
 Training is performed using [panns/train.py](panns/train.py). 
 Training is controlled by the following parameters:
 - Window size (```window_size```): size of the sliding window used in LogMel spectrum extraction
 - Hop size (```hop_size```): hop size of the window used in LogMel spectrum extraction
 - Fmin (```fmin```) and Fmax (```fmax```): minimum and maximum frequencies used in the Mel filterbank
 - Mel bins (```mel_bins```): amount of mel filters to be used in the filterbank
-- Augmentation (mixup): training can be set up to use Mixup (flag ```augmentation```)
-    with a given alpha parameter, which also needs to be provided (```mixup_alpha```)
+- Augmentation (mixup): training can be set up to use Mixup with a given alpha parameter,
+  which needs to be provided (```mixup_alpha```), if not provided than Mixup
+  not used
 - Batch size (```batch_size```): amount of files used in one training loop
-- Maximum iteration (```max_iter```): amount of iterations performed (an 'iteration' is processing
+- Maximum iteration (```iter_max```): amount of iterations performed (an 
+  'iteration' is processing
         of one batch, we do not use epochs in this pipeline)
 - Learning rate (```learning_rate```): learning rate parameter for the optimizer
+- Number of workers (```num_workers```) to use if training on GPU
 
 Training requires the user to specify which model to use (```model_type```, must 
-match one of the classes defined in [panns/models/models.py](panns/models/models.py))
-and which data sampler to use for training (```sampler```, must match one of the 
-classes defined in [panns/data/loaders.py](panns/data/loaders.py)
+match one of the classes defined in [panns/models/models.py](panns/models/models.py)).
 
 Also, directories for storing checkpoints, evaluation statistics and logs
 can be provided (defined above in environment variables); by default
 respectively named folders are created in the current working directory.
 
-In addition it is possible to load an existing (previously trained) checkpoint
-and continue training from a given iteration, when also ```resume_iteration```
-and ```resume_checkpoint_path``` need to be given.
+In addition, it is possible to load an existing (previously trained) checkpoint
+and continue training from that interation, when also ```resume_checkpoint_path```
+need to be given.
+
+It is also recommended to create environment variables for the parameters.
 
 Example of initiating training:
 ```shell
-python -m panns.train --train_indexes_hdf5_path=$TRAIN_INDEXES_HDF5_PATH\
-                      --eval_indexes_hdf5_path=$EVAL_INDEXES_HDF5_PATH\
-                      --model_type='DecisionLevelMax'\
+python -m panns.train --hdf5_files_path_train=$HDF5_FILES_PATH_TRAIN\
+                      --hdf5_files_path_eval=$HDF5_FILES_PATH_EVAL\
+                      --target_weak_path_train=$TARGET_WEAK_PATH_TRAIN\
+                      --target_weak_path_eval=$TARGET_WEAK_PATH_EVAL\
+                      --model_type='Cnn14_DecisionLevelMax'\
                       --logs_dir=$LOGS_DIR\
                       --checkpoints_dir=$CHECKPOINTS_DIR\
                       --statistics_dir=$STATISTICS_DIR\
@@ -167,14 +173,67 @@ python -m panns.train --train_indexes_hdf5_path=$TRAIN_INDEXES_HDF5_PATH\
                       --fmin=50\
                       --fmax=14000\
                       --mel_bins=64\
-                      --sampler='TrainSampler'\
                       --batch_size=32\
                       --learning_rate=1e-3\
-                      --early_stop=6000000\
+                      --iter_max=600000\
                       --classes_num=$CLASSES_NUM\
+                      --num_workers=8
                       --cuda
 ```
+## Inference
 
+It is possible to produce a file with events for a given dataset inferred 
+from the trained model in the same format as files in [dataset](dataset)
+using [panns.inference](panns/inference.py).
+For that a checkpoint of the trained model is needed
+as well as an `hdf5` compression of the evaluation set.
+
+The script accepts following parameters:
+
+- `hdf5_files_path`: location of the `hdf5` compression of the dataset
+- `target_weak_path`: location of the weak target numpy array for the dataset
+- `audio_names_path`: location of the audio_names numpy array (generated 
+  with [panns.utils.metadata_utils](panns/utils/metadata_utils.py))
+- `output_path`: filename to save the detected events
+- `checkpoint_path`: location of the checkpoint of the model to use
+- `logs_dir`: directory to write logs into (optional)
+- `selected_classes_path`: same as defined for SELECTED_CLASSES_PATH 
+  variable above
+- `class_labels_path`: same as defined for CLASS_LABELS_PATH variable above
+- `threshold`: Output of the model is thresholded by this value, only values 
+  greater are considered as 'event detected'
+- `minimum_event_gap`: In seconds, minimum gap between two consecutive 
+  events so that they are considered separate events; events closer than 
+  this are merged together by filling the small gap
+- `minimum_event_length`: In seconds, events shorter than this are ignored 
+  (first gaps are closed, than short events removed)
+- `batch_size`, `cuda`, `num_workers`: Control passing data to the model 
+  similarly to training phase
+- `model_type`, `classes_num`, `sample_rate`, `mel_bins`, `fmin`, `fmax`, 
+  `window_size`, `hop_size`: Parameters for the model
+
+Example of inference:
+```shell
+python -m panns.inference --hdf5_files_path=$HDF5_FILES_PATH_EVAL\
+                          --target_weak_path=$TARGET_WEAK_PATH_EVAL\
+                          --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
+                          --checkpoint_path=\  #Path to checkpoint in $CHECKPOINTS_DIR
+                          --selected_classes_path=$SELECTED_CLASSES_PATH\
+                          --class_labels_path=$CLASS_LABELS_PATH\
+                          --threshold=0.5\
+                          --minimum_event_gap=0.1\
+                          --minimum_event_length=0.1\
+                          --model_type='Cnn14_DecisionLevelMax'\
+                          --sample_rate=32000\
+                          --window_size=1024\
+                          --hop_size=320\
+                          --mel_bins=64\
+                          --fmin=50\
+                          --fmax=14000\
+                          --batch_size=32\
+                          --classes_num=110\
+                          --num_workers=8
+```
 
 ## Cite
 [1] Qiuqiang Kong, Yin Cao, Turab Iqbal, Yuxuan Wang, Wenwu Wang, and Mark D. Plumbley. "Panns: Large-scale pretrained audio neural networks for audio pattern recognition." IEEE/ACM Transactions on Audio, Speech, and Language Processing 28 (2020): 2880-2894.
