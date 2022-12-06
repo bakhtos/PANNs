@@ -170,7 +170,8 @@ def train(*, hdf5_files_path_train,
 
             logging.info(
                 f'--- Iteration: {iteration}, validate time:'
-                f' {validate_time:.3f} s, validate mAP: {np.mean(eval_average_precision):.3f}')
+                f' {validate_time:.3f} s, validate mAP: '
+                f'{np.mean(eval_average_precision):.3f}')
 
         # Save model/Stop training
         if iteration == iter_max:
@@ -238,7 +239,8 @@ if __name__ == '__main__':
     parser.add_argument('--classes_num', type=int, default=110,
                         help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
-                        help="Amount of workers to pass to torch.utils.data.DataLoader (default 8)")
+                        help="Amount of workers to pass to "
+                             "torch.utils.data.DataLoader (default 8)")
     
     args = parser.parse_args()
 
