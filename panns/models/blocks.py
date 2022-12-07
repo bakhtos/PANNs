@@ -498,11 +498,9 @@ class _ResNetWav1d(nn.Module):
 class _InvertedResidual(nn.Module):
     def __init__(self, inp, oup, stride, expand_ratio):
         super().__init__()
-        self.stride = stride
-        assert stride in [1, 2]
 
         hidden_dim = round(inp * expand_ratio)
-        self.use_res_connect = self.stride == 1 and inp == oup
+        self.use_res_connect = stride == 1 and inp == oup
 
         if expand_ratio == 1:
             _layers = [
@@ -675,8 +673,6 @@ class _DropStripes(nn.Module):
         """
         super().__init__()
 
-        assert dim in [2, 3]  # dim 2: time; dim 3: frequency
-
         self.dim = dim
         self.drop_width = drop_width
         self.stripes_num = stripes_num
@@ -687,19 +683,13 @@ class _DropStripes(nn.Module):
         Input must be of shape (batch_size, channels, time_steps, freq_bins).
         """
 
-        assert x.ndimension() == 4
+        batch_size = x.shape[0]
+        total_width = x.shape[self.dim]
 
-        if self.training is False:
-            return x
+        for n in range(batch_size):
+            self.transform_slice(x[n], total_width)
 
-        else:
-            batch_size = x.shape[0]
-            total_width = x.shape[self.dim]
-
-            for n in range(batch_size):
-                self.transform_slice(x[n], total_width)
-
-            return x
+        return x
 
     def transform_slice(self, e, total_width):
         """e: (channels, time_steps, freq_bins)"""
