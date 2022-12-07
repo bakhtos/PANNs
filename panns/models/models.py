@@ -468,6 +468,7 @@ class Cnn14DecisionLevel(nn.Module):
         x = F.relu_(self.fc1(x))
         x = F.dropout(x, p=0.5, training=self.training)
 
+        clipwise_output = None
         if self.decision_level == 'att':
             x = x.transpose(1, 2)
             (clipwise_output, _, segmentwise_output) = self.audioset_layer(x)
