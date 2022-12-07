@@ -6,17 +6,17 @@ __all__ = ['init_layer',
            'init_bn',
            '_ConvBlock',
            '_ConvBlock5x5',
+           '_ConvPreWavBlock',
            '_AttBlock',
            '_ResnetBasicBlock',
            '_ResnetBottleneck',
            '_ResNet',
+           '_ResnetBasicBlockWav1d',
+           '_ResNetWav1d',
            '_InvertedResidual',
            '_LeeNetConvBlock',
            '_LeeNetConvBlock2',
            '_DaiNetResBlock',
-           '_ResnetBasicBlockWav1d',
-           '_ResNetWav1d',
-           '_ConvPreWavBlock',
            '_DropStripes',
            '_SpecAugmentation',
            '_interpolate',
@@ -103,6 +103,36 @@ class _ConvBlock5x5(nn.Module):
             x1 = F.avg_pool2d(x, kernel_size=pool_size)
             x2 = F.max_pool2d(x, kernel_size=pool_size)
             x = x1 + x2
+
+        return x
+
+
+class _ConvPreWavBlock(nn.Module):
+    def __init__(self, in_channels, out_channels):
+        super().__init__()
+
+        self.conv1 = nn.Conv1d(in_channels=in_channels,
+                               out_channels=out_channels,
+                               kernel_size=3, stride=1,
+                               padding=1, bias=False)
+
+        self.conv2 = nn.Conv1d(in_channels=out_channels,
+                               out_channels=out_channels,
+                               kernel_size=3, stride=1, dilation=2,
+                               padding=2, bias=False)
+
+        self.bn1 = nn.BatchNorm1d(out_channels)
+        self.bn2 = nn.BatchNorm1d(out_channels)
+
+        init_layer(self.conv1)
+        init_layer(self.conv2)
+        init_bn(self.bn1)
+        init_bn(self.bn2)
+
+    def forward(self, x, pool_size):
+        x = F.relu_(self.bn1(self.conv1(x)))
+        x = F.relu_(self.bn2(self.conv2(x)))
+        x = F.max_pool1d(x, kernel_size=pool_size)
 
         return x
 
@@ -328,6 +358,149 @@ class _ResNet(nn.Module):
         return x
 
 
+class _ResnetBasicBlockWav1d(nn.Module):
+    expansion = 1
+
+    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
+                 base_width=64, dilation=1, norm_layer=None):
+        super().__init__()
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm1d
+        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
+
+        self.stride = stride
+
+        self.conv1 = nn.Conv1d(in_planes, planes, kernel_size=3, stride=1,
+                               padding=dilation, groups=1, bias=False,
+                               dilation=1)
+        self.bn1 = norm_layer(planes)
+        self.relu = nn.ReLU(inplace=True)
+        self.conv2 = nn.Conv1d(planes, planes, kernel_size=3, stride=1,
+                               padding=dilation, groups=1, bias=False,
+                               dilation=2)
+
+        self.bn2 = norm_layer(planes)
+        self.downsample = downsample
+        self.stride = stride
+
+        init_layer(self.conv1)
+        init_bn(self.bn1)
+        init_layer(self.conv2)
+        init_bn(self.bn2)
+        nn.init.constant_(self.bn2.weight, 0)
+
+    def forward(self, x):
+        identity = x
+
+        if self.stride != 1:
+            out = F.max_pool1d(x, kernel_size=self.stride)
+        else:
+            out = x
+
+        out = self.conv1(out)
+        out = self.bn1(out)
+        out = self.relu(out)
+        out = F.dropout(out, p=0.1, training=self.training)
+
+        out = self.conv2(out)
+        out = self.bn2(out)
+
+        if self.downsample is not None:
+            identity = self.downsample(identity)
+
+        out += identity
+        out = self.relu(out)
+
+        return out
+
+
+class _ResNetWav1d(nn.Module):
+    def __init__(self, block, layers, zero_init_residual=False,
+                 groups=1, width_per_group=64,
+                 replace_stride_with_dilation=(False, False, False),
+                 norm_layer=None):
+        """
+
+        Args:
+            block:
+            layers:
+            zero_init_residual:
+            groups:
+            width_per_group:
+            replace_stride_with_dilation: 3-tuple of bools;
+                indicates whether to replace stride with dilation in
+                each of the three layers
+            norm_layer:
+        """
+        super().__init__()
+
+        if norm_layer is None:
+            norm_layer = nn.BatchNorm1d
+        self._norm_layer = norm_layer
+
+        self.in_planes = 64
+        self.dilation = 1
+        self.groups = groups
+        self.base_width = width_per_group
+
+        self.layer1 = self._make_layer(block, 64, layers[0], stride=1)
+        self.layer2 = self._make_layer(block, 128, layers[1], stride=4)
+        self.layer3 = self._make_layer(block, 256, layers[2], stride=4)
+        self.layer4 = self._make_layer(block, 512, layers[3], stride=4)
+        self.layer5 = self._make_layer(block, 1024, layers[4], stride=4)
+        self.layer6 = self._make_layer(block, 1024, layers[5], stride=4)
+        self.layer7 = self._make_layer(block, 2048, layers[6], stride=4)
+
+    def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
+        norm_layer = self._norm_layer
+        downsample = None
+        previous_dilation = self.dilation
+        if dilate:
+            self.dilation *= stride
+            stride = 1
+        if stride != 1 or self.in_planes != planes * block.expansion:
+            if stride == 1:
+                downsample = nn.Sequential(
+                        nn.Conv1d(self.in_planes, planes * block.expansion,
+                                  kernel_size=1, stride=1, bias=False),
+                        norm_layer(planes * block.expansion),
+                )
+                init_layer(downsample[0])
+                init_bn(downsample[1])
+            else:
+                downsample = nn.Sequential(
+                        nn.AvgPool1d(kernel_size=stride),
+                        nn.Conv1d(self.in_planes, planes * block.expansion,
+                                  kernel_size=1, stride=1, bias=False),
+                        norm_layer(planes * block.expansion),
+                )
+                init_layer(downsample[1])
+                init_bn(downsample[2])
+
+        layers = [block(self.in_planes, planes, stride, downsample, self.groups,
+                        self.base_width, previous_dilation, norm_layer)]
+        self.in_planes = planes * block.expansion
+        for _ in range(1, blocks):
+            layers.append(block(self.in_planes, planes, groups=self.groups,
+                                base_width=self.base_width,
+                                dilation=self.dilation,
+                                norm_layer=norm_layer))
+
+        return nn.Sequential(*layers)
+
+    def forward(self, x):
+
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        x = self.layer5(x)
+        x = self.layer6(x)
+        x = self.layer7(x)
+
+        return x
+
+
 class _InvertedResidual(nn.Module):
     def __init__(self, inp, oup, stride, expand_ratio):
         super().__init__()
@@ -496,177 +669,10 @@ class _DaiNetResBlock(nn.Module):
         return x
 
 
-class _ResnetBasicBlockWav1d(nn.Module):
-    expansion = 1
-
-    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
-        super().__init__()
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm1d
-        # Both self.conv1 and self.downsample layers downsample the input when stride != 1
-
-        self.stride = stride
-
-        self.conv1 = nn.Conv1d(in_planes, planes, kernel_size=3, stride=1,
-                               padding=dilation, groups=1, bias=False,
-                               dilation=1)
-        self.bn1 = norm_layer(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = nn.Conv1d(planes, planes, kernel_size=3, stride=1,
-                               padding=dilation, groups=1, bias=False,
-                               dilation=2)
-
-        self.bn2 = norm_layer(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-        init_layer(self.conv1)
-        init_bn(self.bn1)
-        init_layer(self.conv2)
-        init_bn(self.bn2)
-        nn.init.constant_(self.bn2.weight, 0)
-
-    def forward(self, x):
-        identity = x
-
-        if self.stride != 1:
-            out = F.max_pool1d(x, kernel_size=self.stride)
-        else:
-            out = x
-
-        out = self.conv1(out)
-        out = self.bn1(out)
-        out = self.relu(out)
-        out = F.dropout(out, p=0.1, training=self.training)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            identity = self.downsample(identity)
-
-        out += identity
-        out = self.relu(out)
-
-        return out
 
 
-class _ResNetWav1d(nn.Module):
-    def __init__(self, block, layers, zero_init_residual=False,
-                 groups=1, width_per_group=64,
-                 replace_stride_with_dilation=(False, False, False),
-                 norm_layer=None):
-        """
-
-        Args:
-            block:
-            layers:
-            zero_init_residual:
-            groups:
-            width_per_group:
-            replace_stride_with_dilation: 3-tuple of bools;
-                indicates whether to replace stride with dilation in
-                each of the three layers
-            norm_layer:
-        """
-        super().__init__()
-
-        if norm_layer is None:
-            norm_layer = nn.BatchNorm1d
-        self._norm_layer = norm_layer
-
-        self.in_planes = 64
-        self.dilation = 1
-        self.groups = groups
-        self.base_width = width_per_group
-
-        self.layer1 = self._make_layer(block, 64, layers[0], stride=1)
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=4)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=4)
-        self.layer4 = self._make_layer(block, 512, layers[3], stride=4)
-        self.layer5 = self._make_layer(block, 1024, layers[4], stride=4)
-        self.layer6 = self._make_layer(block, 1024, layers[5], stride=4)
-        self.layer7 = self._make_layer(block, 2048, layers[6], stride=4)
-
-    def _make_layer(self, block, planes, blocks, stride=1, dilate=False):
-        norm_layer = self._norm_layer
-        downsample = None
-        previous_dilation = self.dilation
-        if dilate:
-            self.dilation *= stride
-            stride = 1
-        if stride != 1 or self.in_planes != planes * block.expansion:
-            if stride == 1:
-                downsample = nn.Sequential(
-                        nn.Conv1d(self.in_planes, planes * block.expansion,
-                                  kernel_size=1, stride=1, bias=False),
-                        norm_layer(planes * block.expansion),
-                )
-                init_layer(downsample[0])
-                init_bn(downsample[1])
-            else:
-                downsample = nn.Sequential(
-                        nn.AvgPool1d(kernel_size=stride),
-                        nn.Conv1d(self.in_planes, planes * block.expansion,
-                                  kernel_size=1, stride=1, bias=False),
-                        norm_layer(planes * block.expansion),
-                )
-                init_layer(downsample[1])
-                init_bn(downsample[2])
-
-        layers = [block(self.in_planes, planes, stride, downsample, self.groups,
-                  self.base_width, previous_dilation, norm_layer)]
-        self.in_planes = planes * block.expansion
-        for _ in range(1, blocks):
-            layers.append(block(self.in_planes, planes, groups=self.groups,
-                                base_width=self.base_width,
-                                dilation=self.dilation,
-                                norm_layer=norm_layer))
-
-        return nn.Sequential(*layers)
-
-    def forward(self, x):
-
-        x = self.layer1(x)
-        x = self.layer2(x)
-        x = self.layer3(x)
-        x = self.layer4(x)
-        x = self.layer5(x)
-        x = self.layer6(x)
-        x = self.layer7(x)
-
-        return x
 
 
-class _ConvPreWavBlock(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super().__init__()
-
-        self.conv1 = nn.Conv1d(in_channels=in_channels,
-                               out_channels=out_channels,
-                               kernel_size=3, stride=1,
-                               padding=1, bias=False)
-
-        self.conv2 = nn.Conv1d(in_channels=out_channels,
-                               out_channels=out_channels,
-                               kernel_size=3, stride=1, dilation=2,
-                               padding=2, bias=False)
-
-        self.bn1 = nn.BatchNorm1d(out_channels)
-        self.bn2 = nn.BatchNorm1d(out_channels)
-
-        init_layer(self.conv1)
-        init_layer(self.conv2)
-        init_bn(self.bn1)
-        init_bn(self.bn2)
-
-    def forward(self, x, pool_size):
-        x = F.relu_(self.bn1(self.conv1(x)))
-        x = F.relu_(self.bn2(self.conv2(x)))
-        x = F.max_pool1d(x, kernel_size=pool_size)
-
-        return x
 
 
 # Class taken from torchlibrosa package
