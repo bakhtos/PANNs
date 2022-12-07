@@ -573,17 +573,18 @@ class ResNet22(nn.Module):
                                                 freq_drop_width=8,
                                                 freq_stripes_num=2)
 
-        self.bn0 = nn.BatchNorm2d(64)
+        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
-        # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
         self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[2, 2, 2, 2])
 
         self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
-        self.fc1 = nn.Linear(2048, 2048)
-        self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
+                                     classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -676,17 +677,18 @@ class ResNet38(nn.Module):
                                                 freq_drop_width=8,
                                                 freq_stripes_num=2)
 
-        self.bn0 = nn.BatchNorm2d(64)
+        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
-        # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
         self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[3, 4, 6, 3])
 
         self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
-        self.fc1 = nn.Linear(2048, 2048)
-        self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
+                                     classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -779,17 +781,18 @@ class ResNet54(nn.Module):
                                                 freq_drop_width=8,
                                                 freq_stripes_num=2)
 
-        self.bn0 = nn.BatchNorm2d(64)
+        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
-        # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
         self.resnet = _ResNet(block=_ResnetBottleneck, layers=[3, 4, 6, 3])
 
         self.conv_block_after1 = _ConvBlock(in_channels=2048, out_channels=2048)
 
-        self.fc1 = nn.Linear(2048, 2048)
-        self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
+                                     classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -840,13 +843,15 @@ class Res1dNet31(nn.Module):
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
-        self.bn0 = nn.BatchNorm1d(64)
+        self.bn0 = nn.BatchNorm1d(kwargs.get('num_features', 64))
 
         self.resnet = _ResNetWav1d(block=_ResnetBasicBlockWav1d,
                                    layers=[2, 2, 2, 2, 2, 2, 2])
 
-        self.fc1 = nn.Linear(2048, 2048, bias=True)
-        self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
+                                     classes_num, bias=True)
 
         init_layer(self.conv0)
         init_bn(self.bn0)
@@ -883,13 +888,15 @@ class Res1dNet51(nn.Module):
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
-        self.bn0 = nn.BatchNorm1d(64)
+        self.bn0 = nn.BatchNorm1d(kwargs.get('num_features', 64))
 
         self.resnet = _ResNetWav1d(block=_ResnetBasicBlockWav1d,
                                    layers=[2, 3, 4, 6, 4, 3, 2])
 
-        self.fc1 = nn.Linear(2048, 2048, bias=True)
-        self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
+                                     classes_num, bias=True)
 
         init_layer(self.conv0)
         init_bn(self.bn0)
@@ -935,6 +942,9 @@ class MobileNetV1(nn.Module):
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
                 'ref', 'amin', 'top_db' for LogmelFilterbank
+                'num_features' for BatchNorm2d (default 64).
+                'embedding_size' for the amount of neurons connecting the
+                    last two fully connected layers (default 1024)
         """
 
         super().__init__()
@@ -968,7 +978,7 @@ class MobileNetV1(nn.Module):
                                                 freq_drop_width=8,
                                                 freq_stripes_num=2)
 
-        self.bn0 = nn.BatchNorm2d(64)
+        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
         def conv_bn(inp, oup, stride):
             _layers = [
@@ -1015,8 +1025,10 @@ class MobileNetV1(nn.Module):
                 conv_dw(512, 1024, 2),
                 conv_dw(1024, 1024, 1))
 
-        self.fc1 = nn.Linear(1024, 1024, bias=True)
-        self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
+        self.fc1 = nn.Linear(1024, kwargs.get('embedding_size', 1024),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 1024),
+                                     classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1070,6 +1082,9 @@ class MobileNetV2(nn.Module):
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
                 'ref', 'amin', 'top_db' for LogmelFilterbank
+                'num_features' for BatchNorm2d (default 64).
+                'embedding_size' for the amount of neurons connecting the
+                    last two fully connected layers (default 1024)
         """
 
         super().__init__()
@@ -1103,7 +1118,7 @@ class MobileNetV2(nn.Module):
                                                 freq_drop_width=8,
                                                 freq_stripes_num=2)
 
-        self.bn0 = nn.BatchNorm2d(64)
+        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
         width_mult = 1.
         block = _InvertedResidual
@@ -1163,8 +1178,10 @@ class MobileNetV2(nn.Module):
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
-        self.fc1 = nn.Linear(1280, 1024, bias=True)
-        self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
+        self.fc1 = nn.Linear(1280, kwargs.get('embedding_size', 1024),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 1024),
+                                     classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1217,8 +1234,9 @@ class LeeNet11(nn.Module):
         self.conv_block8 = _LeeNetConvBlock(128, 128, 3, 1)
         self.conv_block9 = _LeeNetConvBlock(128, 256, 3, 1)
 
-        self.fc1 = nn.Linear(256, 512, bias=True)
-        self.fc_audioset = nn.Linear(512, classes_num, bias=True)
+        self.fc1 = nn.Linear(256, kwargs.get('embedding_size', 512), bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 512),
+                                     classes_num, bias=True)
 
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1268,8 +1286,10 @@ class LeeNet24(nn.Module):
         self.conv_block8 = _LeeNetConvBlock2(512, 512, 3, 1)
         self.conv_block9 = _LeeNetConvBlock2(512, 1024, 3, 1)
 
-        self.fc1 = nn.Linear(1024, 1024, bias=True)
-        self.fc_audioset = nn.Linear(1024, classes_num, bias=True)
+        self.fc1 = nn.Linear(1024, kwargs.get('embedding_size', 1024),
+                             bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 1024),
+                                     classes_num, bias=True)
 
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1319,14 +1339,15 @@ class DaiNet19(nn.Module):
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=80,
                                stride=4, padding=0, bias=False)
-        self.bn0 = nn.BatchNorm1d(64)
+        self.bn0 = nn.BatchNorm1d(kwargs.get('num_features', 64))
         self.conv_block1 = _DaiNetResBlock(64, 64, 3)
         self.conv_block2 = _DaiNetResBlock(64, 128, 3)
         self.conv_block3 = _DaiNetResBlock(128, 256, 3)
         self.conv_block4 = _DaiNetResBlock(256, 512, 3)
 
-        self.fc1 = nn.Linear(512, 512, bias=True)
-        self.fc_audioset = nn.Linear(512, classes_num, bias=True)
+        self.fc1 = nn.Linear(512, kwargs.get('embedding_size', 512), bias=True)
+        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 512),
+                                     classes_num, bias=True)
 
         init_layer(self.conv0)
         init_bn(self.bn0)
