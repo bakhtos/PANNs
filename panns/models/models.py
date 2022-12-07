@@ -9,7 +9,6 @@ from .blocks import *
 __all__ = ['Cnn6',
            'Cnn10',
            'Cnn14',
-           'Cnn14DecisionLevel',
            'ResNet22',
            'ResNet38',
            'ResNet54',
@@ -231,7 +230,7 @@ class Cnn14(nn.Module):
     def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
                  fmax, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
-                 spectrogram=True, **kwargs):
+                 spectrogram=True, decision_level=None, **kwargs):
         """
 
         Args:
@@ -258,6 +257,7 @@ class Cnn14(nn.Module):
         self.dropout = dropout
         self.wavegram = wavegram
         self.spectrogram = spectrogram
+        self.decision_level = decision_level
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -315,11 +315,15 @@ class Cnn14(nn.Module):
 
         self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
                              bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
-                                     classes_num, bias=True)
-
         init_layer(self.fc1)
-        init_layer(self.fc_audioset)
+
+        if self.decision_level == 'att':
+            self.audioset_layer = _AttBlock(kwargs.get('embedding_size', 2048),
+                                            classes_num, activation='sigmoid')
+        else:
+            self.audioset_layer = nn.Linear(kwargs.get('embedding_size', 2048),
+                                            classes_num, bias=True)
+            init_layer(self.audioset_layer)
 
     def forward(self, batch, mixup_lambda=None):
         """
@@ -368,162 +372,60 @@ class Cnn14(nn.Module):
         elif self.wavegram:
             x = wave
 
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
-        x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
-        x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
-        x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
-        x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
-        x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
-        x = torch.mean(x, dim=3)
-
-        (x1, _) = torch.max(x, dim=2)
-        x2 = torch.mean(x, dim=2)
-        x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu_(self.fc1(x))
-        embedding = F.dropout(x, p=0.5, training=self.training)
-        clipwise_output = torch.sigmoid(self.fc_audioset(x))
-
-        return clipwise_output, embedding
-
-
-class Cnn14DecisionLevel(nn.Module):
-    def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num, decision_level='max', **kwargs):
-        """
-
-        Args:
-            sample_rate:
-            window_size:
-            hop_size:
-            mel_bins:
-            fmin:
-            fmax:
-            classes_num:
-            decision_level:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
-                'ref', 'amin', 'top_db' for LogmelFilterbank
-        """
-
-        super().__init__()
-
-        self.interpolate_ratio = 32  # Downsampled ratio
-        self.decision_level = decision_level
-
-        # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=window_size,
-                                                 hop_length=hop_size,
-                                                 win_length=window_size,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
-
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=window_size,
-                                                 n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
-        # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
-
-        self.bn0 = nn.BatchNorm2d(64)
-        init_bn(self.bn0)
-
-        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
-        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
-        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
-        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
-        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
-        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
-
-        self.fc1 = nn.Linear(2048, 2048, bias=True)
-        init_layer(self.fc1)
-
-        if self.decision_level == 'att':
-            self.audioset_layer = _AttBlock(2048, classes_num,
-                                            activation='sigmoid')
-        else:
-            self.audioset_layer = nn.Linear(2048, classes_num, bias=True)
-            init_layer(self.audioset_layer)
-
-    def forward(self, batch, mixup_lambda=None):
-        """
-        Input: (batch_size, data_length)"""
-
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
-
         frames_num = x.shape[2]
 
-        x = x.transpose(1, 3)
-        x = self.bn0(x)
-        x = x.transpose(1, 3)
-
-        if self.training:
-            x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
-
-        x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = torch.mean(x, dim=3)
 
-        x1 = F.max_pool1d(x, kernel_size=3, stride=1, padding=1)
-        x2 = F.avg_pool1d(x, kernel_size=3, stride=1, padding=1)
-        x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = x.transpose(1, 2)
-        x = F.relu_(self.fc1(x))
-        x = F.dropout(x, p=0.5, training=self.training)
-
         clipwise_output = None
-        if self.decision_level == 'att':
+        segmentwise_output = None
+        framewise_output = None
+        embedding = None
+        if self.decision_level is None:  # Weak labels
+            (x1, _) = torch.max(x, dim=2)
+            x2 = torch.mean(x, dim=2)
+            x = x1 + x2
+            x = F.dropout(x, p=0.5, training=self.training)
+            x = F.relu_(self.fc1(x))
+            embedding = F.dropout(x, p=0.5, training=self.training)
+            clipwise_output = torch.sigmoid(self.audioset_layer(x))
+        else:  # Strong labels
+            x1 = F.max_pool1d(x, kernel_size=3, stride=1, padding=1)
+            x2 = F.avg_pool1d(x, kernel_size=3, stride=1, padding=1)
+            x = x1 + x2
+            x = F.dropout(x, p=0.5, training=self.training)
             x = x.transpose(1, 2)
-            (clipwise_output, _, segmentwise_output) = self.audioset_layer(x)
-            segmentwise_output = segmentwise_output.transpose(1, 2)
-        else:
-            segmentwise_output = torch.sigmoid(self.audioset_layer(x))
-            if self.decision_level == 'max':
-                (clipwise_output, _) = torch.max(segmentwise_output, dim=1)
-            elif self.decision_level == 'avg':
-                clipwise_output = torch.mean(segmentwise_output, dim=1)
+            x = F.relu_(self.fc1(x))
+            x = F.dropout(x, p=0.5, training=self.training)
 
-        # Get framewise output
-        framewise_output = _interpolate(segmentwise_output,
-                                        self.interpolate_ratio)
-        framewise_output = _pad_framewise_output(framewise_output, frames_num)
+            if self.decision_level == 'att':
+                x = x.transpose(1, 2)
+                (clipwise_output, _, segmentwise_output) = self.audioset_layer(x)
+                segmentwise_output = segmentwise_output.transpose(1, 2)
+            else:
+                segmentwise_output = torch.sigmoid(self.audioset_layer(x))
+                if self.decision_level == 'max':
+                    (clipwise_output, _) = torch.max(segmentwise_output, dim=1)
+                elif self.decision_level == 'avg':
+                    clipwise_output = torch.mean(segmentwise_output, dim=1)
 
-        return clipwise_output, framewise_output
+            # Get framewise output
+            framewise_output = _interpolate(segmentwise_output,
+                                            self.interpolate_ratio)
+            framewise_output = _pad_framewise_output(framewise_output,
+                                                     frames_num)
+
+        return clipwise_output, segmentwise_output, framewise_output, embedding
 
 
 class ResNet22(nn.Module):
