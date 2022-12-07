@@ -7,8 +7,6 @@ __all__ = ['init_layer',
            '_ConvBlock',
            '_ConvBlock5x5',
            '_AttBlock',
-           '_resnet_conv3x3',
-           '_resnet_conv1x1',
            '_ResnetBasicBlock',
            '_ResnetBottleneck',
            '_ResNet',
@@ -16,8 +14,6 @@ __all__ = ['init_layer',
            '_LeeNetConvBlock',
            '_LeeNetConvBlock2',
            '_DaiNetResBlock',
-           '_resnet_conv3x1_wav1d',
-           '_resnet_conv1x1_wav1d',
            '_ResnetBasicBlockWav1d',
            '_ResNetWav1d',
            '_ConvPreWavBlock',
@@ -30,7 +26,6 @@ __all__ = ['init_layer',
 
 
 def init_layer(layer):
-    """Initialize a Linear or Convolutional layer."""
     nn.init.xavier_uniform_(layer.weight)
 
     if hasattr(layer, 'bias'):
@@ -39,7 +34,6 @@ def init_layer(layer):
 
 
 def init_bn(bn):
-    """Initialize a Batchnorm layer."""
     bn.bias.data.fill_(0.)
     bn.weight.data.fill_(1.)
 
@@ -79,20 +73,12 @@ class _ConvBlock(nn.Module):
             x1 = F.avg_pool2d(x, kernel_size=pool_size)
             x2 = F.max_pool2d(x, kernel_size=pool_size)
             x = x1 + x2
-        else:
-            raise Exception('Incorrect argument!')
 
         return x
 
 
 class _ConvBlock5x5(nn.Module):
     def __init__(self, in_channels, out_channels):
-        """
-
-        Args:
-            in_channels:
-            out_channels:
-        """
 
         super().__init__()
 
@@ -117,22 +103,13 @@ class _ConvBlock5x5(nn.Module):
             x1 = F.avg_pool2d(x, kernel_size=pool_size)
             x2 = F.max_pool2d(x, kernel_size=pool_size)
             x = x1 + x2
-        else:
-            raise Exception('Incorrect argument!')
 
         return x
 
 
 class _AttBlock(nn.Module):
     def __init__(self, n_in, n_out, activation='linear', temperature=1.):
-        """
 
-        Args:
-            n_in:
-            n_out:
-            activation: 'linear' or 'sigmoid'
-            temperature: default 1.0
-        """
         super().__init__()
 
         self.activation = activation
@@ -157,17 +134,6 @@ class _AttBlock(nn.Module):
         return x, norm_att, cla
 
 
-def _resnet_conv3x3(in_planes, out_planes):
-    # 3x3 convolution with padding
-    return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=1,
-                     padding=1, groups=1, bias=False, dilation=1)
-
-
-def _resnet_conv1x1(in_planes, out_planes):
-    # 1x1 convolution
-    return nn.Conv2d(in_planes, out_planes, kernel_size=1, stride=1, bias=False)
-
-
 class _ResnetBasicBlock(nn.Module):
     expansion = 1
 
@@ -176,20 +142,16 @@ class _ResnetBasicBlock(nn.Module):
         super().__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-        if groups != 1 or base_width != 64:
-            raise ValueError(
-                '_ResnetBasicBlock only supports groups=1 and base_width=64')
-        if dilation > 1:
-            raise NotImplementedError(
-                "Dilation > 1 not supported in _ResnetBasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
 
         self.stride = stride
 
-        self.conv1 = _resnet_conv3x3(in_planes, planes)
+        self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=1,
+                               padding=1, groups=1, bias=False, dilation=1)
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = _resnet_conv3x3(planes, planes)
+        self.conv2 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=1,
+                               padding=1, groups=1, bias=False, dilation=1)
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
@@ -236,11 +198,13 @@ class _ResnetBottleneck(nn.Module):
         width = int(planes * (base_width / 64.)) * groups
         self.stride = stride
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
-        self.conv1 = _resnet_conv1x1(in_planes, width)
+        self.conv1 = nn.Conv2d(in_planes, width, kernel_size=1, stride=1, bias=False)
         self.bn1 = norm_layer(width)
-        self.conv2 = _resnet_conv3x3(width, width)
+        self.conv2 = nn.Conv2d(width, width, kernel_size=3, stride=1,
+                               padding=1, groups=1, bias=False, dilation=1)
         self.bn2 = norm_layer(width)
-        self.conv3 = _resnet_conv1x1(width, planes * self.expansion)
+        self.conv3 = nn.Conv2d(width, planes*self.expansion, kernel_size=1,
+                               stride=1, bias=False)
         self.bn3 = norm_layer(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
         self.downsample = downsample
@@ -328,8 +292,8 @@ class _ResNet(nn.Module):
         if stride != 1 or self.in_planes != planes * block.expansion:
             if stride == 1:
                 downsample = nn.Sequential(
-                        _resnet_conv1x1(self.in_planes,
-                                        planes * block.expansion),
+                        nn.Conv2d(self.in_planes, planes*block.expansion,
+                                  kernel_size=1, stride=1, bias=False),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[0])
@@ -337,8 +301,8 @@ class _ResNet(nn.Module):
             elif stride == 2:
                 downsample = nn.Sequential(
                         nn.AvgPool2d(kernel_size=2),
-                        _resnet_conv1x1(self.in_planes,
-                                        planes * block.expansion),
+                        nn.Conv2d(self.in_planes, planes * block.expansion,
+                                  kernel_size=1, stride=1, bias=False),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[1])
@@ -532,17 +496,6 @@ class _DaiNetResBlock(nn.Module):
         return x
 
 
-def _resnet_conv3x1_wav1d(in_planes, out_planes, dilation):
-    # 3x3 convolution with padding
-    return nn.Conv1d(in_planes, out_planes, kernel_size=3, stride=1,
-                     padding=dilation, groups=1, bias=False, dilation=dilation)
-
-
-def _resnet_conv1x1_wav1d(in_planes, out_planes):
-    # 1x1 convolution
-    return nn.Conv1d(in_planes, out_planes, kernel_size=1, stride=1, bias=False)
-
-
 class _ResnetBasicBlockWav1d(nn.Module):
     expansion = 1
 
@@ -551,20 +504,19 @@ class _ResnetBasicBlockWav1d(nn.Module):
         super().__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm1d
-        if groups != 1 or base_width != 64:
-            raise ValueError(
-                '_ResnetBasicBlock only supports groups=1 and base_width=64')
-        if dilation > 1:
-            raise NotImplementedError(
-                "Dilation > 1 not supported in _ResnetBasicBlock")
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
 
         self.stride = stride
 
-        self.conv1 = _resnet_conv3x1_wav1d(in_planes, planes, dilation=1)
+        self.conv1 = nn.Conv1d(in_planes, planes, kernel_size=3, stride=1,
+                               padding=dilation, groups=1, bias=False,
+                               dilation=1)
         self.bn1 = norm_layer(planes)
         self.relu = nn.ReLU(inplace=True)
-        self.conv2 = _resnet_conv3x1_wav1d(planes, planes, dilation=2)
+        self.conv2 = nn.Conv1d(planes, planes, kernel_size=3, stride=1,
+                               padding=dilation, groups=1, bias=False,
+                               dilation=2)
+
         self.bn2 = norm_layer(planes)
         self.downsample = downsample
         self.stride = stride
@@ -647,8 +599,8 @@ class _ResNetWav1d(nn.Module):
         if stride != 1 or self.in_planes != planes * block.expansion:
             if stride == 1:
                 downsample = nn.Sequential(
-                        _resnet_conv1x1_wav1d(self.in_planes,
-                                              planes * block.expansion),
+                        nn.Conv1d(self.in_planes, planes * block.expansion,
+                                  kernel_size=1, stride=1, bias=False),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[0])
@@ -656,8 +608,8 @@ class _ResNetWav1d(nn.Module):
             else:
                 downsample = nn.Sequential(
                         nn.AvgPool1d(kernel_size=stride),
-                        _resnet_conv1x1_wav1d(self.in_planes,
-                                              planes * block.expansion),
+                        nn.Conv1d(self.in_planes, planes * block.expansion,
+                                  kernel_size=1, stride=1, bias=False),
                         norm_layer(planes * block.expansion),
                 )
                 init_layer(downsample[1])
