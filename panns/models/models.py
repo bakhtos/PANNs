@@ -25,7 +25,9 @@ __all__ = ['Cnn6',
 
 class Cnn6(nn.Module):
     def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
-                 fmax, classes_num, **kwargs):
+                 fmax, classes_num, spec_aug=True, mixup_time=False,
+                 mixup_freq=True, dropout=True, wavegram=False,
+                 spectrogram=True, decision_level=None, **kwargs):
         """
 
         Args:
@@ -36,93 +38,189 @@ class Cnn6(nn.Module):
             fmin:
             fmax:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
+            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram
+                    (defaults 'hann', 'center', 'reflect'),
                 'ref', 'amin', 'top_db' for LogmelFilterbank
+                    (defaults 1.0, 1e-10, None),
+                'num_features' for BatchNorm2d (default 64).
+                'embedding_size' for the amount of neurons connecting the
+                    last two fully connected layers (default 512)
         """
-
         super().__init__()
 
-        # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=window_size,
-                                                 hop_length=hop_size,
-                                                 win_length=window_size,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
+        self.spec_aug = spec_aug
+        self.mixup_time = mixup_time
+        self.mixup_freq = mixup_freq
+        self.dropout = dropout
+        self.wavegram = wavegram
+        self.spectrogram = spectrogram
+        self.decision_level = decision_level
 
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=window_size,
-                                                 n_mels=mel_bins, fmin=fmin,
-                                                 fmax=fmax,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
+        if self.wavegram:
+            self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
+                                       kernel_size=11, stride=5, padding=5,
+                                       bias=False)
+            self.pre_bn0 = nn.BatchNorm1d(64)
+            self.pre_block1 = _ConvPreWavBlock(64, 64)
+            self.pre_block2 = _ConvPreWavBlock(64, 128)
+            self.pre_block3 = _ConvPreWavBlock(128, 128)
+            self.pre_block4 = _ConvBlock(in_channels=4, out_channels=64)
+            init_layer(self.pre_conv0)
+            init_bn(self.pre_bn0)
 
-        # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
+        if self.spectrogram:
+            # Spectrogram extractor
+            self.spectrogram_extractor = Spectrogram(n_fft=window_size,
+                                                     hop_length=hop_size,
+                                                     win_length=window_size,
+                                                     window=kwargs.get('window',
+                                                                       'hann'),
+                                                     center=kwargs.get('center',
+                                                                       True),
+                                                     pad_mode=kwargs.get(
+                                                             'pad_mode', 'reflect'),
+                                                     freeze_parameters=True)
 
-        self.bn0 = nn.BatchNorm2d(64)
+            # Logmel feature extractor
+            self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
+                                                     n_fft=window_size,
+                                                     n_mels=mel_bins, fmin=fmin,
+                                                     fmax=fmax,
+                                                     ref=kwargs.get('ref',
+                                                                    1.0),
+                                                     amin=kwargs.get('amin',
+                                                                     1e-10),
+                                                     top_db=kwargs.get('top_db',
+                                                                       None),
+                                                     freeze_parameters=True)
+            # Spec augmenter
+            if spec_aug:
+                self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
+                                                        time_stripes_num=2,
+                                                        freq_drop_width=8,
+                                                        freq_stripes_num=2)
+
+            self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+            init_bn(self.bn0)
 
         self.conv_block1 = _ConvBlock5x5(in_channels=1, out_channels=64)
         self.conv_block2 = _ConvBlock5x5(in_channels=64, out_channels=128)
         self.conv_block3 = _ConvBlock5x5(in_channels=128, out_channels=256)
         self.conv_block4 = _ConvBlock5x5(in_channels=256, out_channels=512)
 
-        self.fc1 = nn.Linear(512, 512, bias=True)
-        self.fc_audioset = nn.Linear(512, classes_num, bias=True)
-
-        init_bn(self.bn0)
+        self.fc1 = nn.Linear(512, kwargs.get('embedding_size', 512),
+                             bias=True)
         init_layer(self.fc1)
-        init_layer(self.fc_audioset)
+
+        if self.decision_level == 'att':
+            self.audioset_layer = _AttBlock(kwargs.get('embedding_size', 512),
+                                            classes_num, activation='sigmoid')
+        else:
+            self.audioset_layer = nn.Linear(kwargs.get('embedding_size', 512),
+                                            classes_num, bias=True)
+            init_layer(self.audioset_layer)
 
     def forward(self, batch, mixup_lambda=None):
         """
         Input: (batch_size, data_length)"""
 
-        x = self.spectrogram_extractor(batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
+        # Mixup in time domain
+        if self.mixup_time and self.training and mixup_lambda is not None:
+            batch = mixup(batch, mixup_lambda)
 
-        x = x.transpose(1, 3)
-        x = self.bn0(x)
-        x = x.transpose(1, 3)
+        x = None
+        wave = None
 
-        if self.training:
-            x = self.spec_augmenter(x)
+        if self.wavegram:
+            # Wavegram
+            wave = F.relu_(self.pre_bn0(self.pre_conv0(batch[:, None, :])))
+            wave = self.pre_block1(wave, pool_size=4)
+            wave = self.pre_block2(wave, pool_size=4)
+            wave = self.pre_block3(wave, pool_size=4)
+            wave = wave.reshape((wave.shape[0], -1, 32,
+                                 wave.shape[-1])).transpose(2, 3)
+            wave = self.pre_block4(wave, pool_size=(2, 1))
 
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
+            if self.mixup_freq and self.training and mixup_lambda is not None:
+                wave = mixup(wave, mixup_lambda)
 
-        x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        if self.spectrogram:
+            x = self.spectrogram_extractor(batch)  # (batch_size,1,time_steps,
+            # freq_bins)
+            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,mel_bins)
+
+            x = x.transpose(1, 3)
+            x = self.bn0(x)
+            x = x.transpose(1, 3)
+
+            if self.training:
+                if self.spec_aug:
+                    x = self.spec_augmenter(x)
+                # Mixup on spectrogram
+                if self.mixup_freq and mixup_lambda is not None:
+                    x = mixup(x, mixup_lambda)
+
+            x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
+
+        if self.wavegram and self.spectrogram:
+            x = torch.cat((x, wave), dim=1)
+        elif self.wavegram:
+            x = wave
+
+        frames_num = x.shape[2]
+
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training)
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
+        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
         x = torch.mean(x, dim=3)
 
-        (x1, _) = torch.max(x, dim=2)
-        x2 = torch.mean(x, dim=2)
-        x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
-        x = F.relu_(self.fc1(x))
-        embedding = F.dropout(x, p=0.5, training=self.training)
-        clipwise_output = torch.sigmoid(self.fc_audioset(x))
+        clipwise_output = None
+        segmentwise_output = None
+        framewise_output = None
+        embedding = None
+        if self.decision_level is None:  # Weak labels
+            (x1, _) = torch.max(x, dim=2)
+            x2 = torch.mean(x, dim=2)
+            x = x1 + x2
+            x = F.dropout(x, p=0.5, training=self.training)
+            x = F.relu_(self.fc1(x))
+            embedding = F.dropout(x, p=0.5, training=self.training)
+            clipwise_output = torch.sigmoid(self.audioset_layer(x))
+        else:  # Strong labels
+            x1 = F.max_pool1d(x, kernel_size=3, stride=1, padding=1)
+            x2 = F.avg_pool1d(x, kernel_size=3, stride=1, padding=1)
+            x = x1 + x2
+            x = F.dropout(x, p=0.5, training=self.training)
+            x = x.transpose(1, 2)
+            x = F.relu_(self.fc1(x))
+            x = F.dropout(x, p=0.5, training=self.training)
 
-        return clipwise_output, embedding
+            if self.decision_level == 'att':
+                x = x.transpose(1, 2)
+                (clipwise_output, _, segmentwise_output) = self.audioset_layer(x)
+                segmentwise_output = segmentwise_output.transpose(1, 2)
+            else:
+                segmentwise_output = torch.sigmoid(self.audioset_layer(x))
+                if self.decision_level == 'max':
+                    (clipwise_output, _) = torch.max(segmentwise_output, dim=1)
+                elif self.decision_level == 'avg':
+                    clipwise_output = torch.mean(segmentwise_output, dim=1)
 
+            # Get framewise output
+            framewise_output = _interpolate(segmentwise_output,
+                                            self.interpolate_ratio)
+            framewise_output = _pad_framewise_output(framewise_output,
+                                                     frames_num)
+
+        return clipwise_output, segmentwise_output, framewise_output, embedding
 
 class Cnn10(nn.Module):
     def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
