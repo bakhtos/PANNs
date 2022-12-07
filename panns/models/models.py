@@ -169,17 +169,23 @@ class Cnn6(nn.Module):
 
         frames_num = x.shape[2]
 
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = torch.mean(x, dim=3)
 
         clipwise_output = None
@@ -369,17 +375,23 @@ class Cnn10(nn.Module):
 
         frames_num = x.shape[2]
 
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = torch.mean(x, dim=3)
 
         clipwise_output = None
@@ -571,17 +583,23 @@ class Cnn14(nn.Module):
 
         frames_num = x.shape[2]
 
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training) if self.dropout else x
+        F.dropout(x, p=0.2, inplace=True, training=self.training and
+                                                   self.dropout)
         x = torch.mean(x, dim=3)
 
         clipwise_output = None
@@ -591,7 +609,7 @@ class Cnn14(nn.Module):
             (x1, _) = torch.max(x, dim=2)
             x2 = torch.mean(x, dim=2)
             x = x1 + x2
-            x = F.dropout(x, p=0.5, training=self.training)
+            F.dropout(x, p=0.5, training=self.training, inplace=True)
             x = F.relu_(self.fc1(x))
             embedding = F.dropout(x, p=0.5, training=self.training)
             clipwise_output = torch.sigmoid(self.audioset_layer(x))
@@ -599,10 +617,10 @@ class Cnn14(nn.Module):
             x1 = F.max_pool1d(x, kernel_size=3, stride=1, padding=1)
             x2 = F.avg_pool1d(x, kernel_size=3, stride=1, padding=1)
             x = x1 + x2
-            x = F.dropout(x, p=0.5, training=self.training)
+            F.dropout(x, p=0.5, training=self.training, inplace=True)
             x = x.transpose(1, 2)
             x = F.relu_(self.fc1(x))
-            x = F.dropout(x, p=0.5, training=self.training)
+            F.dropout(x, p=0.5, training=self.training, inplace=True)
             embedding = x
 
             if self.decision_level == 'att':
@@ -709,18 +727,18 @@ class ResNet22(nn.Module):
             x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = self.resnet(x)
         x = F.avg_pool2d(x, kernel_size=(2, 2))
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = self.conv_block_after1(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = torch.mean(x, dim=3)
 
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -813,18 +831,18 @@ class ResNet38(nn.Module):
             x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = self.resnet(x)
         x = F.avg_pool2d(x, kernel_size=(2, 2))
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = self.conv_block_after1(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = torch.mean(x, dim=3)
 
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -917,18 +935,18 @@ class ResNet54(nn.Module):
             x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = self.resnet(x)
         x = F.avg_pool2d(x, kernel_size=(2, 2))
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = self.conv_block_after1(x, pool_size=(1, 1), pool_type='avg')
-        x = F.dropout(x, p=0.2, training=self.training, inplace=True)
+        F.dropout(x, p=0.2, training=self.training, inplace=True)
         x = torch.mean(x, dim=3)
 
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -973,7 +991,7 @@ class Res1dNet31(nn.Module):
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -1018,7 +1036,7 @@ class Res1dNet51(nn.Module):
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -1129,7 +1147,7 @@ class MobileNetV1(nn.Module):
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -1312,7 +1330,7 @@ class LeeNet11(nn.Module):
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -1321,8 +1339,10 @@ class LeeNet11(nn.Module):
 
 
 class LeeNet24(nn.Module):
-    def __init__(self, *, classes_num, **kwargs):
+    def __init__(self, *, classes_num, dropout=True, **kwargs):
         super().__init__()
+
+        self.dropout = dropout
 
         self.conv_block1 = _LeeNetConvBlock2(1, 64, 3, 3)
         self.conv_block2 = _LeeNetConvBlock2(64, 96, 3, 1)
@@ -1353,27 +1373,35 @@ class LeeNet24(nn.Module):
             x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block2(x, pool_size=3)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block3(x, pool_size=3)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block4(x, pool_size=3)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block5(x, pool_size=3)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block6(x, pool_size=3)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block7(x, pool_size=3)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block8(x, pool_size=3)
-        x = F.dropout(x, p=0.1, training=self.training)
+        F.dropout(x, p=0.1, inplace=True, training=self.training and
+                                                   self.dropout)
         x = self.conv_block9(x, pool_size=1)
 
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
@@ -1424,7 +1452,7 @@ class DaiNet19(nn.Module):
         (x1, _) = torch.max(x, dim=2)
         x2 = torch.mean(x, dim=2)
         x = x1 + x2
-        x = F.dropout(x, p=0.5, training=self.training)
+        F.dropout(x, p=0.5, training=self.training, inplace=True)
         x = F.relu_(self.fc1(x))
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
