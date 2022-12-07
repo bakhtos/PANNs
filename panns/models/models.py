@@ -185,7 +185,6 @@ class Cnn6(nn.Module):
         clipwise_output = None
         segmentwise_output = None
         framewise_output = None
-        embedding = None
         if self.decision_level is None:  # Weak labels
             (x1, _) = torch.max(x, dim=2)
             x2 = torch.mean(x, dim=2)
@@ -202,6 +201,7 @@ class Cnn6(nn.Module):
             x = x.transpose(1, 2)
             x = F.relu_(self.fc1(x))
             x = F.dropout(x, p=0.5, training=self.training)
+            embedding = x
 
             if self.decision_level == 'att':
                 x = x.transpose(1, 2)
@@ -221,6 +221,7 @@ class Cnn6(nn.Module):
                                                      frames_num)
 
         return clipwise_output, segmentwise_output, framewise_output, embedding
+
 
 class Cnn10(nn.Module):
     def __init__(self, *, sample_rate, window_size, hop_size, mel_bins, fmin,
@@ -384,7 +385,6 @@ class Cnn10(nn.Module):
         clipwise_output = None
         segmentwise_output = None
         framewise_output = None
-        embedding = None
         if self.decision_level is None:  # Weak labels
             (x1, _) = torch.max(x, dim=2)
             x2 = torch.mean(x, dim=2)
@@ -401,6 +401,7 @@ class Cnn10(nn.Module):
             x = x.transpose(1, 2)
             x = F.relu_(self.fc1(x))
             x = F.dropout(x, p=0.5, training=self.training)
+            embedding = x
 
             if self.decision_level == 'att':
                 x = x.transpose(1, 2)
@@ -586,7 +587,6 @@ class Cnn14(nn.Module):
         clipwise_output = None
         segmentwise_output = None
         framewise_output = None
-        embedding = None
         if self.decision_level is None:  # Weak labels
             (x1, _) = torch.max(x, dim=2)
             x2 = torch.mean(x, dim=2)
@@ -603,6 +603,7 @@ class Cnn14(nn.Module):
             x = x.transpose(1, 2)
             x = F.relu_(self.fc1(x))
             x = F.dropout(x, p=0.5, training=self.training)
+            embedding = x
 
             if self.decision_level == 'att':
                 x = x.transpose(1, 2)
