@@ -167,14 +167,15 @@ class _AttBlock(nn.Module):
 class _ResnetBasicBlock(nn.Module):
     expansion = 1
 
-    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
+    def __init__(self, *, in_planes, planes, stride=1, downsample=None,
+                 norm_layer=None, **kwargs):
         super().__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
         # Both self.conv1 and self.downsample layers downsample the input when stride != 1
 
         self.stride = stride
+        self.downsample = downsample
 
         self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=1,
                                padding=1, groups=1, bias=False, dilation=1)
@@ -183,8 +184,6 @@ class _ResnetBasicBlock(nn.Module):
         self.conv2 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=1,
                                padding=1, groups=1, bias=False, dilation=1)
         self.bn2 = norm_layer(planes)
-        self.downsample = downsample
-        self.stride = stride
 
         init_layer(self.conv1)
         init_bn(self.bn1)
@@ -220,14 +219,19 @@ class _ResnetBasicBlock(nn.Module):
 class _ResnetBottleneck(nn.Module):
     expansion = 4
 
-    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
+    def __init__(self, *, in_planes, planes, stride=1, downsample=None,
+                 groups=1, base_width=64, norm_layer=None, **kwargs):
+
         super().__init__()
+
         if norm_layer is None:
             norm_layer = nn.BatchNorm2d
-        width = int(planes * (base_width / 64.)) * groups
+
         self.stride = stride
+        self.downsample = downsample
+
         # Both self.conv2 and self.downsample layers downsample the input when stride != 1
+        width = int(planes * (base_width / 64.)) * groups
         self.conv1 = nn.Conv2d(in_planes, width, kernel_size=1, stride=1, bias=False)
         self.bn1 = norm_layer(width)
         self.conv2 = nn.Conv2d(width, width, kernel_size=3, stride=1,
@@ -237,8 +241,6 @@ class _ResnetBottleneck(nn.Module):
                                stride=1, bias=False)
         self.bn3 = norm_layer(planes * self.expansion)
         self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
-        self.stride = stride
 
         init_layer(self.conv1)
         init_bn(self.bn1)
@@ -276,7 +278,7 @@ class _ResnetBottleneck(nn.Module):
 
 
 class _ResNet(nn.Module):
-    def __init__(self, block, layers, zero_init_residual=False,
+    def __init__(self, *, block, layers,
                  groups=1, width_per_group=64,
                  replace_stride_with_dilation=(False, False, False),
                  norm_layer=None):
@@ -285,7 +287,6 @@ class _ResNet(nn.Module):
         Args:
             block:
             layers:
-            zero_init_residual:
             groups:
             width_per_group:
             replace_stride_with_dilation: 3-tuple of bools;
@@ -338,11 +339,14 @@ class _ResNet(nn.Module):
                 init_layer(downsample[1])
                 init_bn(downsample[2])
 
-        layers = [block(self.in_planes, planes, stride, downsample, self.groups,
-                  self.base_width, previous_dilation, norm_layer)]
+        layers = [block(in_planes=self.in_planes, planes=planes, stride=stride,
+                        downsample=downsample, groups=self.groups,
+                        base_width=self.base_width, dilation=previous_dilation,
+                        norm_layer=norm_layer)]
         self.in_planes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.in_planes, planes, groups=self.groups,
+            layers.append(block(in_planes=self.in_planes, planes=planes,
+                                groups=self.groups,
                                 base_width=self.base_width,
                                 dilation=self.dilation,
                                 norm_layer=norm_layer))
@@ -361,8 +365,8 @@ class _ResNet(nn.Module):
 class _ResnetBasicBlockWav1d(nn.Module):
     expansion = 1
 
-    def __init__(self, in_planes, planes, stride=1, downsample=None, groups=1,
-                 base_width=64, dilation=1, norm_layer=None):
+    def __init__(self, in_planes, planes, stride=1, downsample=None,
+                 dilation=1, norm_layer=None, **kwargs):
         super().__init__()
         if norm_layer is None:
             norm_layer = nn.BatchNorm1d
@@ -415,23 +419,10 @@ class _ResnetBasicBlockWav1d(nn.Module):
 
 
 class _ResNetWav1d(nn.Module):
-    def __init__(self, block, layers, zero_init_residual=False,
+    def __init__(self, *, block, layers,
                  groups=1, width_per_group=64,
-                 replace_stride_with_dilation=(False, False, False),
                  norm_layer=None):
-        """
 
-        Args:
-            block:
-            layers:
-            zero_init_residual:
-            groups:
-            width_per_group:
-            replace_stride_with_dilation: 3-tuple of bools;
-                indicates whether to replace stride with dilation in
-                each of the three layers
-            norm_layer:
-        """
         super().__init__()
 
         if norm_layer is None:
@@ -477,11 +468,14 @@ class _ResNetWav1d(nn.Module):
                 init_layer(downsample[1])
                 init_bn(downsample[2])
 
-        layers = [block(self.in_planes, planes, stride, downsample, self.groups,
-                        self.base_width, previous_dilation, norm_layer)]
+        layers = [block(in_planes=self.in_planes, planes=planes, stride=stride,
+                        downsample=downsample, groups=self.groups,
+                        base_width=self.base_width, dilation=previous_dilation,
+                        norm_layer=norm_layer)]
         self.in_planes = planes * block.expansion
         for _ in range(1, blocks):
-            layers.append(block(self.in_planes, planes, groups=self.groups,
+            layers.append(block(in_planes=self.in_planes, planes=planes,
+                                groups=self.groups,
                                 base_width=self.base_width,
                                 dilation=self.dilation,
                                 norm_layer=norm_layer))
@@ -667,12 +661,6 @@ class _DaiNetResBlock(nn.Module):
         if pool_size != 1:
             x = F.max_pool1d(x, kernel_size=pool_size, padding=pool_size // 2)
         return x
-
-
-
-
-
-
 
 
 # Class taken from torchlibrosa package

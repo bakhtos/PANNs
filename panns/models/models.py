@@ -578,8 +578,7 @@ class ResNet22(nn.Module):
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
         # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
-        self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[2, 2, 2, 2],
-                              zero_init_residual=True)
+        self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[2, 2, 2, 2])
 
         self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
@@ -682,8 +681,7 @@ class ResNet38(nn.Module):
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
         # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
-        self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[3, 4, 6, 3],
-                              zero_init_residual=True)
+        self.resnet = _ResNet(block=_ResnetBasicBlock, layers=[3, 4, 6, 3])
 
         self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
@@ -786,8 +784,7 @@ class ResNet54(nn.Module):
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
         # self.conv_block2 = ConvBlock(in_channels=64, out_channels=64)
 
-        self.resnet = _ResNet(block=_ResnetBottleneck, layers=[3, 4, 6, 3],
-                              zero_init_residual=True)
+        self.resnet = _ResNet(block=_ResnetBottleneck, layers=[3, 4, 6, 3])
 
         self.conv_block_after1 = _ConvBlock(in_channels=2048, out_channels=2048)
 
@@ -845,8 +842,8 @@ class Res1dNet31(nn.Module):
                                stride=5, padding=5, bias=False)
         self.bn0 = nn.BatchNorm1d(64)
 
-        self.resnet = _ResNetWav1d(_ResnetBasicBlockWav1d,
-                                   [2, 2, 2, 2, 2, 2, 2])
+        self.resnet = _ResNetWav1d(block=_ResnetBasicBlockWav1d,
+                                   layers=[2, 2, 2, 2, 2, 2, 2])
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
@@ -888,8 +885,8 @@ class Res1dNet51(nn.Module):
                                stride=5, padding=5, bias=False)
         self.bn0 = nn.BatchNorm1d(64)
 
-        self.resnet = _ResNetWav1d(_ResnetBasicBlockWav1d,
-                                   [2, 3, 4, 6, 4, 3, 2])
+        self.resnet = _ResNetWav1d(block=_ResnetBasicBlockWav1d,
+                                   layers=[2, 3, 4, 6, 4, 3, 2])
 
         self.fc1 = nn.Linear(2048, 2048, bias=True)
         self.fc_audioset = nn.Linear(2048, classes_num, bias=True)
