@@ -1079,50 +1079,21 @@ class MobileNetV1(nn.Module):
 
         self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
-        def conv_bn(inp, oup, stride):
-            _layers = [
-                nn.Conv2d(inp, oup, 3, 1, 1, bias=False),
-                nn.AvgPool2d(stride),
-                nn.BatchNorm2d(oup),
-                nn.ReLU(inplace=True)
-            ]
-            _layers = nn.Sequential(*_layers)
-            init_layer(_layers[0])
-            init_bn(_layers[2])
-            return _layers
-
-        def conv_dw(inp, oup, stride):
-            _layers = [
-                nn.Conv2d(inp, inp, 3, 1, 1, groups=inp, bias=False),
-                nn.AvgPool2d(stride),
-                nn.BatchNorm2d(inp),
-                nn.ReLU(inplace=True),
-                nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-                nn.BatchNorm2d(oup),
-                nn.ReLU(inplace=True)
-            ]
-            _layers = nn.Sequential(*_layers)
-            init_layer(_layers[0])
-            init_bn(_layers[2])
-            init_layer(_layers[4])
-            init_bn(_layers[5])
-            return _layers
-
         self.features = nn.Sequential(
-                conv_bn(1, 32, 2),
-                conv_dw(32, 64, 1),
-                conv_dw(64, 128, 2),
-                conv_dw(128, 128, 1),
-                conv_dw(128, 256, 2),
-                conv_dw(256, 256, 1),
-                conv_dw(256, 512, 2),
-                conv_dw(512, 512, 1),
-                conv_dw(512, 512, 1),
-                conv_dw(512, 512, 1),
-                conv_dw(512, 512, 1),
-                conv_dw(512, 512, 1),
-                conv_dw(512, 1024, 2),
-                conv_dw(1024, 1024, 1))
+                _ConvBnV1(1, 32, 2),
+                _ConvDw(32, 64, 1),
+                _ConvDw(64, 128, 2),
+                _ConvDw(128, 128, 1),
+                _ConvDw(128, 256, 2),
+                _ConvDw(256, 256, 1),
+                _ConvDw(256, 512, 2),
+                _ConvDw(512, 512, 1),
+                _ConvDw(512, 512, 1),
+                _ConvDw(512, 512, 1),
+                _ConvDw(512, 512, 1),
+                _ConvDw(512, 512, 1),
+                _ConvDw(512, 1024, 2),
+                _ConvDw(1024, 1024, 1))
 
         self.fc1 = nn.Linear(1024, kwargs.get('embedding_size', 1024),
                              bias=True)
@@ -1234,33 +1205,11 @@ class MobileNetV2(nn.Module):
             [6, 320, 1, 1],
         ]
 
-        def conv_bn(inp, oup, stride):
-            _layers = [
-                nn.Conv2d(inp, oup, 3, 1, 1, bias=False),
-                nn.AvgPool2d(stride),
-                nn.BatchNorm2d(oup),
-                nn.ReLU6(inplace=True)
-            ]
-            _layers = nn.Sequential(*_layers)
-            init_layer(_layers[0])
-            init_bn(_layers[2])
-            return _layers
-
-        def conv_1x1_bn(inp, oup):
-            _layers = nn.Sequential(
-                    nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
-                    nn.BatchNorm2d(oup),
-                    nn.ReLU6(inplace=True)
-            )
-            init_layer(_layers[0])
-            init_bn(_layers[1])
-            return _layers
-
         # building first layer
         input_channel = int(input_channel * width_mult)
         self.last_channel = int(
             last_channel * width_mult) if width_mult > 1.0 else last_channel
-        self.features = [conv_bn(1, input_channel, 2)]
+        self.features = [_ConvBnV2(1, input_channel, 2)]
         # building inverted residual blocks
         for t, c, n, s in inverted_residual_setting:
             output_channel = int(c * width_mult)
@@ -1273,7 +1222,7 @@ class MobileNetV2(nn.Module):
                         block(input_channel, output_channel, 1, expand_ratio=t))
                 input_channel = output_channel
         # building last several layers
-        self.features.append(conv_1x1_bn(input_channel, self.last_channel))
+        self.features.append(_Conv1x1Bn(input_channel, self.last_channel))
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 

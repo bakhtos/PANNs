@@ -13,6 +13,10 @@ __all__ = ['init_layer',
            '_ResNet',
            '_ResnetBasicBlockWav1d',
            '_ResNetWav1d',
+           '_ConvBnV1',
+           '_ConvDw',
+           '_ConvBnV2',
+           '_Conv1x1Bn',
            '_InvertedResidual',
            '_LeeNetConvBlock',
            '_LeeNetConvBlock2',
@@ -493,6 +497,61 @@ class _ResNetWav1d(nn.Module):
         x = self.layer7(x)
 
         return x
+
+
+def _ConvBnV1(inp, oup, stride):
+    _layers = [
+        nn.Conv2d(inp, oup, 3, 1, 1, bias=False),
+        nn.AvgPool2d(stride),
+        nn.BatchNorm2d(oup),
+        nn.ReLU(inplace=True)
+    ]
+    _layers = nn.Sequential(*_layers)
+    init_layer(_layers[0])
+    init_bn(_layers[2])
+    return _layers
+
+
+def _ConvDw(inp, oup, stride):
+    _layers = [
+        nn.Conv2d(inp, inp, 3, 1, 1, groups=inp, bias=False),
+        nn.AvgPool2d(stride),
+        nn.BatchNorm2d(inp),
+        nn.ReLU(inplace=True),
+        nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
+        nn.BatchNorm2d(oup),
+        nn.ReLU(inplace=True)
+    ]
+    _layers = nn.Sequential(*_layers)
+    init_layer(_layers[0])
+    init_bn(_layers[2])
+    init_layer(_layers[4])
+    init_bn(_layers[5])
+    return _layers
+
+
+def _ConvBnV2(inp, oup, stride):
+    _layers = [
+        nn.Conv2d(inp, oup, 3, 1, 1, bias=False),
+        nn.AvgPool2d(stride),
+        nn.BatchNorm2d(oup),
+        nn.ReLU6(inplace=True)
+    ]
+    _layers = nn.Sequential(*_layers)
+    init_layer(_layers[0])
+    init_bn(_layers[2])
+    return _layers
+
+
+def _Conv1x1Bn(inp, oup):
+    _layers = nn.Sequential(
+            nn.Conv2d(inp, oup, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(oup),
+            nn.ReLU6(inplace=True)
+    )
+    init_layer(_layers[0])
+    init_bn(_layers[1])
+    return _layers
 
 
 class _InvertedResidual(nn.Module):
