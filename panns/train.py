@@ -216,7 +216,7 @@ if __name__ == '__main__':
     parser.add_argument('--f_min', type=int, default=50,
                         help="Minimum frequency to be used when creating "
                              "Logmel filterbank (default 50)")
-    parser.add_argument('--fmax', type=int, default=14000,
+    parser.add_argument('--f_max', type=int, default=14000,
                         help="Maximum frequency to be used when creating "
                              "Logmel filterbank (default 14000)")
     parser.add_argument('--n_mels', type=int, default=64,
@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
     model = panns.models.load_model(args.model_type, args.sample_rate,
                                     args.win_length, args.hop_length,
-                                    args.n_mels, args.f_min, args.fmax,
+                                    args.n_mels, args.f_min, args.f_max,
                                     args.classes_num,
                                     args.resume_checkpoint_path)
 

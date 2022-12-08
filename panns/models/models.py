@@ -25,7 +25,7 @@ __all__ = ['Cnn6',
 
 class Cnn6(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, spec_aug=True, mixup_time=False,
+                 f_max, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
         """
@@ -36,7 +36,7 @@ class Cnn6(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram
                     (defaults 'hann', 'center', 'reflect'),
@@ -85,7 +85,7 @@ class Cnn6(nn.Module):
             self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                      n_fft=win_length,
                                                      n_mels=n_mels, fmin=f_min,
-                                                     fmax=fmax,
+                                                     fmax=f_max,
                                                      ref=kwargs.get('ref',
                                                                     1.0),
                                                      amin=kwargs.get('amin',
@@ -231,7 +231,7 @@ class Cnn6(nn.Module):
 
 class Cnn10(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, spec_aug=True, mixup_time=False,
+                 f_max, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
         """
@@ -242,7 +242,7 @@ class Cnn10(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram
                     (defaults 'hann', 'center', 'reflect'),
@@ -291,7 +291,7 @@ class Cnn10(nn.Module):
             self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                      n_fft=win_length,
                                                      n_mels=n_mels, fmin=f_min,
-                                                     fmax=fmax,
+                                                     fmax=f_max,
                                                      ref=kwargs.get('ref',
                                                                     1.0),
                                                      amin=kwargs.get('amin',
@@ -437,7 +437,7 @@ class Cnn10(nn.Module):
 
 class Cnn14(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, spec_aug=True, mixup_time=False,
+                 f_max, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
         """
@@ -448,7 +448,7 @@ class Cnn14(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram
                     (defaults 'hann', 'center', 'reflect'),
@@ -497,7 +497,7 @@ class Cnn14(nn.Module):
             self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                      n_fft=win_length,
                                                      n_mels=n_mels, fmin=f_min,
-                                                     fmax=fmax,
+                                                     fmax=f_max,
                                                      ref=kwargs.get('ref',
                                                                     1.0),
                                                      amin=kwargs.get('amin',
@@ -645,7 +645,7 @@ class Cnn14(nn.Module):
 
 class ResNet22(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, **kwargs):
+                 f_max, classes_num, **kwargs):
         """
 
         Args:
@@ -654,7 +654,7 @@ class ResNet22(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
                 'ref', 'amin', 'top_db' for LogmelFilterbank
@@ -678,7 +678,7 @@ class ResNet22(nn.Module):
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
                                                  n_mels=n_mels, fmin=f_min,
-                                                 fmax=fmax,
+                                                 fmax=f_max,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
                                                  top_db=kwargs.get('top_db',
@@ -748,7 +748,7 @@ class ResNet22(nn.Module):
 
 class ResNet38(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, **kwargs):
+                 f_max, classes_num, **kwargs):
         """
 
         Args:
@@ -757,7 +757,7 @@ class ResNet38(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
                 'ref', 'amin', 'top_db' for LogmelFilterbank
@@ -781,7 +781,7 @@ class ResNet38(nn.Module):
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
                                                  n_mels=n_mels, fmin=f_min,
-                                                 fmax=fmax,
+                                                 fmax=f_max,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
                                                  top_db=kwargs.get('top_db',
@@ -852,7 +852,7 @@ class ResNet38(nn.Module):
 
 class ResNet54(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, **kwargs):
+                 f_max, classes_num, **kwargs):
         """
 
         Args:
@@ -861,7 +861,7 @@ class ResNet54(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
                 'ref', 'amin', 'top_db' for LogmelFilterbank
@@ -885,7 +885,7 @@ class ResNet54(nn.Module):
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
                                                  n_mels=n_mels, fmin=f_min,
-                                                 fmax=fmax,
+                                                 fmax=f_max,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
                                                  top_db=kwargs.get('top_db',
@@ -1046,7 +1046,7 @@ class Res1dNet51(nn.Module):
 
 class MobileNetV1(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, **kwargs):
+                 f_max, classes_num, **kwargs):
         """
 
         Args:
@@ -1055,7 +1055,7 @@ class MobileNetV1(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
                 'ref', 'amin', 'top_db' for LogmelFilterbank
@@ -1082,7 +1082,7 @@ class MobileNetV1(nn.Module):
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
                                                  n_mels=n_mels, fmin=f_min,
-                                                 fmax=fmax,
+                                                 fmax=f_max,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
                                                  top_db=kwargs.get('top_db',
@@ -1157,7 +1157,7 @@ class MobileNetV1(nn.Module):
 
 class MobileNetV2(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
-                 fmax, classes_num, **kwargs):
+                 f_max, classes_num, **kwargs):
         """
 
         Args:
@@ -1166,7 +1166,7 @@ class MobileNetV2(nn.Module):
             hop_length:
             n_mels:
             f_min:
-            fmax:
+            f_max:
             classes_num:
             **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
                 'ref', 'amin', 'top_db' for LogmelFilterbank
@@ -1193,7 +1193,7 @@ class MobileNetV2(nn.Module):
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
                                                  n_mels=n_mels, fmin=f_min,
-                                                 fmax=fmax,
+                                                 fmax=f_max,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
                                                  top_db=kwargs.get('top_db',
