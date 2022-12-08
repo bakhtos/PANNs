@@ -130,7 +130,7 @@ some auxiliary classes are defined in [panns/models/blocks.py]
 Training is performed using [panns/train.py](panns/train.py). 
 Training is controlled by the following parameters:
 - Window size (```win_length```): size of the sliding window used in LogMel spectrum extraction
-- Hop size (```hop_size```): hop size of the window used in LogMel spectrum extraction
+- Hop size (```hop_length```): hop size of the window used in LogMel spectrum extraction
 - Fmin (```fmin```) and Fmax (```fmax```): minimum and maximum frequencies used in the Mel filterbank
 - Mel bins (```mel_bins```): amount of mel filters to be used in the filterbank
 - Augmentation (mixup): training can be set up to use Mixup with a given alpha parameter,
@@ -167,7 +167,7 @@ python -m panns.train --hdf5_files_path_train=$HDF5_FILES_PATH_TRAIN\
                       --checkpoints_dir=$CHECKPOINTS_DIR\
                       --statistics_dir=$STATISTICS_DIR\
                       --win_length=1024\
-                      --hop_size=320\
+                      --hop_length=320\
                       --sample_rate=$SAMPLE_RATE\
                       --clip_length=10000\
                       --fmin=50\
@@ -210,7 +210,7 @@ The script accepts following parameters:
 - `batch_size`, `cuda`, `num_workers`: Control passing data to the model 
   similarly to training phase
 - `model_type`, `classes_num`, `sample_rate`, `mel_bins`, `fmin`, `fmax`, 
-  `win_length`, `hop_size`: Parameters for the model
+  `win_length`, `hop_length`: Parameters for the model
 
 Example of inference:
 ```shell
@@ -226,7 +226,7 @@ python -m panns.inference --hdf5_files_path=$HDF5_FILES_PATH_EVAL\
                           --model_type='Cnn14_DecisionLevelMax'\
                           --sample_rate=32000\
                           --win_length=1024\
-                          --hop_size=320\
+                          --hop_length=320\
                           --mel_bins=64\
                           --fmin=50\
                           --fmax=14000\

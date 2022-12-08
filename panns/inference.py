@@ -22,7 +22,7 @@ def detect_events(*, frame_probabilities,
                   minimum_event_length=0.1,
                   minimum_event_gap=0.1,
                   sample_rate=32000,
-                  hop_size=320):
+                  hop_length=320):
     """Detect Sound Events using a given framewise probability array.
 
     Args:
@@ -44,7 +44,7 @@ def detect_events(*, frame_probabilities,
             (default 0.1)
         sample_rate: int, Sample rate of audio clips used in the dataset
             (default 32000)
-        hop_size: int, Hop length which was used to obtain the frame_probabilities
+        hop_length: int, Hop length which was used to obtain the frame_probabilities
             (default 320)
 
     Returns:
@@ -53,14 +53,14 @@ def detect_events(*, frame_probabilities,
 
     logging.info(f"Detecting events with parameters threshold={threshold}, "
                  f"minimum_event_length={minimum_event_length}, "
-                 f"minimum_event_gap={minimum_event_gap}i, hop_size="
-                 f"{hop_size}, sample_rate={sample_rate}.")
+                 f"minimum_event_gap={minimum_event_gap}i, hop_length="
+                 f"{hop_length}, sample_rate={sample_rate}.")
 
     event_file = open(output, 'w')
     event_file.write('filename\tevent_label\tonset\toffset\n')
     logging.info(f"Created file {output}.")
 
-    hop_length_seconds = hop_size / sample_rate
+    hop_length_seconds = hop_length / sample_rate
     activity_array = frame_probabilities >= threshold
     change_indices = np.logical_xor(activity_array[:, 1:, :],
                                     activity_array[:, :-1, :])
@@ -140,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument('--win_length', type=int, default=1024,
                         help="Window size of filter to be used in training ("
                              "default 1024)")
-    parser.add_argument('--hop_size', type=int, default=320,
+    parser.add_argument('--hop_length', type=int, default=320,
                         help="Hop size of filter to be used in training ("
                              "default 320)")
     parser.add_argument('--sample_rate', type=int, default=32000,
@@ -183,7 +183,7 @@ if __name__ == '__main__':
     create_logging(logs_dir, filemode='w')
 
     model = load_model(args.model_type, args.sample_rate,
-                       args.win_length, args.hop_size,
+                       args.win_length, args.hop_length,
                        args.mel_bins, args.fmin, args.fmax,
                        args.classes_num,
                        checkpoint=args.checkpoint_path)
@@ -223,4 +223,4 @@ if __name__ == '__main__':
                   minimum_event_length=args.minimum_event_length,
                   minimum_event_gap=args.minimum_event_gap,
                   sample_rate=args.sample_rate,
-                  hop_size=args.hop_size)
+                  hop_length=args.hop_length)

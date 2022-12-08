@@ -24,7 +24,7 @@ __all__ = ['Cnn6',
 
 
 class Cnn6(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
@@ -33,7 +33,7 @@ class Cnn6(nn.Module):
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -71,7 +71,7 @@ class Cnn6(nn.Module):
         if self.spectrogram:
             # Spectrogram extractor
             self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                     hop_length=hop_size,
+                                                     hop_length=hop_length,
                                                      win_length=win_length,
                                                      window=kwargs.get('window',
                                                                        'hann'),
@@ -230,7 +230,7 @@ class Cnn6(nn.Module):
 
 
 class Cnn10(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
@@ -239,7 +239,7 @@ class Cnn10(nn.Module):
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -277,7 +277,7 @@ class Cnn10(nn.Module):
         if self.spectrogram:
             # Spectrogram extractor
             self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                     hop_length=hop_size,
+                                                     hop_length=hop_length,
                                                      win_length=win_length,
                                                      window=kwargs.get('window',
                                                                        'hann'),
@@ -436,7 +436,7 @@ class Cnn10(nn.Module):
 
 
 class Cnn14(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
@@ -445,7 +445,7 @@ class Cnn14(nn.Module):
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -483,7 +483,7 @@ class Cnn14(nn.Module):
         if self.spectrogram:
             # Spectrogram extractor
             self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                     hop_length=hop_size,
+                                                     hop_length=hop_length,
                                                      win_length=win_length,
                                                      window=kwargs.get('window',
                                                                        'hann'),
@@ -644,14 +644,14 @@ class Cnn14(nn.Module):
 
 
 class ResNet22(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, **kwargs):
         """
 
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -664,7 +664,7 @@ class ResNet22(nn.Module):
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_size,
+                                                 hop_length=hop_length,
                                                  win_length=win_length,
                                                  window=kwargs.get('window',
                                                                    'hann'),
@@ -747,14 +747,14 @@ class ResNet22(nn.Module):
 
 
 class ResNet38(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, **kwargs):
         """
 
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -767,7 +767,7 @@ class ResNet38(nn.Module):
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_size,
+                                                 hop_length=hop_length,
                                                  win_length=win_length,
                                                  window=kwargs.get('window',
                                                                    'hann'),
@@ -851,14 +851,14 @@ class ResNet38(nn.Module):
 
 
 class ResNet54(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, **kwargs):
         """
 
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -871,7 +871,7 @@ class ResNet54(nn.Module):
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_size,
+                                                 hop_length=hop_length,
                                                  win_length=win_length,
                                                  window=kwargs.get('window',
                                                                    'hann'),
@@ -1045,14 +1045,14 @@ class Res1dNet51(nn.Module):
 
 
 class MobileNetV1(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, **kwargs):
         """
 
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -1068,7 +1068,7 @@ class MobileNetV1(nn.Module):
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_size,
+                                                 hop_length=hop_length,
                                                  win_length=win_length,
                                                  window=kwargs.get('window',
                                                                    'hann'),
@@ -1156,14 +1156,14 @@ class MobileNetV1(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_size, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
                  fmax, classes_num, **kwargs):
         """
 
         Args:
             sample_rate:
             win_length:
-            hop_size:
+            hop_length:
             mel_bins:
             fmin:
             fmax:
@@ -1179,7 +1179,7 @@ class MobileNetV2(nn.Module):
 
         # Spectrogram extractor
         self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_size,
+                                                 hop_length=hop_length,
                                                  win_length=win_length,
                                                  window=kwargs.get('window',
                                                                    'hann'),

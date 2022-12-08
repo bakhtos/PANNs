@@ -204,7 +204,7 @@ if __name__ == '__main__':
     parser.add_argument('--win_length', type=int, default=1024,
                         help="Window size of filter to be used in training ("
                              "default 1024)")
-    parser.add_argument('--hop_size', type=int, default=320,
+    parser.add_argument('--hop_length', type=int, default=320,
                         help="Hop size of filter to be used in training ("
                              "default 320)")
     parser.add_argument('--sample_rate', type=int, default=32000,
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     model = panns.models.load_model(args.model_type, args.sample_rate,
-                                    args.win_length, args.hop_size,
+                                    args.win_length, args.hop_length,
                                     args.mel_bins, args.fmin, args.fmax,
                                     args.classes_num,
                                     args.resume_checkpoint_path)
