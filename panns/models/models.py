@@ -24,7 +24,7 @@ __all__ = ['Cnn6',
 
 
 class Cnn6(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
@@ -34,7 +34,7 @@ class Cnn6(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -84,7 +84,7 @@ class Cnn6(nn.Module):
             # Logmel feature extractor
             self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                      n_fft=win_length,
-                                                     n_mels=mel_bins, fmin=fmin,
+                                                     n_mels=n_mels, fmin=fmin,
                                                      fmax=fmax,
                                                      ref=kwargs.get('ref',
                                                                     1.0),
@@ -147,7 +147,7 @@ class Cnn6(nn.Module):
         if self.spectrogram:
             x = self.spectrogram_extractor(batch)  # (batch_size,1,time_steps,
             # freq_bins)
-            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,mel_bins)
+            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,n_mels)
 
             x = x.transpose(1, 3)
             x = self.bn0(x)
@@ -230,7 +230,7 @@ class Cnn6(nn.Module):
 
 
 class Cnn10(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
@@ -240,7 +240,7 @@ class Cnn10(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -290,7 +290,7 @@ class Cnn10(nn.Module):
             # Logmel feature extractor
             self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                      n_fft=win_length,
-                                                     n_mels=mel_bins, fmin=fmin,
+                                                     n_mels=n_mels, fmin=fmin,
                                                      fmax=fmax,
                                                      ref=kwargs.get('ref',
                                                                     1.0),
@@ -353,7 +353,7 @@ class Cnn10(nn.Module):
         if self.spectrogram:
             x = self.spectrogram_extractor(batch)  # (batch_size,1,time_steps,
             # freq_bins)
-            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,mel_bins)
+            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,n_mels)
 
             x = x.transpose(1, 3)
             x = self.bn0(x)
@@ -436,7 +436,7 @@ class Cnn10(nn.Module):
 
 
 class Cnn14(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
                  spectrogram=True, decision_level=None, **kwargs):
@@ -446,7 +446,7 @@ class Cnn14(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -496,7 +496,7 @@ class Cnn14(nn.Module):
             # Logmel feature extractor
             self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                      n_fft=win_length,
-                                                     n_mels=mel_bins, fmin=fmin,
+                                                     n_mels=n_mels, fmin=fmin,
                                                      fmax=fmax,
                                                      ref=kwargs.get('ref',
                                                                     1.0),
@@ -561,7 +561,7 @@ class Cnn14(nn.Module):
         if self.spectrogram:
             x = self.spectrogram_extractor(batch)  # (batch_size,1,time_steps,
             # freq_bins)
-            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,mel_bins)
+            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,n_mels)
 
             x = x.transpose(1, 3)
             x = self.bn0(x)
@@ -644,7 +644,7 @@ class Cnn14(nn.Module):
 
 
 class ResNet22(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, **kwargs):
         """
 
@@ -652,7 +652,7 @@ class ResNet22(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -677,7 +677,7 @@ class ResNet22(nn.Module):
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
-                                                 n_mels=mel_bins, fmin=fmin,
+                                                 n_mels=n_mels, fmin=fmin,
                                                  fmax=fmax,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
@@ -713,7 +713,7 @@ class ResNet22(nn.Module):
 
         x = self.spectrogram_extractor(
             batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
+        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
 
         x = x.transpose(1, 3)
         x = self.bn0(x)
@@ -747,7 +747,7 @@ class ResNet22(nn.Module):
 
 
 class ResNet38(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, **kwargs):
         """
 
@@ -755,7 +755,7 @@ class ResNet38(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -780,7 +780,7 @@ class ResNet38(nn.Module):
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
-                                                 n_mels=mel_bins, fmin=fmin,
+                                                 n_mels=n_mels, fmin=fmin,
                                                  fmax=fmax,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
@@ -817,7 +817,7 @@ class ResNet38(nn.Module):
 
         x = self.spectrogram_extractor(
             batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
+        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
 
         x = x.transpose(1, 3)
         x = self.bn0(x)
@@ -851,7 +851,7 @@ class ResNet38(nn.Module):
 
 
 class ResNet54(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, **kwargs):
         """
 
@@ -859,7 +859,7 @@ class ResNet54(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -884,7 +884,7 @@ class ResNet54(nn.Module):
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
-                                                 n_mels=mel_bins, fmin=fmin,
+                                                 n_mels=n_mels, fmin=fmin,
                                                  fmax=fmax,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
@@ -921,7 +921,7 @@ class ResNet54(nn.Module):
 
         x = self.spectrogram_extractor(
             batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
+        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
 
         x = x.transpose(1, 3)
         x = self.bn0(x)
@@ -1045,7 +1045,7 @@ class Res1dNet51(nn.Module):
 
 
 class MobileNetV1(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, **kwargs):
         """
 
@@ -1053,7 +1053,7 @@ class MobileNetV1(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -1081,7 +1081,7 @@ class MobileNetV1(nn.Module):
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
-                                                 n_mels=mel_bins, fmin=fmin,
+                                                 n_mels=n_mels, fmin=fmin,
                                                  fmax=fmax,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
@@ -1128,7 +1128,7 @@ class MobileNetV1(nn.Module):
 
         x = self.spectrogram_extractor(
             batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
+        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
 
         x = x.transpose(1, 3)
         x = self.bn0(x)
@@ -1156,7 +1156,7 @@ class MobileNetV1(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, *, sample_rate, win_length, hop_length, mel_bins, fmin,
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, fmin,
                  fmax, classes_num, **kwargs):
         """
 
@@ -1164,7 +1164,7 @@ class MobileNetV2(nn.Module):
             sample_rate:
             win_length:
             hop_length:
-            mel_bins:
+            n_mels:
             fmin:
             fmax:
             classes_num:
@@ -1192,7 +1192,7 @@ class MobileNetV2(nn.Module):
         # Logmel feature extractor
         self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
                                                  n_fft=win_length,
-                                                 n_mels=mel_bins, fmin=fmin,
+                                                 n_mels=n_mels, fmin=fmin,
                                                  fmax=fmax,
                                                  ref=kwargs.get('ref', 1.0),
                                                  amin=kwargs.get('amin', 1e-10),
@@ -1259,7 +1259,7 @@ class MobileNetV2(nn.Module):
 
         x = self.spectrogram_extractor(
             batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, mel_bins)
+        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
 
         x = x.transpose(1, 3)
         x = self.bn0(x)

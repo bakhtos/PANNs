@@ -219,7 +219,7 @@ if __name__ == '__main__':
     parser.add_argument('--fmax', type=int, default=14000,
                         help="Maximum frequency to be used when creating "
                              "Logmel filterbank (default 14000)")
-    parser.add_argument('--mel_bins', type=int, default=64,
+    parser.add_argument('--n_mels', type=int, default=64,
                         help="Amount of mel filters to use in the filterbank "
                              "(default 64)")
     parser.add_argument('--mixup_alpha', type=float, default=None,
@@ -246,7 +246,7 @@ if __name__ == '__main__':
 
     model = panns.models.load_model(args.model_type, args.sample_rate,
                                     args.win_length, args.hop_length,
-                                    args.mel_bins, args.fmin, args.fmax,
+                                    args.n_mels, args.fmin, args.fmax,
                                     args.classes_num,
                                     args.resume_checkpoint_path)
 
