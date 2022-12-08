@@ -146,7 +146,7 @@ if __name__ == '__main__':
     parser.add_argument('--sample_rate', type=int, default=32000,
                         help="Sample rate of the used audio clips; supported "
                              "values are 32000, 16000, 8000 (default 32000)")
-    parser.add_argument('--fmin', type=int, default=50,
+    parser.add_argument('--f_min', type=int, default=50,
                         help="Minimum frequency to be used when creating "
                              "Logmel filterbank (default 50)")
     parser.add_argument('--fmax', type=int, default=14000,
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     model = load_model(args.model_type, args.sample_rate,
                        args.win_length, args.hop_length,
-                       args.n_mels, args.fmin, args.fmax,
+                       args.n_mels, args.f_min, args.fmax,
                        args.classes_num,
                        checkpoint=args.checkpoint_path)
 
