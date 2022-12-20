@@ -18,27 +18,26 @@ def forward(model, data_loader, return_data=False,
             collated target (default False)
 
     Returns:
-        clipwise_output, second_output, data, target
-            -First output of the model, tensor of shape (audios_num, classes_num)
-            -Either segmentwise or framewise output,
-            tensor of shape(audios_num, segments_num or frames_num, classes_num)
-            -If return_data is True, tensor of shape (audios_num, clip_samples),
-            otherwise None
-            -If return_target is True, tensor of shape (audios_num, classes_num),
-            otherwise None
+        clipwise_output, segmentwise_output, framewise_output, embedding, data,
+        target
     """
 
     # Forward data to a model in mini-batches
 
     all_clipwise_output = []
-    all_second_output = []
+    all_segmentwise_output = []
+    all_framewise_output = []
+    all_embedding = []
     all_data = []
     all_target = []
     for data, target in data_loader:
-        clipwise_output, second_output = model(data)
+        clipwise_output, segmentwise_output, framewise_output, embedding = \
+            model(data)
 
         all_clipwise_output.append(clipwise_output)
-        all_second_output.append(second_output)
+        all_segmentwise_output.append(segmentwise_output)
+        all_framewise_output.append(framewise_output)
+        all_embedding.append(embedding)
 
         if return_data:
             all_data.append(data)
@@ -46,8 +45,11 @@ def forward(model, data_loader, return_data=False,
             all_target.append(target)
 
     all_clipwise_output = torch.cat(all_clipwise_output, dim=0)
-    all_second_output = torch.cat(all_second_output, dim=0)
+    all_segmentwise_output = torch.cat(all_segmentwise_output, dim=0)
+    all_framewise_output = torch.cat(all_framewise_output, dim=0)
+    all_embedding = torch.cat(all_embedding, dim=0)
     all_data = torch.cat(all_data) if return_data else None
     all_target = torch.cat(all_target) if return_target else None
 
-    return all_clipwise_output, all_second_output, all_data, all_target
+    return all_clipwise_output, all_segmentwise_output, all_framewise_output,\
+           all_embedding, all_data, all_target
