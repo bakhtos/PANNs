@@ -64,6 +64,12 @@ class Cnn6(nn.Module):
         self.spectrogram = spectrogram
         self.decision_level = decision_level
         self.interpolate_ratio = 32
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 512)
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -85,18 +91,11 @@ class Cnn6(nn.Module):
                                                   hop_length=hop_length,
                                                   f_min=f_min, f_max=f_max,
                                                   n_mels=n_mels,
-                                                  window_fn=kwargs.get(
-                                                          'window_fn',
-                                                          torch.hann_window),
+                                                  window_fn=window_fn,
                                                   power=2, onesided=True,
-                                                  center=kwargs.get('center',
-                                                                    True),
-                                                  pad_mode=kwargs.get(
-                                                          'pad_mode', 'reflect')
-                                                  )
-            self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                                 top_db=kwargs.get('top_db',
-                                                                   None))
+                                                  center=center,
+                                                  pad_mode=pad_mode)
+            self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
             # Spec augmenter
             if spec_aug:
@@ -107,7 +106,7 @@ class Cnn6(nn.Module):
                                                        stripes_num=2,
                                                        axis=3)
 
-            self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+            self.bn0 = nn.BatchNorm2d(num_features)
             init_bn(self.bn0)
 
         self.conv_block1 = _ConvBlock5x5(in_channels=1, out_channels=64)
@@ -115,16 +114,15 @@ class Cnn6(nn.Module):
         self.conv_block3 = _ConvBlock5x5(in_channels=128, out_channels=256)
         self.conv_block4 = _ConvBlock5x5(in_channels=256, out_channels=512)
 
-        self.fc1 = nn.Linear(512, kwargs.get('embedding_size', 512),
-                             bias=True)
+        self.fc1 = nn.Linear(512, embedding_size, bias=True)
         init_layer(self.fc1)
 
         if self.decision_level == 'att':
-            self.audioset_layer = _AttBlock(kwargs.get('embedding_size', 512),
-                                            classes_num, activation='sigmoid')
+            self.audioset_layer = _AttBlock(embedding_size, classes_num,
+                                            activation='sigmoid')
         else:
-            self.audioset_layer = nn.Linear(kwargs.get('embedding_size', 512),
-                                            classes_num, bias=True)
+            self.audioset_layer = nn.Linear(embedding_size, classes_num,
+                                            bias=True)
             init_layer(self.audioset_layer)
 
     def forward(self, batch, mixup_lambda=None):
@@ -288,6 +286,12 @@ class Cnn10(nn.Module):
         self.spectrogram = spectrogram
         self.decision_level = decision_level
         self.interpolate_ratio = 32
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 512)
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -309,18 +313,11 @@ class Cnn10(nn.Module):
                                                   hop_length=hop_length,
                                                   f_min=f_min, f_max=f_max,
                                                   n_mels=n_mels,
-                                                  window_fn=kwargs.get(
-                                                          'window_fn',
-                                                          torch.hann_window),
+                                                  window_fn=window_fn,
                                                   power=2, onesided=True,
-                                                  center=kwargs.get('center',
-                                                                    True),
-                                                  pad_mode=kwargs.get(
-                                                          'pad_mode', 'reflect')
-                                                  )
-            self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                                 top_db=kwargs.get('top_db',
-                                                                   None))
+                                                  center=center,
+                                                  pad_mode=pad_mode)
+            self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
             # Spec augmenter
             if spec_aug:
@@ -331,7 +328,7 @@ class Cnn10(nn.Module):
                                                        stripes_num=2,
                                                        axis=3)
 
-            self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+            self.bn0 = nn.BatchNorm2d(num_features)
             init_bn(self.bn0)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
@@ -339,16 +336,15 @@ class Cnn10(nn.Module):
         self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
         self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
 
-        self.fc1 = nn.Linear(512, kwargs.get('embedding_size', 512),
-                             bias=True)
+        self.fc1 = nn.Linear(512, embedding_size, bias=True)
         init_layer(self.fc1)
 
         if self.decision_level == 'att':
-            self.audioset_layer = _AttBlock(kwargs.get('embedding_size', 512),
-                                            classes_num, activation='sigmoid')
+            self.audioset_layer = _AttBlock(embedding_size, classes_num,
+                                            activation='sigmoid')
         else:
-            self.audioset_layer = nn.Linear(kwargs.get('embedding_size', 512),
-                                            classes_num, bias=True)
+            self.audioset_layer = nn.Linear(embedding_size, classes_num,
+                                            bias=True)
             init_layer(self.audioset_layer)
 
     def forward(self, batch, mixup_lambda=None):
@@ -512,6 +508,12 @@ class Cnn14(nn.Module):
         self.spectrogram = spectrogram
         self.decision_level = decision_level
         self.interpolate_ratio = 32
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 2048)
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -533,18 +535,11 @@ class Cnn14(nn.Module):
                                                   hop_length=hop_length,
                                                   f_min=f_min, f_max=f_max,
                                                   n_mels=n_mels,
-                                                  window_fn=kwargs.get(
-                                                          'window_fn',
-                                                          torch.hann_window),
+                                                  window_fn=window_fn,
                                                   power=2, onesided=True,
-                                                  center=kwargs.get('center',
-                                                                    True),
-                                                  pad_mode=kwargs.get(
-                                                          'pad_mode', 'reflect')
-                                                  )
-            self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                                 top_db=kwargs.get('top_db',
-                                                                   None))
+                                                  center=center,
+                                                  pad_mode=pad_mode)
+            self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
             # Spec augmenter
             if spec_aug:
@@ -555,7 +550,7 @@ class Cnn14(nn.Module):
                                                        stripes_num=2,
                                                        axis=3)
 
-            self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+            self.bn0 = nn.BatchNorm2d(num_features)
             init_bn(self.bn0)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
@@ -565,16 +560,15 @@ class Cnn14(nn.Module):
         self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
         self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
 
-        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
-                             bias=True)
+        self.fc1 = nn.Linear(2048, embedding_size, bias=True)
         init_layer(self.fc1)
 
         if self.decision_level == 'att':
-            self.audioset_layer = _AttBlock(kwargs.get('embedding_size', 2048),
-                                            classes_num, activation='sigmoid')
+            self.audioset_layer = _AttBlock(embedding_size, classes_num,
+                                            activation='sigmoid')
         else:
-            self.audioset_layer = nn.Linear(kwargs.get('embedding_size', 2048),
-                                            classes_num, bias=True)
+            self.audioset_layer = nn.Linear(embedding_size, classes_num,
+                                            bias=True)
             init_layer(self.audioset_layer)
 
     def forward(self, batch, mixup_lambda=None):
@@ -720,6 +714,13 @@ class ResNet22(nn.Module):
 
         super().__init__()
 
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 2048)
+
         # Spectrogram extractor
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
@@ -727,18 +728,11 @@ class ResNet22(nn.Module):
                                               hop_length=hop_length,
                                               f_min=f_min, f_max=f_max,
                                               n_mels=n_mels,
-                                              window_fn=kwargs.get(
-                                                      'window_fn',
-                                                      torch.hann_window),
+                                              window_fn=window_fn,
                                               power=2, onesided=True,
-                                              center=kwargs.get('center',
-                                                                True),
-                                              pad_mode=kwargs.get(
-                                                      'pad_mode', 'reflect')
-                                              )
-        self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                             top_db=kwargs.get('top_db',
-                                                               None))
+                                              center=center,
+                                              pad_mode=pad_mode)
+        self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
         # Spec augmenter
         self.spec_aug_time = _SpecAugmentation(mask_param=64,
@@ -748,7 +742,7 @@ class ResNet22(nn.Module):
                                                stripes_num=2,
                                                axis=3)
 
-        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm2d(num_features)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
 
@@ -756,10 +750,8 @@ class ResNet22(nn.Module):
 
         self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
-        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -836,6 +828,13 @@ class ResNet38(nn.Module):
 
         super().__init__()
 
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 2048)
+
         # Spectrogram extractor
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
@@ -843,18 +842,11 @@ class ResNet38(nn.Module):
                                               hop_length=hop_length,
                                               f_min=f_min, f_max=f_max,
                                               n_mels=n_mels,
-                                              window_fn=kwargs.get(
-                                                      'window_fn',
-                                                      torch.hann_window),
+                                              window_fn=window_fn,
                                               power=2, onesided=True,
-                                              center=kwargs.get('center',
-                                                                True),
-                                              pad_mode=kwargs.get(
-                                                      'pad_mode', 'reflect')
-                                              )
-        self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                             top_db=kwargs.get('top_db',
-                                                               None))
+                                              center=center,
+                                              pad_mode=pad_mode)
+        self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
         # Spec augmenter
         self.spec_aug_time = _SpecAugmentation(mask_param=64,
@@ -864,7 +856,7 @@ class ResNet38(nn.Module):
                                                stripes_num=2,
                                                axis=3)
 
-        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm2d(num_features)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
 
@@ -872,10 +864,8 @@ class ResNet38(nn.Module):
 
         self.conv_block_after1 = _ConvBlock(in_channels=512, out_channels=2048)
 
-        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -952,6 +942,13 @@ class ResNet54(nn.Module):
 
         super().__init__()
 
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 2048)
+
         # Spectrogram extractor
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
@@ -959,18 +956,11 @@ class ResNet54(nn.Module):
                                               hop_length=hop_length,
                                               f_min=f_min, f_max=f_max,
                                               n_mels=n_mels,
-                                              window_fn=kwargs.get(
-                                                      'window_fn',
-                                                      torch.hann_window),
+                                              window_fn=window_fn,
                                               power=2, onesided=True,
-                                              center=kwargs.get('center',
-                                                                True),
-                                              pad_mode=kwargs.get(
-                                                      'pad_mode', 'reflect')
-                                              )
-        self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                             top_db=kwargs.get('top_db',
-                                                               None))
+                                              center=center,
+                                              pad_mode=pad_mode)
+        self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
         # Spec augmenter
         self.spec_aug_time = _SpecAugmentation(mask_param=64,
@@ -980,7 +970,7 @@ class ResNet54(nn.Module):
                                                stripes_num=2,
                                                axis=3)
 
-        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm2d(num_features)
 
         self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
 
@@ -988,10 +978,8 @@ class ResNet54(nn.Module):
 
         self.conv_block_after1 = _ConvBlock(in_channels=2048, out_channels=2048)
 
-        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1058,17 +1046,18 @@ class Res1dNet31(nn.Module):
 
         super().__init__()
 
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 2048)
+
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
-        self.bn0 = nn.BatchNorm1d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm1d(num_features)
 
         self.resnet = _ResNetWav1d(block=_ResnetBasicBlockWav1d,
                                    layers=[2, 2, 2, 2, 2, 2, 2])
 
-        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_layer(self.conv0)
         init_bn(self.bn0)
@@ -1120,17 +1109,18 @@ class Res1dNet51(nn.Module):
 
         super().__init__()
 
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 2048)
+
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
-        self.bn0 = nn.BatchNorm1d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm1d(num_features)
 
         self.resnet = _ResNetWav1d(block=_ResnetBasicBlockWav1d,
                                    layers=[2, 3, 4, 6, 4, 3, 2])
 
-        self.fc1 = nn.Linear(2048, kwargs.get('embedding_size', 2048),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 2048),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(2048, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_layer(self.conv0)
         init_bn(self.bn0)
@@ -1192,6 +1182,13 @@ class MobileNetV1(nn.Module):
 
         super().__init__()
 
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 1024)
+
         # Spectrogram extractor
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
@@ -1199,18 +1196,11 @@ class MobileNetV1(nn.Module):
                                               hop_length=hop_length,
                                               f_min=f_min, f_max=f_max,
                                               n_mels=n_mels,
-                                              window_fn=kwargs.get(
-                                                      'window_fn',
-                                                      torch.hann_window),
+                                              window_fn=window_fn,
                                               power=2, onesided=True,
-                                              center=kwargs.get('center',
-                                                                True),
-                                              pad_mode=kwargs.get(
-                                                      'pad_mode', 'reflect')
-                                              )
-        self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                             top_db=kwargs.get('top_db',
-                                                               None))
+                                              center=center,
+                                              pad_mode=pad_mode)
+        self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
         # Spec augmenter
         self.spec_aug_time = _SpecAugmentation(mask_param=64,
@@ -1220,7 +1210,7 @@ class MobileNetV1(nn.Module):
                                                stripes_num=2,
                                                axis=3)
 
-        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm2d(num_features)
 
         self.features = nn.Sequential(
                 _ConvBnV1(1, 32, 2),
@@ -1238,10 +1228,8 @@ class MobileNetV1(nn.Module):
                 _ConvDw(512, 1024, 2),
                 _ConvDw(1024, 1024, 1))
 
-        self.fc1 = nn.Linear(1024, kwargs.get('embedding_size', 1024),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 1024),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(1024, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1312,6 +1300,13 @@ class MobileNetV2(nn.Module):
 
         super().__init__()
 
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 1024)
+
         # Spectrogram extractor
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
@@ -1319,18 +1314,11 @@ class MobileNetV2(nn.Module):
                                               hop_length=hop_length,
                                               f_min=f_min, f_max=f_max,
                                               n_mels=n_mels,
-                                              window_fn=kwargs.get(
-                                                      'window_fn',
-                                                      torch.hann_window),
+                                              window_fn=window_fn,
                                               power=2, onesided=True,
-                                              center=kwargs.get('center',
-                                                                True),
-                                              pad_mode=kwargs.get(
-                                                      'pad_mode', 'reflect')
-                                              )
-        self.amplitude_to_db = AmplitudeToDB(stype="power",
-                                             top_db=kwargs.get('top_db',
-                                                               None))
+                                              center=center,
+                                              pad_mode=pad_mode)
+        self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
 
         # Spec augmenter
         self.spec_aug_time = _SpecAugmentation(mask_param=64,
@@ -1340,7 +1328,7 @@ class MobileNetV2(nn.Module):
                                                stripes_num=2,
                                                axis=3)
 
-        self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm2d(num_features)
 
         width_mult = 1.
         block = _InvertedResidual
@@ -1378,10 +1366,8 @@ class MobileNetV2(nn.Module):
         # make it nn.Sequential
         self.features = nn.Sequential(*self.features)
 
-        self.fc1 = nn.Linear(1280, kwargs.get('embedding_size', 1024),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 1024),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(1280, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_bn(self.bn0)
         init_layer(self.fc1)
@@ -1441,6 +1427,8 @@ class LeeNet11(nn.Module):
         """
         super().__init__()
 
+        embedding_size = kwargs.get('embedding_size', 512)
+
         self.conv_block1 = _LeeNetConvBlock(1, 64, 3, 3)
         self.conv_block2 = _LeeNetConvBlock(64, 64, 3, 1)
         self.conv_block3 = _LeeNetConvBlock(64, 64, 3, 1)
@@ -1451,9 +1439,8 @@ class LeeNet11(nn.Module):
         self.conv_block8 = _LeeNetConvBlock(128, 128, 3, 1)
         self.conv_block9 = _LeeNetConvBlock(128, 256, 3, 1)
 
-        self.fc1 = nn.Linear(256, kwargs.get('embedding_size', 512), bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 512),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(256, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1509,6 +1496,8 @@ class LeeNet24(nn.Module):
         """
         super().__init__()
 
+        embedding_size = kwargs.get('embedding_size', 1024)
+
         self.dropout = dropout
 
         self.conv_block1 = _LeeNetConvBlock2(1, 64, 3, 3)
@@ -1521,10 +1510,8 @@ class LeeNet24(nn.Module):
         self.conv_block8 = _LeeNetConvBlock2(512, 512, 3, 1)
         self.conv_block9 = _LeeNetConvBlock2(512, 1024, 3, 1)
 
-        self.fc1 = nn.Linear(1024, kwargs.get('embedding_size', 1024),
-                             bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 1024),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(1024, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_layer(self.fc1)
         init_layer(self.fc_audioset)
@@ -1596,17 +1583,19 @@ class DaiNet19(nn.Module):
 
         super().__init__()
 
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 512)
+
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=80,
                                stride=4, padding=0, bias=False)
-        self.bn0 = nn.BatchNorm1d(kwargs.get('num_features', 64))
+        self.bn0 = nn.BatchNorm1d(num_features)
         self.conv_block1 = _DaiNetResBlock(64, 64, 3)
         self.conv_block2 = _DaiNetResBlock(64, 128, 3)
         self.conv_block3 = _DaiNetResBlock(128, 256, 3)
         self.conv_block4 = _DaiNetResBlock(256, 512, 3)
 
-        self.fc1 = nn.Linear(512, kwargs.get('embedding_size', 512), bias=True)
-        self.fc_audioset = nn.Linear(kwargs.get('embedding_size', 512),
-                                     classes_num, bias=True)
+        self.fc1 = nn.Linear(512, embedding_size, bias=True)
+        self.fc_audioset = nn.Linear(embedding_size, classes_num, bias=True)
 
         init_layer(self.conv0)
         init_bn(self.bn0)
@@ -1677,16 +1666,16 @@ class TransferModel(nn.Module):
         self.decision_level = decision_level
         self.frames_num = frames_num
         self.interpolate_ratio = interpolate_ratio
+        embedding_size = kwargs.get('embedding_size', 512)
 
         # Transfer to another task layer
         self.fc_transfer = nn.Linear(2048, classes_num_new, bias=True)
         if self.decision_level == 'att':
-            self.audioset_layer = _AttBlock(kwargs.get('embedding_size', 2048),
-                                            classes_num_new,
+            self.audioset_layer = _AttBlock(embedding_size, classes_num_new,
                                             activation='sigmoid')
         else:
-            self.audioset_layer = nn.Linear(kwargs.get('embedding_size', 2048),
-                                            classes_num_new, bias=True)
+            self.audioset_layer = nn.Linear(embedding_size, classes_num_new,
+                                            bias=True)
             init_layer(self.audioset_layer)
 
         if freeze_base:
