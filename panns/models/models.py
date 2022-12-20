@@ -31,20 +31,29 @@ class Cnn6(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
+            spec_aug: If True, apply Spectrogram Augmentation (default True).
+            mixup_time: If True, apply mixup in time domain (default False).
+            mixup_freq: If True, apply mixup in frequency domain (default True).
+            dropout: If True, apply dropout in dropout layers during training.
+            wavegram: If True, use wavegram features (default False).
+            spectrogram: If True, use spectrogram features (default True).
+            decision_level: If not None, create framewise output using one of
+                the options 'max', 'avg', 'att' (default None).
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 512)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 512)
         """
+
         super().__init__()
 
         self.spec_aug = spec_aug
@@ -120,7 +129,15 @@ class Cnn6(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         # Mixup in time domain
         if self.mixup_time and self.training and mixup_lambda is not None:
@@ -238,20 +255,29 @@ class Cnn10(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
+            spec_aug: If True, apply Spectrogram Augmentation (default True).
+            mixup_time: If True, apply mixup in time domain (default False).
+            mixup_freq: If True, apply mixup in frequency domain (default True).
+            dropout: If True, apply dropout in dropout layers during training.
+            wavegram: If True, use wavegram features (default False).
+            spectrogram: If True, use spectrogram features (default True).
+            decision_level: If not None, create framewise output using one of
+                the options 'max', 'avg', 'att' (default None).
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 512)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 512)
         """
+
         super().__init__()
 
         self.spec_aug = spec_aug
@@ -327,7 +353,15 @@ class Cnn10(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         # Mixup in time domain
         if self.mixup_time and self.training and mixup_lambda is not None:
@@ -445,20 +479,29 @@ class Cnn14(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
+            spec_aug: If True, apply Spectrogram Augmentation (default True).
+            mixup_time: If True, apply mixup in time domain (default False).
+            mixup_freq: If True, apply mixup in frequency domain (default True).
+            dropout: If True, apply dropout in dropout layers during training.
+            wavegram: If True, use wavegram features (default False).
+            spectrogram: If True, use spectrogram features (default True).
+            decision_level: If not None, create framewise output using one of
+                the options 'max', 'avg', 'att' (default None).
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 2048)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 2048)
         """
+
         super().__init__()
 
         self.spec_aug = spec_aug
@@ -536,7 +579,15 @@ class Cnn14(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         # Mixup in time domain
         if self.mixup_time and self.training and mixup_lambda is not None:
@@ -652,19 +703,19 @@ class ResNet22(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 2048)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 2048)
         """
 
         super().__init__()
@@ -716,7 +767,15 @@ class ResNet22(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]        # (batch_size, 1, time)
         x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
@@ -760,19 +819,19 @@ class ResNet38(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 2048)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 2048)
         """
 
         super().__init__()
@@ -824,7 +883,15 @@ class ResNet38(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]        # (batch_size, 1, time)
         x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
@@ -868,19 +935,19 @@ class ResNet54(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 2048)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 2048)
         """
 
         super().__init__()
@@ -932,7 +999,15 @@ class ResNet54(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]        # (batch_size, 1, time)
         x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
@@ -972,6 +1047,15 @@ class ResNet54(nn.Module):
 
 class Res1dNet31(nn.Module):
     def __init__(self, *, classes_num, **kwargs):
+        """
+
+        Args:
+            classes_num: Amount of classes used for training.
+            **kwargs: 'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                      last two fully connected layers (default 2048)
+        """
+
         super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
@@ -993,7 +1077,15 @@ class Res1dNet31(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]
 
@@ -1017,6 +1109,15 @@ class Res1dNet31(nn.Module):
 
 class Res1dNet51(nn.Module):
     def __init__(self, *, classes_num, **kwargs):
+        """
+
+        Args:
+            classes_num: Amount of classes used for training.
+            **kwargs: 'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                      last two fully connected layers (default 2048)
+        """
+
         super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
@@ -1038,7 +1139,15 @@ class Res1dNet51(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]
 
@@ -1066,19 +1175,19 @@ class MobileNetV1(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 1024)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 1024)
         """
 
         super().__init__()
@@ -1140,7 +1249,15 @@ class MobileNetV1(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]        # (batch_size, 1, time)
         x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
@@ -1178,19 +1295,19 @@ class MobileNetV2(nn.Module):
         """
 
         Args:
-            sample_rate:
-            win_length:
-            hop_length:
-            n_mels:
-            f_min:
-            f_max:
-            classes_num:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
             **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
-                    (defaults 'hann', 'center', 'reflect'),
-                'top_db' for AmplitudeToDB (default None),
-                'num_features' for BatchNorm2d (default 64),
-                'embedding_size' for the amount of neurons connecting the
-                    last two fully connected layers (default 1024)
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 1024)
         """
 
         super().__init__()
@@ -1272,7 +1389,15 @@ class MobileNetV2(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, time)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]        # (batch_size, 1, time)
         x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
@@ -1306,6 +1431,14 @@ class MobileNetV2(nn.Module):
 
 class LeeNet11(nn.Module):
     def __init__(self, *, classes_num, **kwargs):
+        """
+
+        Args:
+            classes_num: Amount of classes used for training.
+            **kwargs: 'embedding_size' for the amount of neurons connecting the
+                      last two fully connected layers (default 512)
+
+        """
         super().__init__()
 
         self.conv_block1 = _LeeNetConvBlock(1, 64, 3, 3)
@@ -1327,7 +1460,15 @@ class LeeNet11(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]
 
@@ -1358,6 +1499,14 @@ class LeeNet11(nn.Module):
 
 class LeeNet24(nn.Module):
     def __init__(self, *, classes_num, dropout=True, **kwargs):
+        """
+
+        Args:
+            classes_num: Amount of classes used for training.
+            dropout: If True, apply dropout in dropout layers during training.
+            **kwargs: 'embedding_size' for the amount of neurons connecting the
+                      last two fully connected layers (default 1024)
+        """
         super().__init__()
 
         self.dropout = dropout
@@ -1382,7 +1531,15 @@ class LeeNet24(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]
 
@@ -1429,6 +1586,14 @@ class LeeNet24(nn.Module):
 
 class DaiNet19(nn.Module):
     def __init__(self, *, classes_num, **kwargs):
+        """
+
+        Args:
+            classes_num: Amount of classes used for training.
+            **kwargs: 'embedding_size' for the amount of neurons connecting the
+                      last two fully connected layers (default 512)
+        """
+
         super().__init__()
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=80,
@@ -1450,7 +1615,15 @@ class DaiNet19(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
 
         x = batch[:, None, :]
 
@@ -1482,8 +1655,22 @@ class TransferModel(nn.Module):
     def __init__(self, model, classes_num_new, frames_num=1000,
                  interpolate_ratio=32, decision_level=None,
                  freeze_base=True, **kwargs):
+        """Classifier for a new task using pretrained model as a submodule.
 
-        """Classifier for a new task using pretrained model as a submodule. """
+        Args:
+            model: Model object with loaded checkpoint used as the base model.
+            classes_num_new: New amount of classes to use in the last layer.
+            frames_num: (For Strong labels) Amount of frames expected
+                        (default 1000).
+            interpolate_ratio: Interpolate_ratio of the base model (default 32).
+            decision_level: If not None, create framewise output using one of
+                the options 'max', 'avg', 'att' (default None).
+            freeze_base: If True, freeze parameters of the base model
+                         (default True).
+            **kwargs: 'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 2048)
+        """
+
         super().__init__()
 
         self.base = model
@@ -1509,10 +1696,19 @@ class TransferModel(nn.Module):
 
         init_layer(self.fc_transfer)
 
-    def forward(self, data, mixup_lambda=None):
-        """Data: (batch_size, data_length)
+    def forward(self, batch, mixup_lambda=None):
         """
-        _, _, _, embedding = self.base(data, mixup_lambda)
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
+
+        _, _, _, embedding = self.base(batch, mixup_lambda)
 
         clipwise_output = None
         segmentwise_output = None
