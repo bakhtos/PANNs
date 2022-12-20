@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+from torchaudio.functional import mask_along_axis_iid
 
 __all__ = ['init_layer',
            'init_bn',
@@ -21,7 +22,6 @@ __all__ = ['init_layer',
            '_LeeNetConvBlock',
            '_LeeNetConvBlock2',
            '_DaiNetResBlock',
-           '_DropStripes',
            '_SpecAugmentation',
            '_interpolate',
            '_pad_framewise_output',
@@ -720,78 +720,46 @@ class _DaiNetResBlock(nn.Module):
         return x
 
 
-# Class taken from torchlibrosa package
-# https://github.com/qiuqiangkong/torchlibrosa/blob/master/torchlibrosa/augmentation.py
-class _DropStripes(nn.Module):
-    def __init__(self, dim, drop_width, stripes_num):
-        """Drop stripes.
-
-          :param int dim: Dimension along which to drop
-          :param int drop_width: Maximum width of stripes to drop
-          :param int stripes_num: How many stripes to drop
-        """
-        super().__init__()
-
-        self.dim = dim
-        self.drop_width = drop_width
-        self.stripes_num = stripes_num
-
-    def forward(self, x):
-        """Drop stripes of input.
-
-        Input must be of shape (batch_size, channels, time_steps, freq_bins).
-        """
-
-        batch_size = x.shape[0]
-        total_width = x.shape[self.dim]
-
-        for n in range(batch_size):
-            self.transform_slice(x[n], total_width)
-
-        return x
-
-    def transform_slice(self, e, total_width):
-        """e: (channels, time_steps, freq_bins)"""
-
-        for _ in range(self.stripes_num):
-            distance = torch.randint(low=0, high=self.drop_width, size=(1,))[0]
-            bgn = torch.randint(low=0, high=total_width - distance, size=(1,))[
-                0]
-
-            if self.dim == 2:
-                e[:, bgn: bgn + distance, :] = 0
-            elif self.dim == 3:
-                e[:, :, bgn: bgn + distance] = 0
-
-
-# Class taken from torchlibrosa package
-# https://github.com/qiuqiangkong/torchlibrosa/blob/master/torchlibrosa/augmentation.py
 class _SpecAugmentation(nn.Module):
-    def __init__(self, time_drop_width, time_stripes_num, freq_drop_width,
-                 freq_stripes_num):
-        """Spec augmentation.
+    def __init__(self, stripes_num, mask_param, axis, mask_value=0.0, p=1.0):
+        """ Spectrogram augmentation.
+
+        Masks will be applied from indices ``[v_0, v_0 + v)``,
+        where ``v`` is sampled from ``uniform(0, max_v)`` and
+        ``v_0`` from ``uniform(0, specgrams.size(axis) - v)``,
+        with ``max_v = mask_param`` when ``p = 1.0`` and
+        ``max_v = min(mask_param, floor(specgrams.size(axis) * p))`` otherwise.
+        Note: masks are sampled independently and so may overlap
+
         [ref] Park, D.S., Chan, W., Zhang, Y., Chiu, C.C., Zoph, B., Cubuk, E.D.
         and Le, Q.V., 2019. Specaugment: A simple data augmentation method
         for automatic speech recognition. arXiv preprint arXiv:1904.08779.
+
         Args:
-          time_drop_width: int
-          time_stripes_num: int
-          freq_drop_width: int
-          freq_stripes_num: int
+            stripes_num: int, amount of masks to apply
+                (Note: masks are sampled independently
+            mask_param: int, Number of columns to be masked will be uniformly
+                sampled from [0, mask_param]
+            axis: int, Axis to apply masking on (2 -> frequency, 3 -> time)
+            mask_value: float, Value to assign to the masked columns
+                (default 0.0)
+            p: float, maximum proportion of columns that can be masked
+                (default 1.0)
         """
 
         super().__init__()
 
-        self.time_dropper = _DropStripes(dim=2, drop_width=time_drop_width,
-                                         stripes_num=time_stripes_num)
+        self.stripes_num = stripes_num
+        self.mask_param = mask_param
+        self.axis = axis
+        self.mask_value = mask_value
+        self.p = p
 
-        self.freq_dropper = _DropStripes(dim=3, drop_width=freq_drop_width,
-                                         stripes_num=freq_stripes_num)
-
-    def forward(self, x):
-        x = self.time_dropper(x)
-        x = self.freq_dropper(x)
-        return x
+    def forward(self, specgrams):
+        for i in range(self.stripes_num):
+            specgrams = mask_along_axis_iid(specgrams, self.mask_param,
+                                            self.mask_value, self.axis, self.p)
+        return specgrams
 
 
 def _interpolate(x, ratio):

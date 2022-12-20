@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchlibrosa.stft import Spectrogram, LogmelFilterBank
+from torchaudio.transforms import MelSpectrogram, AmplitudeToDB
 
 from panns.data.mixup import mixup
 from .blocks import *
@@ -38,11 +38,10 @@ class Cnn6(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
                     (defaults 'hann', 'center', 'reflect'),
-                'ref', 'amin', 'top_db' for LogmelFilterbank
-                    (defaults 1.0, 1e-10, None),
-                'num_features' for BatchNorm2d (default 64).
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
                 'embedding_size' for the amount of neurons connecting the
                     last two fully connected layers (default 512)
         """
@@ -70,35 +69,33 @@ class Cnn6(nn.Module):
 
         if self.spectrogram:
             # Spectrogram extractor
-            self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                     hop_length=hop_length,
-                                                     win_length=win_length,
-                                                     window=kwargs.get('window',
-                                                                       'hann'),
-                                                     center=kwargs.get('center',
-                                                                       True),
-                                                     pad_mode=kwargs.get(
-                                                             'pad_mode', 'reflect'),
-                                                     freeze_parameters=True)
+            self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                                  n_fft=win_length,
+                                                  win_length=win_length,
+                                                  hop_length=hop_length,
+                                                  f_min=f_min, f_max=f_max,
+                                                  n_mels=n_mels,
+                                                  window_fn=kwargs.get(
+                                                          'window_fn',
+                                                          torch.hann_window),
+                                                  power=2, onesided=True,
+                                                  center=kwargs.get('center',
+                                                                    True),
+                                                  pad_mode=kwargs.get(
+                                                          'pad_mode', 'reflect')
+                                                  )
+            self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                                 top_db=kwargs.get('top_db',
+                                                                   None))
 
-            # Logmel feature extractor
-            self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                     n_fft=win_length,
-                                                     n_mels=n_mels, fmin=f_min,
-                                                     fmax=f_max,
-                                                     ref=kwargs.get('ref',
-                                                                    1.0),
-                                                     amin=kwargs.get('amin',
-                                                                     1e-10),
-                                                     top_db=kwargs.get('top_db',
-                                                                       None),
-                                                     freeze_parameters=True)
             # Spec augmenter
             if spec_aug:
-                self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                        time_stripes_num=2,
-                                                        freq_drop_width=8,
-                                                        freq_stripes_num=2)
+                self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                                       stripes_num=2,
+                                                       axis=2)
+                self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                                       stripes_num=2,
+                                                       axis=3)
 
             self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
             init_bn(self.bn0)
@@ -122,7 +119,7 @@ class Cnn6(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
         # Mixup in time domain
         if self.mixup_time and self.training and mixup_lambda is not None:
@@ -145,17 +142,20 @@ class Cnn6(nn.Module):
                 wave = mixup(wave, mixup_lambda)
 
         if self.spectrogram:
-            x = self.spectrogram_extractor(batch)  # (batch_size,1,time_steps,
-            # freq_bins)
-            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,n_mels)
+            x = batch[:, None, :]        # (batch_size, 1, time)
+            x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+            x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-            x = x.transpose(1, 3)
+            x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+            x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
             x = self.bn0(x)
-            x = x.transpose(1, 3)
+
+            x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
             if self.training:
                 if self.spec_aug:
-                    x = self.spec_augmenter(x)
+                    x = self.spec_aug_time(x)
+                    x = self.spec_aug_freq(x)
                 # Mixup on spectrogram
                 if self.mixup_freq and mixup_lambda is not None:
                     x = mixup(x, mixup_lambda)
@@ -244,11 +244,10 @@ class Cnn10(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
                     (defaults 'hann', 'center', 'reflect'),
-                'ref', 'amin', 'top_db' for LogmelFilterbank
-                    (defaults 1.0, 1e-10, None),
-                'num_features' for BatchNorm2d (default 64).
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
                 'embedding_size' for the amount of neurons connecting the
                     last two fully connected layers (default 512)
         """
@@ -276,35 +275,33 @@ class Cnn10(nn.Module):
 
         if self.spectrogram:
             # Spectrogram extractor
-            self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                     hop_length=hop_length,
-                                                     win_length=win_length,
-                                                     window=kwargs.get('window',
-                                                                       'hann'),
-                                                     center=kwargs.get('center',
-                                                                       True),
-                                                     pad_mode=kwargs.get(
-                                                             'pad_mode', 'reflect'),
-                                                     freeze_parameters=True)
+            self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                                  n_fft=win_length,
+                                                  win_length=win_length,
+                                                  hop_length=hop_length,
+                                                  f_min=f_min, f_max=f_max,
+                                                  n_mels=n_mels,
+                                                  window_fn=kwargs.get(
+                                                          'window_fn',
+                                                          torch.hann_window),
+                                                  power=2, onesided=True,
+                                                  center=kwargs.get('center',
+                                                                    True),
+                                                  pad_mode=kwargs.get(
+                                                          'pad_mode', 'reflect')
+                                                  )
+            self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                                 top_db=kwargs.get('top_db',
+                                                                   None))
 
-            # Logmel feature extractor
-            self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                     n_fft=win_length,
-                                                     n_mels=n_mels, fmin=f_min,
-                                                     fmax=f_max,
-                                                     ref=kwargs.get('ref',
-                                                                    1.0),
-                                                     amin=kwargs.get('amin',
-                                                                     1e-10),
-                                                     top_db=kwargs.get('top_db',
-                                                                       None),
-                                                     freeze_parameters=True)
             # Spec augmenter
             if spec_aug:
-                self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                        time_stripes_num=2,
-                                                        freq_drop_width=8,
-                                                        freq_stripes_num=2)
+                self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                                       stripes_num=2,
+                                                       axis=2)
+                self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                                       stripes_num=2,
+                                                       axis=3)
 
             self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
             init_bn(self.bn0)
@@ -328,7 +325,7 @@ class Cnn10(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
         # Mixup in time domain
         if self.mixup_time and self.training and mixup_lambda is not None:
@@ -351,17 +348,20 @@ class Cnn10(nn.Module):
                 wave = mixup(wave, mixup_lambda)
 
         if self.spectrogram:
-            x = self.spectrogram_extractor(batch)  # (batch_size,1,time_steps,
-            # freq_bins)
-            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,n_mels)
+            x = batch[:, None, :]        # (batch_size, 1, time)
+            x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+            x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-            x = x.transpose(1, 3)
+            x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+            x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
             x = self.bn0(x)
-            x = x.transpose(1, 3)
+
+            x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
             if self.training:
                 if self.spec_aug:
-                    x = self.spec_augmenter(x)
+                    x = self.spec_aug_time(x)
+                    x = self.spec_aug_freq(x)
                 # Mixup on spectrogram
                 if self.mixup_freq and mixup_lambda is not None:
                     x = mixup(x, mixup_lambda)
@@ -450,11 +450,10 @@ class Cnn14(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
                     (defaults 'hann', 'center', 'reflect'),
-                'ref', 'amin', 'top_db' for LogmelFilterbank
-                    (defaults 1.0, 1e-10, None),
-                'num_features' for BatchNorm2d (default 64).
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
                 'embedding_size' for the amount of neurons connecting the
                     last two fully connected layers (default 2048)
         """
@@ -482,35 +481,33 @@ class Cnn14(nn.Module):
 
         if self.spectrogram:
             # Spectrogram extractor
-            self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                     hop_length=hop_length,
-                                                     win_length=win_length,
-                                                     window=kwargs.get('window',
-                                                                       'hann'),
-                                                     center=kwargs.get('center',
-                                                                       True),
-                                                     pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                     freeze_parameters=True)
+            self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                                  n_fft=win_length,
+                                                  win_length=win_length,
+                                                  hop_length=hop_length,
+                                                  f_min=f_min, f_max=f_max,
+                                                  n_mels=n_mels,
+                                                  window_fn=kwargs.get(
+                                                          'window_fn',
+                                                          torch.hann_window),
+                                                  power=2, onesided=True,
+                                                  center=kwargs.get('center',
+                                                                    True),
+                                                  pad_mode=kwargs.get(
+                                                          'pad_mode', 'reflect')
+                                                  )
+            self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                                 top_db=kwargs.get('top_db',
+                                                                   None))
 
-            # Logmel feature extractor
-            self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                     n_fft=win_length,
-                                                     n_mels=n_mels, fmin=f_min,
-                                                     fmax=f_max,
-                                                     ref=kwargs.get('ref',
-                                                                    1.0),
-                                                     amin=kwargs.get('amin',
-                                                                     1e-10),
-                                                     top_db=kwargs.get('top_db',
-                                                                       None),
-                                                     freeze_parameters=True)
             # Spec augmenter
             if spec_aug:
-                self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                        time_stripes_num=2,
-                                                        freq_drop_width=8,
-                                                        freq_stripes_num=2)
+                self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                                       stripes_num=2,
+                                                       axis=2)
+                self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                                       stripes_num=2,
+                                                       axis=3)
 
             self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
             init_bn(self.bn0)
@@ -536,7 +533,7 @@ class Cnn14(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
         # Mixup in time domain
         if self.mixup_time and self.training and mixup_lambda is not None:
@@ -559,17 +556,20 @@ class Cnn14(nn.Module):
                 wave = mixup(wave, mixup_lambda)
 
         if self.spectrogram:
-            x = self.spectrogram_extractor(batch)  # (batch_size,1,time_steps,
-            # freq_bins)
-            x = self.logmel_extractor(x)  # (batch_size,1,time_steps,n_mels)
+            x = batch[:, None, :]        # (batch_size, 1, time)
+            x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+            x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-            x = x.transpose(1, 3)
+            x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+            x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
             x = self.bn0(x)
-            x = x.transpose(1, 3)
+
+            x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
             if self.training:
                 if self.spec_aug:
-                    x = self.spec_augmenter(x)
+                    x = self.spec_aug_time(x)
+                    x = self.spec_aug_freq(x)
                 # Mixup on spectrogram
                 if self.mixup_freq and mixup_lambda is not None:
                     x = mixup(x, mixup_lambda)
@@ -656,39 +656,43 @@ class ResNet22(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
-                'ref', 'amin', 'top_db' for LogmelFilterbank
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
+                    (defaults 'hann', 'center', 'reflect'),
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
+                'embedding_size' for the amount of neurons connecting the
+                    last two fully connected layers (default 2048)
         """
 
         super().__init__()
 
         # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_length,
-                                                 win_length=win_length,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
+        self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                              n_fft=win_length,
+                                              win_length=win_length,
+                                              hop_length=hop_length,
+                                              f_min=f_min, f_max=f_max,
+                                              n_mels=n_mels,
+                                              window_fn=kwargs.get(
+                                                      'window_fn',
+                                                      torch.hann_window),
+                                              power=2, onesided=True,
+                                              center=kwargs.get('center',
+                                                                True),
+                                              pad_mode=kwargs.get(
+                                                      'pad_mode', 'reflect')
+                                              )
+        self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                             top_db=kwargs.get('top_db',
+                                                               None))
 
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=win_length,
-                                                 n_mels=n_mels, fmin=f_min,
-                                                 fmax=f_max,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
         # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
+        self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                               stripes_num=2,
+                                               axis=2)
+        self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                               stripes_num=2,
+                                               axis=3)
 
         self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
@@ -709,22 +713,23 @@ class ResNet22(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
+        x = batch[:, None, :]        # (batch_size, 1, time)
+        x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+        x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-        x = x.transpose(1, 3)
+        x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+        x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
         x = self.bn0(x)
-        x = x.transpose(1, 3)
+
+        x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
         if self.training:
-            x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
+            x = self.spec_aug_time(x)
+            x = self.spec_aug_freq(x)
+            if mixup_lambda is not None:
+                x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         F.dropout(x, p=0.2, training=self.training, inplace=True)
@@ -759,40 +764,43 @@ class ResNet38(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
-                'ref', 'amin', 'top_db' for LogmelFilterbank
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
+                    (defaults 'hann', 'center', 'reflect'),
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
+                'embedding_size' for the amount of neurons connecting the
+                    last two fully connected layers (default 2048)
         """
 
         super().__init__()
 
         # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_length,
-                                                 win_length=win_length,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
-
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=win_length,
-                                                 n_mels=n_mels, fmin=f_min,
-                                                 fmax=f_max,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
+        self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                              n_fft=win_length,
+                                              win_length=win_length,
+                                              hop_length=hop_length,
+                                              f_min=f_min, f_max=f_max,
+                                              n_mels=n_mels,
+                                              window_fn=kwargs.get(
+                                                      'window_fn',
+                                                      torch.hann_window),
+                                              power=2, onesided=True,
+                                              center=kwargs.get('center',
+                                                                True),
+                                              pad_mode=kwargs.get(
+                                                      'pad_mode', 'reflect')
+                                              )
+        self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                             top_db=kwargs.get('top_db',
+                                                               None))
 
         # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
+        self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                               stripes_num=2,
+                                               axis=2)
+        self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                               stripes_num=2,
+                                               axis=3)
 
         self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
@@ -813,22 +821,23 @@ class ResNet38(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
+        x = batch[:, None, :]        # (batch_size, 1, time)
+        x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+        x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-        x = x.transpose(1, 3)
+        x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+        x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
         x = self.bn0(x)
-        x = x.transpose(1, 3)
+
+        x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
         if self.training:
-            x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
+            x = self.spec_aug_time(x)
+            x = self.spec_aug_freq(x)
+            if mixup_lambda is not None:
+                x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         F.dropout(x, p=0.2, training=self.training, inplace=True)
@@ -863,40 +872,43 @@ class ResNet54(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
-                'ref', 'amin', 'top_db' for LogmelFilterbank
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
+                    (defaults 'hann', 'center', 'reflect'),
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
+                'embedding_size' for the amount of neurons connecting the
+                    last two fully connected layers (default 2048)
         """
 
         super().__init__()
 
         # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_length,
-                                                 win_length=win_length,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
-
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=win_length,
-                                                 n_mels=n_mels, fmin=f_min,
-                                                 fmax=f_max,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
+        self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                              n_fft=win_length,
+                                              win_length=win_length,
+                                              hop_length=hop_length,
+                                              f_min=f_min, f_max=f_max,
+                                              n_mels=n_mels,
+                                              window_fn=kwargs.get(
+                                                      'window_fn',
+                                                      torch.hann_window),
+                                              power=2, onesided=True,
+                                              center=kwargs.get('center',
+                                                                True),
+                                              pad_mode=kwargs.get(
+                                                      'pad_mode', 'reflect')
+                                              )
+        self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                             top_db=kwargs.get('top_db',
+                                                               None))
 
         # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
+        self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                               stripes_num=2,
+                                               axis=2)
+        self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                               stripes_num=2,
+                                               axis=3)
 
         self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
@@ -917,22 +929,23 @@ class ResNet54(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
+        x = batch[:, None, :]        # (batch_size, 1, time)
+        x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+        x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-        x = x.transpose(1, 3)
+        x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+        x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
         x = self.bn0(x)
-        x = x.transpose(1, 3)
+
+        x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
         if self.training:
-            x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
+            x = self.spec_aug_time(x)
+            x = self.spec_aug_freq(x)
+            if mixup_lambda is not None:
+                x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
         F.dropout(x, p=0.2, training=self.training, inplace=True)
@@ -1057,9 +1070,10 @@ class MobileNetV1(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
-                'ref', 'amin', 'top_db' for LogmelFilterbank
-                'num_features' for BatchNorm2d (default 64).
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
+                    (defaults 'hann', 'center', 'reflect'),
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
                 'embedding_size' for the amount of neurons connecting the
                     last two fully connected layers (default 1024)
         """
@@ -1067,33 +1081,32 @@ class MobileNetV1(nn.Module):
         super().__init__()
 
         # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_length,
-                                                 win_length=win_length,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
-
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=win_length,
-                                                 n_mels=n_mels, fmin=f_min,
-                                                 fmax=f_max,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
+        self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                              n_fft=win_length,
+                                              win_length=win_length,
+                                              hop_length=hop_length,
+                                              f_min=f_min, f_max=f_max,
+                                              n_mels=n_mels,
+                                              window_fn=kwargs.get(
+                                                      'window_fn',
+                                                      torch.hann_window),
+                                              power=2, onesided=True,
+                                              center=kwargs.get('center',
+                                                                True),
+                                              pad_mode=kwargs.get(
+                                                      'pad_mode', 'reflect')
+                                              )
+        self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                             top_db=kwargs.get('top_db',
+                                                               None))
 
         # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
+        self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                               stripes_num=2,
+                                               axis=2)
+        self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                               stripes_num=2,
+                                               axis=3)
 
         self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
@@ -1124,22 +1137,23 @@ class MobileNetV1(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
+        x = batch[:, None, :]        # (batch_size, 1, time)
+        x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+        x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-        x = x.transpose(1, 3)
+        x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+        x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
         x = self.bn0(x)
-        x = x.transpose(1, 3)
+
+        x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
         if self.training:
-            x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
+            x = self.spec_aug_time(x)
+            x = self.spec_aug_freq(x)
+            if mixup_lambda is not None:
+                x = mixup(x, mixup_lambda)
 
         x = self.features(x)
         x = torch.mean(x, dim=3)
@@ -1168,9 +1182,10 @@ class MobileNetV2(nn.Module):
             f_min:
             f_max:
             classes_num:
-            **kwargs: 'window', 'center', 'pad_mode' for Spectrogram,
-                'ref', 'amin', 'top_db' for LogmelFilterbank
-                'num_features' for BatchNorm2d (default 64).
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
+                    (defaults 'hann', 'center', 'reflect'),
+                'top_db' for AmplitudeToDB (default None),
+                'num_features' for BatchNorm2d (default 64),
                 'embedding_size' for the amount of neurons connecting the
                     last two fully connected layers (default 1024)
         """
@@ -1178,33 +1193,32 @@ class MobileNetV2(nn.Module):
         super().__init__()
 
         # Spectrogram extractor
-        self.spectrogram_extractor = Spectrogram(n_fft=win_length,
-                                                 hop_length=hop_length,
-                                                 win_length=win_length,
-                                                 window=kwargs.get('window',
-                                                                   'hann'),
-                                                 center=kwargs.get('center',
-                                                                   True),
-                                                 pad_mode=kwargs.get(
-                                                         'pad_mode', 'reflect'),
-                                                 freeze_parameters=True)
-
-        # Logmel feature extractor
-        self.logmel_extractor = LogmelFilterBank(sr=sample_rate,
-                                                 n_fft=win_length,
-                                                 n_mels=n_mels, fmin=f_min,
-                                                 fmax=f_max,
-                                                 ref=kwargs.get('ref', 1.0),
-                                                 amin=kwargs.get('amin', 1e-10),
-                                                 top_db=kwargs.get('top_db',
-                                                                   None),
-                                                 freeze_parameters=True)
+        self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                              n_fft=win_length,
+                                              win_length=win_length,
+                                              hop_length=hop_length,
+                                              f_min=f_min, f_max=f_max,
+                                              n_mels=n_mels,
+                                              window_fn=kwargs.get(
+                                                      'window_fn',
+                                                      torch.hann_window),
+                                              power=2, onesided=True,
+                                              center=kwargs.get('center',
+                                                                True),
+                                              pad_mode=kwargs.get(
+                                                      'pad_mode', 'reflect')
+                                              )
+        self.amplitude_to_db = AmplitudeToDB(stype="power",
+                                             top_db=kwargs.get('top_db',
+                                                               None))
 
         # Spec augmenter
-        self.spec_augmenter = _SpecAugmentation(time_drop_width=64,
-                                                time_stripes_num=2,
-                                                freq_drop_width=8,
-                                                freq_stripes_num=2)
+        self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                               stripes_num=2,
+                                               axis=2)
+        self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                               stripes_num=2,
+                                               axis=3)
 
         self.bn0 = nn.BatchNorm2d(kwargs.get('num_features', 64))
 
@@ -1255,22 +1269,23 @@ class MobileNetV2(nn.Module):
 
     def forward(self, batch, mixup_lambda=None):
         """
-        Input: (batch_size, data_length)"""
+        Input: (batch_size, time)"""
 
-        x = self.spectrogram_extractor(
-            batch)  # (batch_size, 1, time_steps, freq_bins)
-        x = self.logmel_extractor(x)  # (batch_size, 1, time_steps, n_mels)
+        x = batch[:, None, :]        # (batch_size, 1, time)
+        x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+        x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
 
-        x = x.transpose(1, 3)
+        x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+        x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
         x = self.bn0(x)
-        x = x.transpose(1, 3)
+
+        x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
 
         if self.training:
-            x = self.spec_augmenter(x)
-
-        # Mixup on spectrogram
-        if self.training and mixup_lambda is not None:
-            x = mixup(x, mixup_lambda)
+            x = self.spec_aug_time(x)
+            x = self.spec_aug_freq(x)
+            if mixup_lambda is not None:
+                x = mixup(x, mixup_lambda)
 
         x = self.features(x)
 
