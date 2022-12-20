@@ -54,6 +54,7 @@ class Cnn6(nn.Module):
         self.wavegram = wavegram
         self.spectrogram = spectrogram
         self.decision_level = decision_level
+        self.interpolate_ratio = 32
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -260,6 +261,7 @@ class Cnn10(nn.Module):
         self.wavegram = wavegram
         self.spectrogram = spectrogram
         self.decision_level = decision_level
+        self.interpolate_ratio = 32
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -466,6 +468,7 @@ class Cnn14(nn.Module):
         self.wavegram = wavegram
         self.spectrogram = spectrogram
         self.decision_level = decision_level
+        self.interpolate_ratio = 32
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
