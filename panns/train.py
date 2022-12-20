@@ -12,7 +12,7 @@ import torch.utils.data
  
 from panns.utils.logging_utils import create_logging
 from panns.data.mixup import mixup_coefficients, mixup
-import panns.models
+from panns.models import load_model
 from panns.evaluate import evaluate
 from panns.data.dataset import AudioSetDataset
 
@@ -244,11 +244,11 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
 
-    model = panns.models.load_model(args.model_type, args.sample_rate,
-                                    args.win_length, args.hop_length,
-                                    args.n_mels, args.f_min, args.f_max,
-                                    args.classes_num,
-                                    args.resume_checkpoint_path)
+    model = load_model(model=args.model_type,
+                       checkpoint=args.resume_checkpoint_path,
+                       win_length=args.win_length, hop_length=args.hop_length,
+                       n_mels=args.n_mels, f_min=args.f_min, f_max=args.f_max,
+                       classes_num=args.classes_num)
 
     train(hdf5_files_path_train=args.hdf5_files_path_train,
           target_weak_path_train=args.target_weak_path_train,

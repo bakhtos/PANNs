@@ -182,11 +182,10 @@ if __name__ == '__main__':
         logs_dir = os.path.join(os.getcwd(), 'logs')
     create_logging(logs_dir, filemode='w')
 
-    model = load_model(args.model_type, args.sample_rate,
-                       args.win_length, args.hop_length,
-                       args.n_mels, args.f_min, args.f_max,
-                       args.classes_num,
-                       checkpoint=args.checkpoint_path)
+    model = load_model(model=args.model_type, checkpoint=args.checkpoint,
+                       win_length=args.win_length, hop_length=args.hop_length,
+                       n_mels=args.n_mels, f_min=args.f_min, f_max=args.f_max,
+                       classes_num=args.classes_num)
 
     device = torch.device('cuda') if (args.cuda and torch.cuda.is_available()) \
         else torch.device('cpu')
