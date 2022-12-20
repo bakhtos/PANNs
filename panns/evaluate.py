@@ -17,8 +17,9 @@ def evaluate(model, data_loader):
     """
 
     # Forward
-    clipwise_output, _, _, target = forward(model=model, data_loader=data_loader,
-                                            return_target=True)
+    clipwise_output, _, _, _, _, target = forward(model=model,
+                                                  data_loader=data_loader,
+                                                  return_target=True)
     # TODO Change to .numpy(force=True) when torch 1.11 is supported
     clipwise_output = clipwise_output.cpu().numpy()
     target = target.cpu().numpy()
