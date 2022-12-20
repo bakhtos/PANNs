@@ -187,23 +187,23 @@ class Cnn6(nn.Module):
 
         frames_num = x.shape[2]
 
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = torch.mean(x, dim=3)
 
         clipwise_output = None
@@ -411,23 +411,23 @@ class Cnn10(nn.Module):
 
         frames_num = x.shape[2]
 
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = torch.mean(x, dim=3)
 
         clipwise_output = None
@@ -637,23 +637,23 @@ class Cnn14(nn.Module):
 
         frames_num = x.shape[2]
 
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
-        F.dropout(x, p=0.2, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.2, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = torch.mean(x, dim=3)
 
         clipwise_output = None
@@ -1548,29 +1548,29 @@ class LeeNet24(nn.Module):
             x = mixup(x, mixup_lambda)
 
         x = self.conv_block1(x)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block2(x, pool_size=3)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block3(x, pool_size=3)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block4(x, pool_size=3)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block5(x, pool_size=3)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block6(x, pool_size=3)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block7(x, pool_size=3)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block8(x, pool_size=3)
-        F.dropout(x, p=0.1, inplace=True, training=self.training and
-                                                   self.dropout)
+        F.dropout(x, p=0.1, inplace=True, training=(self.training and
+                                                    self.dropout))
         x = self.conv_block9(x, pool_size=1)
 
         (x1, _) = torch.max(x, dim=2)
