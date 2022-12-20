@@ -748,7 +748,7 @@ class ResNet22(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class ResNet38(nn.Module):
@@ -856,7 +856,7 @@ class ResNet38(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class ResNet54(nn.Module):
@@ -964,7 +964,7 @@ class ResNet54(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class Res1dNet31(nn.Module):
@@ -1009,7 +1009,7 @@ class Res1dNet31(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class Res1dNet51(nn.Module):
@@ -1054,7 +1054,7 @@ class Res1dNet51(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class MobileNetV1(nn.Module):
@@ -1166,7 +1166,7 @@ class MobileNetV1(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class MobileNetV2(nn.Module):
@@ -1298,7 +1298,7 @@ class MobileNetV2(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class LeeNet11(nn.Module):
@@ -1350,7 +1350,7 @@ class LeeNet11(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class LeeNet24(nn.Module):
@@ -1421,7 +1421,7 @@ class LeeNet24(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
 
 
 class DaiNet19(nn.Module):
@@ -1496,8 +1496,8 @@ class TransferModel(nn.Module):
     def forward(self, data, mixup_lambda=None):
         """Data: (batch_size, data_length)
         """
-        _, embedding = self.base(data, mixup_lambda)
+        _, _, _, embedding = self.base(data, mixup_lambda)
 
         clipwise_output = torch.log_softmax(self.fc_transfer(embedding), dim=-1)
 
-        return clipwise_output, embedding
+        return clipwise_output, None, None, embedding
