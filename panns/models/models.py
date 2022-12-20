@@ -1479,15 +1479,28 @@ class DaiNet19(nn.Module):
 
 
 class TransferModel(nn.Module):
-    def __init__(self, model, classes_num_new, freeze_base=True):
+    def __init__(self, model, classes_num_new, frames_num=1000,
+                 interpolate_ratio=32, decision_level=None,
+                 freeze_base=True, **kwargs):
 
         """Classifier for a new task using pretrained model as a submodule. """
         super().__init__()
 
         self.base = model
+        self.decision_level = decision_level
+        self.frames_num = frames_num
+        self.interpolate_ratio = interpolate_ratio
 
         # Transfer to another task layer
         self.fc_transfer = nn.Linear(2048, classes_num_new, bias=True)
+        if self.decision_level == 'att':
+            self.audioset_layer = _AttBlock(kwargs.get('embedding_size', 2048),
+                                            classes_num_new,
+                                            activation='sigmoid')
+        else:
+            self.audioset_layer = nn.Linear(kwargs.get('embedding_size', 2048),
+                                            classes_num_new, bias=True)
+            init_layer(self.audioset_layer)
 
         if freeze_base:
             # Freeze AudioSet pretrained layers
@@ -1501,6 +1514,27 @@ class TransferModel(nn.Module):
         """
         _, _, _, embedding = self.base(data, mixup_lambda)
 
-        clipwise_output = torch.log_softmax(self.fc_transfer(embedding), dim=-1)
+        clipwise_output = None
+        segmentwise_output = None
+        framewise_output = None
+        if self.decision_level is None:  # Weak labels
+            clipwise_output = torch.sigmoid(self.audioset_layer(embedding))
+        else:  # Strong labels
+            if self.decision_level == 'att':
+                x = torch.transpose(embedding, 1, 2)
+                (clipwise_output, _, segmentwise_output) = self.audioset_layer(x)
+                segmentwise_output = segmentwise_output.transpose(1, 2)
+            else:
+                segmentwise_output = torch.sigmoid(self.audioset_layer(embedding))
+                if self.decision_level == 'max':
+                    (clipwise_output, _) = torch.max(segmentwise_output, dim=1)
+                elif self.decision_level == 'avg':
+                    clipwise_output = torch.mean(segmentwise_output, dim=1)
 
-        return clipwise_output, None, None, embedding
+            # Get framewise output
+            framewise_output = _interpolate(segmentwise_output,
+                                            self.interpolate_ratio)
+            framewise_output = _pad_framewise_output(framewise_output,
+                                                     self.frames_num)
+
+        return clipwise_output, segmentwise_output, framewise_output, embedding
