@@ -16,4 +16,6 @@ __all__ = ['Cnn6',
            'LeeNet24',
            'DaiNet19',
            'TransferModel',
-           'load_model']
+           'load_model',
+           'model_parser',
+           ]

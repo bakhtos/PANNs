@@ -9,7 +9,7 @@ from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
 from panns.utils.metadata_utils import get_labels
 from panns.utils.logging_utils import create_logging
-from panns.models.loader import load_model
+from panns.models.loader import load_model, model_parser
 
 __all__ = ['detect_events']
 
@@ -116,7 +116,7 @@ def detect_events(*, frame_probabilities,
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(parents=[model_parser])
     parser.add_argument('--hdf5_files_path', type=str, required=True,
                         help="Path to hdf5 file of the eval split")
     parser.add_argument('--target_weak_path', type=str, required=True,
@@ -126,8 +126,6 @@ if __name__ == '__main__':
                              'to be packed in this order')
     parser.add_argument('--output_path', type=str, default='events.txt',
                         help="File to save detected events")
-    parser.add_argument('--model_type', type=str, required=True,
-                        help="Name of model to train")
     parser.add_argument('--checkpoint_path', type=str, required=True,
                         help="File to load the NN checkpoint from")
     parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
@@ -137,31 +135,11 @@ if __name__ == '__main__':
     parser.add_argument('--class_labels_path', type=str, required=True,
                         help="List of selected classes that were used in "
                              "training are used in the model, one per line")
-    parser.add_argument('--win_length', type=int, default=1024,
-                        help="Window size of filter to be used in training ("
-                             "default 1024)")
-    parser.add_argument('--hop_length', type=int, default=320,
-                        help="Hop size of filter to be used in training ("
-                             "default 320)")
-    parser.add_argument('--sample_rate', type=int, default=32000,
-                        help="Sample rate of the used audio clips; supported "
-                             "values are 32000, 16000, 8000 (default 32000)")
-    parser.add_argument('--f_min', type=int, default=50,
-                        help="Minimum frequency to be used when creating "
-                             "Logmel filterbank (default 50)")
-    parser.add_argument('--f_max', type=int, default=14000,
-                        help="Maximum frequency to be used when creating "
-                             "Logmel filterbank (default 14000)")
-    parser.add_argument('--n_mels', type=int, default=64,
-                        help="Amount of mel filters to use in the filterbank "
-                             "(default 64)")
     parser.add_argument('--batch_size', type=int, default=32,
                         help="Batch size to use for training/evaluation ("
                              "default 32)")
     parser.add_argument('--cuda', action='store_true', default=False,
                         help="If set, try to use GPU for training")
-    parser.add_argument('--classes_num', type=int, default=110,
-                        help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
                         help="Amount of workers to pass to "
                              "torch.utils.data.DataLoader (default 8)")
@@ -182,9 +160,25 @@ if __name__ == '__main__':
         logs_dir = os.path.join(os.getcwd(), 'logs')
     create_logging(logs_dir, filemode='w')
 
-    model = load_model(model=args.model_type, checkpoint=args.checkpoint,
+    spec_aug = args.spec_aug or args.no_spec_aug
+    mixup_time = args.mixup_time or args.no_mixup_time
+    mixup_freq = args.mixup_freq or args.no_mixup_freq
+    dropout = args.dropout or args.no_dropout
+    wavegram = args.wavegram or args.no_wavegram
+    spectrogram = args.spectrogram or args.no_spectrogram
+    center = args.center or args.no_center
+
+    model = load_model(model=args.model_type,
+                       checkpoint=args.resume_checkpoint_path,
+                       spec_aug=spec_aug, mixup_time=mixup_time,
+                       mixup_freq=mixup_freq, dropout=dropout,
+                       wavegram=wavegram, spectrogram=spectrogram,
+                       decision_level=args.decision_level, center=center,
                        win_length=args.win_length, hop_length=args.hop_length,
                        n_mels=args.n_mels, f_min=args.f_min, f_max=args.f_max,
+                       pad_mode=args.pad_mode, top_db=args.top_db,
+                       num_features=args.num_features,
+                       embedding_size=args.embedding_size,
                        classes_num=args.classes_num)
 
     device = torch.device('cuda') if (args.cuda and torch.cuda.is_available()) \

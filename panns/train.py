@@ -12,7 +12,7 @@ import torch.utils.data
  
 from panns.utils.logging_utils import create_logging
 from panns.data.mixup import mixup_coefficients, mixup
-from panns.models import load_model
+from panns.models import load_model, model_parser
 from panns.evaluate import evaluate
 from panns.data.dataset import AudioSetDataset
 
@@ -185,7 +185,7 @@ def train(*, hdf5_files_path_train,
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(parents=[model_parser])
     parser.add_argument('--hdf5_files_path_train', type=str, required=True,
                         help="Path to hdf5 file of the train split")
     parser.add_argument('--target_weak_path_train', type=str, required=True,
@@ -194,34 +194,11 @@ if __name__ == '__main__':
                         help="Path to hdf5 file of the eval split")
     parser.add_argument('--target_weak_path_eval', type=str, required=True,
                         help="Path to the weak target array of the eval split")
-    parser.add_argument('--model_type', type=str, required=True,
-                        help="Name of model to train")
     parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
     parser.add_argument('--checkpoints_dir', type=str,
                         help="Directory to save neural net's checkpoints into")
     parser.add_argument('--statistics_dir', type=str,
                         help="Directory to save evaluation statistics into")
-    parser.add_argument('--win_length', type=int, default=1024,
-                        help="Window size of filter to be used in training ("
-                             "default 1024)")
-    parser.add_argument('--hop_length', type=int, default=320,
-                        help="Hop size of filter to be used in training ("
-                             "default 320)")
-    parser.add_argument('--sample_rate', type=int, default=32000,
-                        help="Sample rate of the used audio clips; supported "
-                             "values are 32000, 16000, 8000 (default 32000)")
-    parser.add_argument('--clip_length', type=int, default=10000,
-                        help="Length (in ms) of audio clips used in the "
-                             "dataset (default 10000)")
-    parser.add_argument('--f_min', type=int, default=50,
-                        help="Minimum frequency to be used when creating "
-                             "Logmel filterbank (default 50)")
-    parser.add_argument('--f_max', type=int, default=14000,
-                        help="Maximum frequency to be used when creating "
-                             "Logmel filterbank (default 14000)")
-    parser.add_argument('--n_mels', type=int, default=64,
-                        help="Amount of mel filters to use in the filterbank "
-                             "(default 64)")
     parser.add_argument('--mixup_alpha', type=float, default=None,
                         help="If using augmentation, use this as alpha "
                              "parameter for Mixup (default 1.0)")
@@ -236,18 +213,31 @@ if __name__ == '__main__':
                         help="Train until this iteration (default 1000000)")
     parser.add_argument('--cuda', action='store_true', default=False,
                         help="If set, try to use GPU for training")
-    parser.add_argument('--classes_num', type=int, default=110,
-                        help="Amount of classes used in the dataset (default 110)")
     parser.add_argument('--num_workers', type=int, default=8,
                         help="Amount of workers to pass to "
                              "torch.utils.data.DataLoader (default 8)")
     
     args = parser.parse_args()
 
+    spec_aug = args.spec_aug or args.no_spec_aug
+    mixup_time = args.mixup_time or args.no_mixup_time
+    mixup_freq = args.mixup_freq or args.no_mixup_freq
+    dropout = args.dropout or args.no_dropout
+    wavegram = args.wavegram or args.no_wavegram
+    spectrogram = args.spectrogram or args.no_spectrogram
+    center = args.center or args.no_center
+
     model = load_model(model=args.model_type,
                        checkpoint=args.resume_checkpoint_path,
+                       spec_aug=spec_aug, mixup_time=mixup_time,
+                       mixup_freq=mixup_freq, dropout=dropout,
+                       wavegram=wavegram, spectrogram=spectrogram,
+                       decision_level=args.decision_level, center=center,
                        win_length=args.win_length, hop_length=args.hop_length,
                        n_mels=args.n_mels, f_min=args.f_min, f_max=args.f_max,
+                       pad_mode=args.pad_mode, top_db=args.top_db,
+                       num_features=args.num_features,
+                       embedding_size=args.embedding_size,
                        classes_num=args.classes_num)
 
     train(hdf5_files_path_train=args.hdf5_files_path_train,
