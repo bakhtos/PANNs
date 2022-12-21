@@ -142,7 +142,7 @@ if __name__ == '__main__':
                                                      "training")
     training.add_argument('--batch_size', type=int, default=32,
                           help="Batch size to use for training/evaluation ("
-                             "default 32)")
+                               "default 32)")
     training.add_argument('--cuda', action='store_true', default=False,
                           help="If set, try to use GPU for training")
     training.add_argument('--num_workers', type=int, default=8,
@@ -152,7 +152,7 @@ if __name__ == '__main__':
                                                    'inference')
     infer.add_argument('--threshold', type=float, default=0.5,
                        help="Threshold for frame activity tensor, values "
-                            "above the threshold are interpreted as'event "
+                            "above the threshold are interpreted as 'event "
                             "present' (default 0.5)")
     infer.add_argument('--minimum_event_length', type=float, default=0.1,
                        help="Events shorter than this ae filtered out (default 0.1)")
@@ -207,7 +207,7 @@ if __name__ == '__main__':
                                               persistent_workers=True,
                                               pin_memory=True)
 
-    clipwise_output, framewise_output, _, _ = forward(model, eval_loader)
+    _, _, framewise_output, _ = forward(model, eval_loader)
 
     framewise_output = framewise_output.cpu().numpy()
     audio_names = np.load(args.audio_names_path)
