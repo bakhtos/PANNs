@@ -26,6 +26,7 @@ def train(*, hdf5_files_path_train,
           checkpoints_dir=None,
           statistics_dir=None,
           mixup_alpha=None,
+          label_type='weak',
           batch_size=32, learning_rate=1e-3,
           iter_max=1000000,
           cuda=False, num_workers=8):
@@ -53,6 +54,8 @@ def train(*, hdf5_files_path_train,
         statistics_dir : str,
             Directory to save evaluation statistics into (will be created if doesn't exist);
             if None a directory 'statistics' will be created in CWD (default None)
+        label_type: str, Either 'weak' or 'strong' - which labels are used
+                         to calculate loss
         mixup_alpha : float, Alpha parameter for Mixup;
             if None, mixup not used (default None)
         batch_size : int, Batch size to use for training/evaluation (default 32)
@@ -148,9 +151,11 @@ def train(*, hdf5_files_path_train,
 
         # Train
         model.train()
-        clipwise_output, _ = model(data, mixup_lambda)
+        clipwise_output, segmentwise_output, framewise_output, embedding = \
+            model(data, mixup_lambda)
 
-        loss = F.binary_cross_entropy(clipwise_output, target)
+        loss = F.binary_cross_entropy(clipwise_output, target) if label_type \
+               == 'weak' else F.binary_cross_entropy(framewise_output, target)
         loss.backward()
 
         optimizer.step()
@@ -206,6 +211,9 @@ if __name__ == '__main__':
                        help="Read a checkpoint from this path")
     training = parser.add_argument_group("Training", "Parameters to customize "
                                                      "training")
+    training.add_argument('--label_type', choices=['weak', 'strong'],
+                          default='weak', help='Use weak/strong labels to '
+                                               'calculate loss')
     training.add_argument('--mixup_alpha', type=float, default=None,
                           help="If using augmentation, use this as alpha "
                                "parameter for Mixup (default 1.0)")
@@ -255,6 +263,10 @@ if __name__ == '__main__':
     center = args.center or args.no_center
     freeze = args.freeze_base or args.no_freeze_base
 
+    if args.label_type == 'strong':
+        if args.decision_level is None:
+            raise ValueError('Strong labels are used but no decision_level '
+                             'function specified (--decision_level parameter)')
     if args.transfer:
         if args.resume_checkpoint_path is None:
             raise ValueError('Transfer flag is set, but no model checkpoint '
@@ -295,6 +307,7 @@ if __name__ == '__main__':
           logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
+          label_type=args.label_type,
           mixup_alpha=args.mixup_alpha,
           batch_size=args.batch_size,
           learning_rate=args.learning_rate,
