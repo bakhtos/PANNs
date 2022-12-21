@@ -16,24 +16,26 @@ model_group.add_argument('--model_type', type=str, required=True,
 model_group.add_argument('--classes_num', type=int, default=110,
                          help="Amount of classes used in the dataset ("
                               "default 110)")
-model_group.add_argument('--win_length', type=int, default=1024,
-                         help="Window size of filter to be used in training ("
-                              "default 1024)")
-model_group.add_argument('--hop_length', type=int, default=320,
-                         help="Hop size of filter to be used in training ("
-                              "default 320)")
-model_group.add_argument('--sample_rate', type=int, default=32000,
-                         help="Sample rate of the used audio clips; supported "
-                              "values are 32000, 16000, 8000 (default 32000)")
-model_group.add_argument('--f_min', type=int, default=50,
-                         help="Minimum frequency to be used when creating "
-                              "Logmel filterbank (default 50)")
-model_group.add_argument('--f_max', type=int, default=14000,
-                         help="Maximum frequency to be used when creating "
-                              "Logmel filterbank (default 14000)")
-model_group.add_argument('--n_mels', type=int, default=64,
-                         help="Amount of mel filters to use in the filterbank "
-                              "(default 64)")
+spec = model_group.add_argument_group('Spectrogram', 'Parameters for '
+                                                     'spectrogram calculation')
+spec.add_argument('--win_length', type=int, default=1024,
+                  help="Window size of filter to be used in training ("
+                       "default 1024)")
+spec.add_argument('--hop_length', type=int, default=320,
+                  help="Hop size of filter to be used in training ("
+                       "default 320)")
+spec.add_argument('--sample_rate', type=int, default=32000,
+                  help="Sample rate of the used audio clips; supported "
+                       "values are 32000, 16000, 8000 (default 32000)")
+spec.add_argument('--f_min', type=int, default=50,
+                  help="Minimum frequency to be used when creating "
+                       "Logmel filterbank (default 50)")
+spec.add_argument('--f_max', type=int, default=14000,
+                  help="Maximum frequency to be used when creating "
+                       "Logmel filterbank (default 14000)")
+spec.add_argument('--n_mels', type=int, default=64,
+                  help="Amount of mel filters to use in the filterbank "
+                       "(default 64)")
 model_group.add_argument('--decision_level', choices=['max', 'att', 'avg'],
                          default=None, help="If given, model will create "
                                             "Strong labels using the given "
