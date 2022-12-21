@@ -1641,7 +1641,7 @@ class DaiNet19(nn.Module):
 
 
 class TransferModel(nn.Module):
-    def __init__(self, model, classes_num_new, frames_num=1000,
+    def __init__(self, model, classes_num_new, frames_num=None,
                  interpolate_ratio=32, decision_level=None,
                  freeze_base=True, **kwargs):
         """Classifier for a new task using pretrained model as a submodule.
@@ -1650,8 +1650,8 @@ class TransferModel(nn.Module):
             model: Model object with loaded checkpoint used as the base model.
             classes_num_new: New amount of classes to use in the last layer.
             frames_num: (For Strong labels) Amount of frames expected
-                        (default 1000).
-            interpolate_ratio: Interpolate_ratio of the base model (default 32).
+            interpolate_ratio: (For Strong labels) Interpolate_ratio of the
+                               base model (default 32).
             decision_level: If not None, create framewise output using one of
                 the options 'max', 'avg', 'att' (default None).
             freeze_base: If True, freeze parameters of the base model
