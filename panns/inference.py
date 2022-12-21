@@ -117,41 +117,48 @@ def detect_events(*, frame_probabilities,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(parents=[model_parser])
-    parser.add_argument('--hdf5_files_path', type=str, required=True,
-                        help="Path to hdf5 file of the eval split")
-    parser.add_argument('--target_weak_path', type=str, required=True,
-                        help="Path to the weak target array of the eval split")
-    parser.add_argument('--audio_names_path', type=str, required=True,
-                        help='Path to .npy file to load audio filenames '
-                             'to be packed in this order')
-    parser.add_argument('--output_path', type=str, default='events.txt',
-                        help="File to save detected events")
-    parser.add_argument('--checkpoint_path', type=str, required=True,
-                        help="File to load the NN checkpoint from")
-    parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
-    parser.add_argument('--selected_classes_path', type=str, required=True,
-                        help="Dataset class labels in tsv format (as in "
-                             "'Reformatted' dataset)")
-    parser.add_argument('--class_labels_path', type=str, required=True,
-                        help="List of selected classes that were used in "
-                             "training are used in the model, one per line")
-    parser.add_argument('--batch_size', type=int, default=32,
-                        help="Batch size to use for training/evaluation ("
+    files = parser.add_argument_group('Files', 'Arguments to specify paths '
+                                               'to necessary files')
+    files.add_argument('--hdf5_files_path', type=str, required=True,
+                       help="Path to hdf5 file of the eval split")
+    files.add_argument('--target_weak_path', type=str, required=True,
+                       help="Path to the weak target array of the eval split")
+    files.add_argument('--audio_names_path', type=str, required=True,
+                       help='Path to .npy file to load audio filenames '
+                            'to be packed in this order')
+    files.add_argument('--output_path', type=str, default='events.txt',
+                       help="File to save detected events")
+    files.add_argument('--checkpoint_path', type=str, required=True,
+                       help="File to load the NN checkpoint from")
+    files.add_argument('--logs_dir', type=str, help="Directory to save the "
+                                                    "logs into")
+    files.add_argument('--selected_classes_path', type=str, required=True,
+                       help="Dataset class labels in tsv format (as in "
+                            "'Reformatted' dataset)")
+    files.add_argument('--class_labels_path', type=str, required=True,
+                       help="List of selected classes that were used in "
+                            "training are used in the model, one per line")
+    training = parser.add_argument_group("Training", "Parameters to customize "
+                                                     "training")
+    training.add_argument('--batch_size', type=int, default=32,
+                          help="Batch size to use for training/evaluation ("
                              "default 32)")
-    parser.add_argument('--cuda', action='store_true', default=False,
-                        help="If set, try to use GPU for training")
-    parser.add_argument('--num_workers', type=int, default=8,
-                        help="Amount of workers to pass to "
-                             "torch.utils.data.DataLoader (default 8)")
-    parser.add_argument('--threshold', type=float, default=0.5,
-                        help="Threshold for frame activity tensor, values "
-                             "above the threshold are interpreted as'event "
-                             "present' (default 0.5)")
-    parser.add_argument('--minimum_event_length', type=float, default=0.1,
-                        help="Events shorter than this ae filtered out (default 0.1)")
-    parser.add_argument('--minimum_event_gap', type=float, default=0.1,
-                        help="Two consecutive events with gap between them less"
-                             " than this are joined together (default 0.1)")
+    training.add_argument('--cuda', action='store_true', default=False,
+                          help="If set, try to use GPU for training")
+    training.add_argument('--num_workers', type=int, default=8,
+                          help="Amount of workers to pass to "
+                               "torch.utils.data.DataLoader (default 8)")
+    infer = parser.add_argument_group('Inference', 'Parameters to control '
+                                                   'inference')
+    infer.add_argument('--threshold', type=float, default=0.5,
+                       help="Threshold for frame activity tensor, values "
+                            "above the threshold are interpreted as'event "
+                            "present' (default 0.5)")
+    infer.add_argument('--minimum_event_length', type=float, default=0.1,
+                       help="Events shorter than this ae filtered out (default 0.1)")
+    infer.add_argument('--minimum_event_gap', type=float, default=0.1,
+                       help="Two consecutive events with gap between them less"
+                            " than this are joined together (default 0.1)")
 
     args = parser.parse_args()
 

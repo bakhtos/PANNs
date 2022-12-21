@@ -186,36 +186,42 @@ def train(*, hdf5_files_path_train,
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(parents=[model_parser])
-    parser.add_argument('--hdf5_files_path_train', type=str, required=True,
-                        help="Path to hdf5 file of the train split")
-    parser.add_argument('--target_weak_path_train', type=str, required=True,
-                        help="Path to the weak target array of the train split")
-    parser.add_argument('--hdf5_files_path_eval', type=str, required=True,
-                        help="Path to hdf5 file of the eval split")
-    parser.add_argument('--target_weak_path_eval', type=str, required=True,
-                        help="Path to the weak target array of the eval split")
-    parser.add_argument('--logs_dir', type=str, help="Directory to save the logs into")
-    parser.add_argument('--checkpoints_dir', type=str,
-                        help="Directory to save neural net's checkpoints into")
-    parser.add_argument('--statistics_dir', type=str,
-                        help="Directory to save evaluation statistics into")
-    parser.add_argument('--mixup_alpha', type=float, default=None,
-                        help="If using augmentation, use this as alpha "
-                             "parameter for Mixup (default 1.0)")
-    parser.add_argument('--batch_size', type=int, default=32,
-                        help="Batch size to use for training/evaluation ("
-                             "default 32)")
-    parser.add_argument('--learning_rate', type=float, default=1e-3,
-                        help="Learning rate to use in training (default 1e-3)")
-    parser.add_argument('--resume_checkpoint_path', type=str, default=None,
-                        help="Read a checkpoint from this path")
-    parser.add_argument('--iter_max', type=int, default=1000000,
-                        help="Train until this iteration (default 1000000)")
-    parser.add_argument('--cuda', action='store_true', default=False,
-                        help="If set, try to use GPU for training")
-    parser.add_argument('--num_workers', type=int, default=8,
-                        help="Amount of workers to pass to "
-                             "torch.utils.data.DataLoader (default 8)")
+    files = parser.add_argument_group('Files', 'Arguments to specify paths '
+                                               'to necessary files')
+    files.add_argument('--hdf5_files_path_train', type=str, required=True,
+                       help="Path to hdf5 file of the train split")
+    files.add_argument('--target_weak_path_train', type=str, required=True,
+                       help="Path to the weak target array of the train split")
+    files.add_argument('--hdf5_files_path_eval', type=str, required=True,
+                       help="Path to hdf5 file of the eval split")
+    files.add_argument('--target_weak_path_eval', type=str, required=True,
+                       help="Path to the weak target array of the eval split")
+    files.add_argument('--logs_dir', type=str, help="Directory to save the "
+                                                    "logs into")
+    files.add_argument('--checkpoints_dir', type=str,
+                       help="Directory to save neural net's checkpoints into")
+    files.add_argument('--statistics_dir', type=str,
+                       help="Directory to save evaluation statistics into")
+    files.add_argument('--resume_checkpoint_path', type=str, default=None,
+                       help="Read a checkpoint from this path")
+    training = parser.add_argument_group("Training", "Parameters to customize "
+                                                     "training")
+    training.add_argument('--mixup_alpha', type=float, default=None,
+                          help="If using augmentation, use this as alpha "
+                               "parameter for Mixup (default 1.0)")
+    training.add_argument('--batch_size', type=int, default=32,
+                          help="Batch size to use for training/evaluation ("
+                               "default 32)")
+    training.add_argument('--learning_rate', type=float, default=1e-3,
+                          help="Learning rate to use in training (default "
+                               "1e-3)")
+    training.add_argument('--iter_max', type=int, default=1000000,
+                          help="Train until this iteration (default 1000000)")
+    training.add_argument('--cuda', action='store_true', default=False,
+                          help="If set, try to use GPU for training")
+    training.add_argument('--num_workers', type=int, default=8,
+                          help="Amount of workers to pass to "
+                               "torch.utils.data.DataLoader (default 8)")
     
     args = parser.parse_args()
 
