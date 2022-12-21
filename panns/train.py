@@ -269,11 +269,11 @@ if __name__ == '__main__':
                              'function specified (--decision_level parameter)')
     if args.transfer:
         if args.resume_checkpoint_path is None:
-            raise ValueError('Transfer flag is set, but no model checkpoint '
-                             'is provided')
+            raise ValueError('Transfer flag is set, but model checkpoint is not'
+                             ' provided (--resume_checkpoint_path parameter)')
         if args.classes_num_new is None:
             raise ValueError('Transfer flag is set, but number of new classes '
-                             'is not provided')
+                             'is not provided (--classes_num_new parameter')
 
     model = load_model(model=args.model_type,
                        checkpoint=args.resume_checkpoint_path,
