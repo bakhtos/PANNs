@@ -12,7 +12,7 @@ import torch.utils.data
  
 from panns.utils.logging_utils import create_logging
 from panns.data.mixup import mixup_coefficients, mixup
-from panns.models import load_model, model_parser
+from panns.models import load_model, model_parser, TransferModel
 from panns.evaluate import evaluate
 from panns.data.dataset import AudioSetDataset
 
@@ -222,7 +222,28 @@ if __name__ == '__main__':
     training.add_argument('--num_workers', type=int, default=8,
                           help="Amount of workers to pass to "
                                "torch.utils.data.DataLoader (default 8)")
-    
+    transfer = parser.add_argument_group('Transfer', 'Transfer a pre-trained '
+                                                     'model to another task')
+    transfer.add_argument('--transfer', action='store_true', required=False,
+                          help='If set, transfer the pre-trained model from a '
+                               'checkpoint to a new task with new amount '
+                               'of classes')
+    transfer.add_argument('--classes_num_new', type=int, required=False,
+                          help='New amount of classes for the transfer task')
+    transfer.add_argument('--interpolate_ratio', type=int, default=32,
+                          required=False, help='Ratio to interpolate '
+                                               'framewise_output')
+    freeze = transfer.add_mutually_exclusive_group()
+    freeze.add_argument('--freeze_base', action='store_true', required=False,
+                        help='If set, freeze the parameters of base model '
+                             'during fine-tuning')
+    freeze.add_argument('--no_freeze_base', action='store_false',
+                        required=False, help='If set, do not freeze '
+                                             'parameters of the base model '
+                                             'during fine-tuning')
+    freeze.add_argument('--clip_length', type=int, default=10000,
+                        required=False, help='Length (in ms) of clips used in'
+                                             'the dataset')
     args = parser.parse_args()
 
     spec_aug = args.spec_aug or args.no_spec_aug
@@ -232,6 +253,15 @@ if __name__ == '__main__':
     wavegram = args.wavegram or args.no_wavegram
     spectrogram = args.spectrogram or args.no_spectrogram
     center = args.center or args.no_center
+    freeze = args.freeze_base or args.no_freeze_base
+
+    if args.transfer:
+        if args.resume_checkpoint_path is None:
+            raise ValueError('Transfer flag is set, but no model checkpoint '
+                             'is provided')
+        if args.classes_num_new is None:
+            raise ValueError('Transfer flag is set, but number of new classes '
+                             'is not provided')
 
     model = load_model(model=args.model_type,
                        checkpoint=args.resume_checkpoint_path,
@@ -245,6 +275,17 @@ if __name__ == '__main__':
                        num_features=args.num_features,
                        embedding_size=args.embedding_size,
                        classes_num=args.classes_num)
+
+    if args.transfer:
+        frames_num = (args.clip_length // 1000) * (args.sample_rate //
+                                                   args.hop_length) if \
+                     args.decision_level is not None else None
+        model = TransferModel(model, args.classes_num_new,
+                              frames_num=frames_num,
+                              interpolate_ratio=args.interpolate_ratio,
+                              decision_level=args.decision_level,
+                              freeze_base=freeze,
+                              embedding_size=args.embedding_size)
 
     train(hdf5_files_path_train=args.hdf5_files_path_train,
           target_weak_path_train=args.target_weak_path_train,
