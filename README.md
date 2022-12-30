@@ -123,16 +123,57 @@ python -m panns.data.hdf5  --audios_dir=$AUDIOS_DIR_EVAL\
 
 ***NOTE*** Optionally `--mini_data` parameter can be specified, which only packs the given amount of files.
 
+## Models
+The models are defined in [panns/models/models.py](panns/models/models.py),
+some auxiliary classes are defined in [panns/models/blocks.py](panns/models/blocks.py).
+
+Models have been significantly reworked compared to [the original implementation](http://github.com/qiuqiangkong/audioset_tagging_cnn).
+
+In particular, customly-written [torchlibrosa](https://github.com/qiuqiangkong/torchlibrosa)
+has been replaced with native
+[torchaudio](https://pytorch.org/audio/stable/index.html). This applies to 
+Spectrogram extraction for models that require it as well as Spectrogram 
+Augmentation.
+
+Furthermore, many versions of the CNN14 model in the original implementation 
+differed only by a handful of parameters that were hardcoded. They are now 
+refactored into the main CNN14 model with the possibility to customize these 
+parameters to resemble the original models. CNN6 and CNN10 also had these features 
+inserted into them.
+
+In general, these parameters are used to customize the models (some models 
+only support some of the parameters, check [the source](panns/models/models.py):
+
+- `classes_num`: Amount of classes used
+- `wavegram`: Whether to use the Wavegram features (see [1])
+- `spectrogram`: Whether to use the log-mel-Spectrogram features
+  - `sample_rate`: Sample rate of the original audio
+  - `win_length`: Window length to use for MelSpectrogram extraction
+  - `hop_legtn`: Hop length for the window of MelSpectrogram extraction 
+  - `n_mels`: Amount of mel filterbanks to use for MelSpectrogram
+  - `f_min`: Minimum frequency
+  - `f_max`: Maximum frequency
+  - `spec_aug`: Whether to use SpectrogramAugmentation during training
+- `mixup_time`: Whether to perform mixup in time-domain (before feature 
+  extraction)
+- `mixup_freq`: Whether to perform mixup in frequency domain (after feature 
+  extraction)
+- `dropout`: Whether to perform dropout during training
+- `decision_level`: Whether to output strong labels (`framewise_output`) and 
+  which function to use to generate them
+- Additional:
+  - `window_fn`, `center`, `pad_mode`: Passed to [MelSpectrogram](https://pytorch.org/audio/stable/generated/torchaudio.transforms.MelSpectrogram.html#torchaudio.transforms.MelSpectrogram)
+  - `top_db`: Passed to [AmplitudeToDB](https://pytorch.org/audio/stable/generated/torchaudio.transforms.AmplitudeToDB.html#torchaudio.transforms.AmplitudeToDB)
+  - `num_features`: Passed to [BatchNorm2D](https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html?highlight=batchnorm2d) (must be correct with respect to the input)
+  - `embedding_size`: Amount of nodes connecting the last two layers of the 
+    model
+
 ## Training
-The Neural Networks are defined in [panns/models/models.py](panns/models/models.py),
-some auxiliary classes are defined in [panns/models/blocks.py]
-(panns/models/blocks.py).
+
 Training is performed using [panns/train.py](panns/train.py). 
 Training is controlled by the following parameters:
-- Window size (```win_length```): size of the sliding window used in LogMel spectrum extraction
-- Hop size (```hop_length```): hop size of the window used in LogMel spectrum extraction
-- Fmin (```f_min```) and Fmax (```f_max```): minimum and maximum frequencies used in the Mel filterbank
-- Mel bins (```n_mels```): amount of mel filters to be used in the filterbank
+- `model_type`: One of the classes in [panns/models/models.py](panns/models/models.py) (the model used)
+- Parameters for the model (see [Models](#Models))
 - Augmentation (mixup): training can be set up to use Mixup with a given alpha parameter,
   which needs to be provided (```mixup_alpha```), if not provided than Mixup
   not used
@@ -142,9 +183,6 @@ Training is controlled by the following parameters:
         of one batch, we do not use epochs in this pipeline)
 - Learning rate (```learning_rate```): learning rate parameter for the optimizer
 - Number of workers (```num_workers```) to use if training on GPU
-
-Training requires the user to specify which model to use (```model_type```, must 
-match one of the classes defined in [panns/models/models.py](panns/models/models.py)).
 
 Also, directories for storing checkpoints, evaluation statistics and logs
 can be provided (defined above in environment variables); by default
