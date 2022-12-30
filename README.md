@@ -142,7 +142,7 @@ parameters to resemble the original models. CNN6 and CNN10 also had these featur
 inserted into them.
 
 In general, these parameters are used to customize the models (some models 
-only support some of the parameters, check [the source](panns/models/models.py):
+only support some of the parameters, check [the source](panns/models/models.py)):
 
 - `classes_num`: Amount of classes used
 - `wavegram`: Whether to use the Wavegram features (see [1])
@@ -167,6 +167,42 @@ only support some of the parameters, check [the source](panns/models/models.py):
   - `num_features`: Passed to [BatchNorm2D](https://pytorch.org/docs/stable/generated/torch.nn.BatchNorm2d.html?highlight=batchnorm2d) (must be correct with respect to the input)
   - `embedding_size`: Amount of nodes connecting the last two layers of the 
     model
+
+Below is the 'conversion table' between models in the original and current 
+implementations (note that in all cases parameters for Spectrogram are renamed):
+
+| Original                   | Current                                                                                                                                                                                                            |
+|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Cnn6`                     | `Cnn6(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None)`                                                                                      |
+| `Cnn10`                    | `Cnn10(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None)`                                                                                     |
+| `Cnn14`                    | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None)`                                                                                     |
+| `Cnn14_8k`                 | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None, sample_rate=8000, win_length=256, hop_length=80, n_mels=64, f_mix=50, f_max=4000)`   |
+| `Cnn14_16k`                | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None, sample_rate=16000, win_length=512, hop_length=160, n_mels=64, f_mix=50, f_max=8000)` |
+| `Cnn14_no_specaug`         | `Cnn14(spec_aug=False, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None)`                                                                                    |
+| `Cnn14_no_dropout`         | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=False, wavegram=False, spectrogram=True, decision_level=None)`                                                                                    |
+| `Cnn14_mixup_time_domain`  | `Cnn14(spec_aug=True, mixup_time=True, mixup_freq=False, dropout=True, wavegram=False, spectrogram=True, decision_level=None)`                                                                                     |
+| `Cnn14_emb32`              | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None, embedding_size=32)`                                                                  |
+| `Cnn14_emb128`             | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None, embedding_size=128)`                                                                 |
+| `Cnn14_emb512`             | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None, embedding_size=512)`                                                                 |
+| `Cnn14_mel32`              | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None, num_features=32)`                                                                    |
+| `Cnn14_mel128`             | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level=None, num_features=128)`                                                                   |
+| `Cnn14_DecisionLevelMax`   | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level='max')`                                                                                    |
+| `Cnn14_DecisionLevelAvg`   | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level='avg')`                                                                                    |
+| `Cnn14_DecisionLevelAtt`   | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=False, spectrogram=True, decision_level='att')`                                                                                    |
+| `Wavegram_Cnn14`           | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=True, spectrogram=False, decision_level=None)`                                                                                     |
+| `Wavegram_Logmel_Cnn14`    | `Cnn14(spec_aug=True, mixup_time=False, mixup_freq=True, dropout=True, wavegram=True, spectrogram=True, decision_level=None)`                                                                                      |
+| `Wavegram_Logmel128_Cnn14` | Not implemented                                                                                                                                                                                                    |
+| `ResNet22`                 | `ResNet22` (same)                                                                                                                                                                                                  |
+| `ResNet38`                 | `ResNet38` (same)                                                                                                                                                                                                  |
+| `ResNet54`                 | `ResNet54` (same)                                                                                                                                                                                                  |
+| `Res1dNet31`               | `Res1dNet31(classes_num)` (other parameters are not used)                                                                                                                                                          |
+| `Res1dNet51`               | `Res1dNet51(classes_num)` (other parameters are not used)                                                                                                                                                          |
+| `MobileNetV1`              | `MobileNetV1` (same)                                                                                                                                                                                               |
+| `MobileNetV2`              | `MobileNetV2` (same)                                                                                                                                                                                               |
+| `LeeNet11`                 | `LeeNet11(classes_num)` (other parameters are not used)                                                                                                                                                            |
+| `LeeNet24`                 | `LeeNet24(classes_num, dropout=True)` (other parameters are not used, dropout can be set to `False`)                                                                                                               |
+| `DaiNet19`                 | `DaiNet19(classes_num)` (other parameters are not used)                                                                                                                                                            |
+
 
 ## Training
 
