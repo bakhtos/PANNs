@@ -6,7 +6,7 @@ import logging
 import h5py
 import librosa
 
-from panns.utils.logging_utils import create_logging
+from panns.logging import create_logging
 
 __all__ = ['wav_to_hdf5']
 

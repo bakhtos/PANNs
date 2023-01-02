@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 
 import panns.models
-from panns.utils.metadata_utils import get_class_labels
+from panns.data.metadata import get_class_labels
 
 
 @torch.no_grad()

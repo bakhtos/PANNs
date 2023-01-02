@@ -7,8 +7,8 @@ import numpy as np
 
 from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
-from panns.utils.metadata_utils import get_class_labels
-from panns.utils.logging_utils import create_logging
+from panns.data.metadata import get_class_labels
+from panns.logging import create_logging
 from panns.models.loader import load_model, model_parser
 
 __all__ = ['detect_events']

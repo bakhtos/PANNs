@@ -10,7 +10,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 import torch.utils.data
  
-from panns.utils.logging_utils import create_logging
+from panns.logging import create_logging
 from panns.data.mixup import mixup_coefficients, mixup
 from panns.models import load_model, model_parser, TransferModel
 from panns.evaluate import evaluate
