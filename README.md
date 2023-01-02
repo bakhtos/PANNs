@@ -156,7 +156,7 @@ some auxiliary classes are defined in [panns/models/blocks.py](panns/models/bloc
 
 Models have been significantly reworked compared to [the original implementation](http://github.com/qiuqiangkong/audioset_tagging_cnn).
 
-In particular, customly-written [torchlibrosa](https://github.com/qiuqiangkong/torchlibrosa)
+In particular, custom-written [torchlibrosa](https://github.com/qiuqiangkong/torchlibrosa)
 has been replaced with native
 [torchaudio](https://pytorch.org/audio/stable/index.html). This applies to 
 Spectrogram extraction for models that require it as well as Spectrogram 
@@ -301,7 +301,7 @@ The script accepts following parameters:
 - `selected_classes_path`: same as defined for SELECTED_CLASSES_PATH 
   variable above
 - `class_labels_path`: same as defined for CLASS_LABELS_PATH variable above
-- `threshold`: Output of the model is thresholded by this value, only values 
+- `threshold`: This threshold is applied to the output of the model only values 
   greater are considered as 'event detected'
 - `minimum_event_gap`: In seconds, minimum gap between two consecutive 
   events so that they are considered separate events; events closer than 
