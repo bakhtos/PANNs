@@ -9,34 +9,36 @@ for Audio Patterns Recognition** [1])
 We do not provide here the scripts to download the dataset and assume that the
 files are already prepared by the user.
 
-### Storing the dataset and metadata
+### Preparing the dataset and metadata
 
 The codes here assume that all files are already the audio segments which are to be studied
 (and not full recordings from which segments are to be extracted), that the
 segments are 10 seconds long (or less, although codes should support any length of audio common to all used clips)
 and are named according to the pattern `Y*.wav`, 
 i.e. begin with 'Y', followed by arbitrary symbols (video's YouTubeID) and having the extension '.wav.'
-Data should have a sampling rate of either 32000Hz(preferred), 16000Hz or 8000Hz
-(although again, any sample rate common to all files could be possible).
+Data should preferably have a sampling rate of 32000Hz,
+although again, any sample rate common to all files could be possible.
 
 The files should be stored in two separate directories, `train/` and `eval/`, for the
 training and evaluation splits, respectively.
 
-Metadata files storing class labels should be provided as tab-separated files, 
+Metadata files storing class labels for audios should be provided as 
+tab-separated files, 
 as in [Google's AudioSet: Reformatted](https://github.com/bakhtos/GoogleAudioSetReformatted) dataset,
 as well as a file (`class_labels.tsv`) listing all class labels and their ids.
 
 These metadata files should only mention audio files that were actually downloaded,
-and only the classes that were selected for the model.
-
-Also, a file `selected_classes.txt` listing all classes selected for training line by line should be provided.
+and only the classes that were selected for the model. A file 
+`selected_classes.txt` listing all classes selected for training line by line
+should be provided.
 
 ***NOTE:*** `filename` fields should not contain the prefix "Y" or the extension ".wav", these
 are added by the scripts.
 
 You can check the [dataset](dataset) folder to verify the format of all files.
 
-Create the following environment variables to keep track of all the files and parameters:
+Create the following environment variables to keep track of all files and 
+locations:
 
 ```shell
 AUDIOS_DIR_TRAIN # Location of the training split of files
@@ -44,9 +46,6 @@ AUDIOS_DIR_EVAL # Location of the evaluation split of files
 LABELS_TSV_PATH_TRAIN # Path to the tsv file containing strong labels for the train split
 LABELS_TSV_PATH_EVAL # Path to the tsv file containing strong labels for the eval split
 LOGS_DIR # Location to store logs
-SAMPLE_RATE # Sample rate of the audio files
-CLIP_LENGTH # Length (in ms) of audio clips used in the dataset
-CLASSES_NUM # Amount of classes used in the dataset
 CLASS_LABELS_PATH # Path to the tsv file mapping class ids to labels
 SELECTED_CLASSES_PATH # Path to the txt file containing list of selected class ids, one on each line
 ```
