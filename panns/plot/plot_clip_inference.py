@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import torch
 
 import panns.models
-from panns.utils.metadata_utils import get_labels
+from panns.utils.metadata_utils import get_class_labels
 
 
 @torch.no_grad()
@@ -144,8 +144,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    _, labels, _, _ = get_labels(args.class_labels_path,
-                                 args.selected_classes_path)
+    _, labels = get_class_labels(args.class_labels_path, args.selected_classes_path)
 
     model = panns.models.load_model(model=args.model_type,
                                     win_length=args.window_size,

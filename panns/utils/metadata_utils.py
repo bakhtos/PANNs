@@ -4,12 +4,12 @@ import math
 
 import numpy as np
 
-__all__ = ['get_labels',
+__all__ = ['get_class_labels',
            'get_weak_target',
            'get_strong_target']
 
 
-def get_labels(class_labels_path, selected_classes_path):
+def get_class_labels(class_labels_path, selected_classes_path):
 
     """ Map selected labels from label to id and index and vice versa.
 
@@ -20,13 +20,11 @@ def get_labels(class_labels_path, selected_classes_path):
             List of class ids selected for training, one per line.
 
     Returns:
-        ids, labels, lb_to_id, id_to_lb
+        ids, labels
             -List of all selected classes' ids,
             in the order they were given in 'selected_classes_path'.
             -List of all selected classes' labels,
             in the order they were given in 'selected_classes_path'.
-            -Map from selected classes' labels to their ids.
-            -Map from selected classes' ids to their labels.
     """
 
     selected_classes_file = open(selected_classes_path, 'r')
@@ -49,14 +47,7 @@ def get_labels(class_labels_path, selected_classes_path):
             labels.append(label)
     class_labels_file.close()
 
-    lb_to_id = dict()
-    id_to_lb = dict()
-
-    for label, id_ in zip(labels, ids):
-        lb_to_id[label] = id_
-        id_to_lb[id_] = label
-
-    return ids, labels, lb_to_id, id_to_lb
+    return ids, labels
 
 
 def get_weak_target(data_path, class_ids):
@@ -184,7 +175,8 @@ if __name__ == '__main__':
                              " (defaults to 'target.npy' in CWD)")
     args = parser.parse_args()
 
-    ids, _, _, _ = get_labels(args.class_labels_path, args.selected_classes_path)
+    ids, _ = get_class_labels(args.class_labels_path, args.selected_classes_path)
+
     if args.target_type == 'strong':
         if args.sample_rate is None:
             raise AttributeError("Strong label target was requested, but no"

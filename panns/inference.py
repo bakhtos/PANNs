@@ -7,7 +7,7 @@ import numpy as np
 
 from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
-from panns.utils.metadata_utils import get_labels
+from panns.utils.metadata_utils import get_class_labels
 from panns.utils.logging_utils import create_logging
 from panns.models.loader import load_model, model_parser
 
@@ -212,8 +212,7 @@ if __name__ == '__main__':
     framewise_output = framewise_output.cpu().numpy()
     audio_names = np.load(args.audio_names_path)
 
-    ids, _, _, _ = get_labels(args.class_labels_path,
-                              args.selected_classes_path)
+    ids, _ = get_class_labels(args.class_labels_path, args.selected_classes_path)
 
     detect_events(frame_probabilities=framewise_output,
                   label_id_list=ids,
