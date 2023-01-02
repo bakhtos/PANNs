@@ -145,7 +145,7 @@ def train(*, hdf5_files_path_train,
         # Data augmentation
         mixup_lambda = next(mixup_augmenter) if aug else None
         target = mixup(target, mixup_lambda) if aug else target
-        target = torch.tensor(target, device=device)
+        target = target.to(device)
 
         train_bgn_time = time.time()
 
@@ -196,11 +196,11 @@ if __name__ == '__main__':
     files.add_argument('--hdf5_files_path_train', type=str, required=True,
                        help="Path to hdf5 file of the train split")
     files.add_argument('--target_weak_path_train', type=str, required=True,
-                       help="Path to the weak target array of the train split")
+                       help="Path to the weak target tensor of the train split")
     files.add_argument('--hdf5_files_path_eval', type=str, required=True,
                        help="Path to hdf5 file of the eval split")
     files.add_argument('--target_weak_path_eval', type=str, required=True,
-                       help="Path to the weak target array of the eval split")
+                       help="Path to the weak target tensor of the eval split")
     files.add_argument('--logs_dir', type=str, help="Directory to save the "
                                                     "logs into")
     files.add_argument('--checkpoints_dir', type=str,
