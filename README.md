@@ -27,6 +27,7 @@ tab-separated files,
 as in [Google's AudioSet: Reformatted](https://github.com/bakhtos/GoogleAudioSetReformatted) dataset,
 as well as a file (`class_labels.tsv`) listing all class labels and their ids.
 Columns should be in order `filename`-`event_label`-`onset`-`offset`.
+
 ***NOTE:*** `filename` fields should not contain the prefix "Y" or the extension ".wav", these
 are added by the scripts.
 
@@ -51,7 +52,7 @@ CLASS_LABELS_PATH # Path to the tsv file mapping class ids to labels
 SELECTED_CLASSES_PATH # Path to the txt file containing list of selected class ids, one on each line
 ```
 
-### Create audio indexing and target arrays
+### Create audio indexing list and target arrays
 
 Use the `panns.data.metadata` module from the command line to save the 
 lists of files as well as the target tensors for train and eval splits.
