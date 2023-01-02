@@ -12,12 +12,12 @@ files are already prepared by the user.
 ### Preparing the dataset and metadata
 
 The codes here assume that all files are already the audio segments which are to be studied
-(and not full recordings from which segments are to be extracted), that the
-segments are 10 seconds long (or less, although codes should support any length of audio common to all used clips)
+and not full recordings from which segments are to be extracted, that the
+segments are 10 seconds long (although codes should support any length of audio common to all used clips)
 and are named according to the pattern `Y*.wav`, 
-i.e. begin with 'Y', followed by arbitrary symbols (video's YouTubeID) and having the extension '.wav.'
-Data should preferably have a sampling rate of 32000Hz,
-although again, any sample rate common to all files could be possible.
+i.e. begin with 'Y', followed by arbitrary symbols (video's YouTubeID) and having the extension '.wav'.
+Data should have a sampling rate of 32000Hz,
+although again, any sample rate common to all files is supported.
 
 The files should be stored in two separate directories, `train/` and `eval/`, for the
 training and evaluation splits, respectively.
@@ -26,14 +26,15 @@ Metadata files storing class labels for audios should be provided as
 tab-separated files, 
 as in [Google's AudioSet: Reformatted](https://github.com/bakhtos/GoogleAudioSetReformatted) dataset,
 as well as a file (`class_labels.tsv`) listing all class labels and their ids.
+Columns should be in order `filename`-`event_label`-`onset`-`offset`.
+***NOTE:*** `filename` fields should not contain the prefix "Y" or the extension ".wav", these
+are added by the scripts.
 
 These metadata files should only mention audio files that were actually downloaded,
 and only the classes that were selected for the model. A file 
 `selected_classes.txt` listing all classes selected for training line by line
 should be provided.
 
-***NOTE:*** `filename` fields should not contain the prefix "Y" or the extension ".wav", these
-are added by the scripts.
 
 You can check the [dataset](dataset) folder to verify the format of all files.
 
@@ -43,21 +44,22 @@ locations:
 ```shell
 AUDIOS_DIR_TRAIN # Location of the training split of files
 AUDIOS_DIR_EVAL # Location of the evaluation split of files
-LABELS_TSV_PATH_TRAIN # Path to the tsv file containing strong labels for the train split
-LABELS_TSV_PATH_EVAL # Path to the tsv file containing strong labels for the eval split
+DATASET_PATH_TRAIN # Path to the tsv file containing strong labels for the train split
+DATASET_PATH_EVAL # Path to the tsv file containing strong labels for the eval split
 LOGS_DIR # Location to store logs
 CLASS_LABELS_PATH # Path to the tsv file mapping class ids to labels
 SELECTED_CLASSES_PATH # Path to the txt file containing list of selected class ids, one on each line
 ```
 
-These variables will be used later in all shown commands.
+### Create audio indexing and target arrays
 
-### Create audio names list and weak target arrays
-
-Use the `panns.utils.metadata_utils` module from the command line to save the lists of files
-as well as the weak target arrays for train and eval splits.
-Audio names array will have shape `(audios_num, )`, weak target array - `(audios_num, classes_num)`
-(index of an audio name in the audio names array is the same as in target array).
+Use the `panns.data.metadata` module from the command line to save the 
+lists of files as well as the target tensors for train and eval splits.
+Weak target array will have the shape `(audios_num, classes_num)`,
+strong target array - `(audios_num, frames_num, classes_num)`.
+Index of an audio name in the audio names list is the same as in target array(s).
+Weak target can be computed once for a dataset, Strong target depends on 
+sample rate, hop length (in samples) and clip length (in ms).
 
 Use the following environment variables:
 
@@ -66,23 +68,50 @@ AUDIO_NAMES_PATH_TRAIN # Path to save the train audio names array
 AUDIO_NAMES_PATH_EVAL # Path to save the eval audio names array
 TARGET_WEAK_PATH_TRAIN # Path to save the weak target array for train files
 TARGET_WEAK_PATH_EVAL # Path to save the weak target array for eval files
+TARGET_STRONG_PATH_TRAIN # Path to save the strong target array for train files
+TARGET_STRONG_PATH_EVAL # Path to save the strong target array for eval files
 ```
 
 And then call the module as follows:
 
 ```shell
+# Weak target
 # Train split
-python -m panns.utils.metadata_utils --class_labels_path=$CLASS_LABELS_PATH\
-                                     --selected_classes_path=$SELECTED_CLASSES_PATH\
-                                     --data_path=$LABELS_TSV_PATH_TRAIN\
-                                     --audio_names_path=$AUDIO_NAMES_PATH_TRAIN\
-                                     --target_weak_path=$TARGET_WEAK_PATH_TRAIN\
+python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
+                              --selected_classes_path=$SELECTED_CLASSES_PATH\
+                              --data_path=$DATASET_PATH_TRAIN\
+                              --audio_names_path=$AUDIO_NAMES_PATH_TRAIN\
+                              --target_type=weak\
+                              --target_path=$TARGET_WEAK_PATH_TRAIN
 # Eval split
-python -m panns.utils.metadata_utils --class_labels_path=$CLASS_LABELS_PATH,
-                                     --selected_classes_path=$SELECTED_CLASSES_PATH,
-                                     --data_path=$LABELS_TSV_PATH_EVAL,
-                                     --audio_names_path=$AUDIO_NAMES_PATH_EVAL,
-                                     --target_weak_path=$TARGET_WEAK_PATH_EVAL
+python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
+                              --selected_classes_path=$SELECTED_CLASSES_PATH\
+                              --data_path=$DATASET_PATH_EVAL\
+                              --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
+                              --target_type=weak\
+                              --target_path=$TARGET_WEAK_PATH_EVAL
+                              
+# Strong target
+# Train split
+python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
+                              --selected_classes_path=$SELECTED_CLASSES_PATH\
+                              --data_path=$DATASET_PATH_TRAIN\
+                              --audio_names_path=$AUDIO_NAMES_PATH_TRAIN\
+                              --target_type=strong\
+                              --target_path=$TARGET_STRONG_PATH_TRAIN\
+                              --sample_rate=32000\
+                              --hop_length=320\
+                              --clip_length=10000
+# Eval split
+python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
+                              --selected_classes_path=$SELECTED_CLASSES_PATH\
+                              --data_path=$DATASET_PATH_EVAL\
+                              --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
+                              --target_type=strong\
+                              --target_path=$TARGET_STRONG_PATH_EVAL
+                              --sample_rate=32000\
+                              --hop_length=320\
+                              --clip_length=10000
 ```
 
 ### Pack waveforms into hdf5 files
@@ -90,7 +119,7 @@ python -m panns.utils.metadata_utils --class_labels_path=$CLASS_LABELS_PATH,
 For training and evaluation, the actual audio files need to be packed into a [hdf5](https://hdfgroup.org/) object
 using the `panns.data.hdf5` module, which relies on the [h5py](https://www.h5py.org/) package.
 
-The audio arrays will be made to match the length `CLIP_LENGTH*SAMPLE_RATE/1000` either by truncating or zero-padding.
+The audio arrays will be made to match the length `clip length*sample rate/1000` either by truncating or zero-padding.
 
 Create the following environment variables:
 
@@ -106,18 +135,17 @@ And make the calls:
 python -m panns.data.hdf5  --audios_dir=$AUDIOS_DIR_TRAIN\
                            --audio_names_path=$AUDIO_NAMES_PATH_TRAIN\
                            --hdf5_path=$HDF5_FILES_PATH_TRAIN\
-                           --sample_rate=$SAMPLE_RATE\
-                           --clip_length=$CLIP_LENGTH\
                            --logs_dir=$LOGS_DIR
+                           --sample_rate=32000\
+                           --clip_length=10000
                            
 # Eval split
 python -m panns.data.hdf5  --audios_dir=$AUDIOS_DIR_EVAL\
                            --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
                            --hdf5_path=$HDF5_FILES_PATH_EVAL\
-                           --sample_rate=$SAMPLE_RATE\
-                           --clip_length=$CLIP_LENGTH\
                            --logs_dir=$LOGS_DIR
-
+                           --sample_rate=32000\
+                           --clip_length=10000
 ```
 
 ***NOTE*** Optionally `--mini_data` parameter can be specified, which only packs the given amount of files.
@@ -141,14 +169,14 @@ parameters to resemble the original models. CNN6 and CNN10 also had these featur
 inserted into them.
 
 In general, these parameters are used to customize the models (some models 
-only support some of the parameters, check [the source](panns/models/models.py)):
+only support some parameters, check [the source](panns/models/models.py)):
 
 - `classes_num`: Amount of classes used
 - `wavegram`: Whether to use the Wavegram features (see [1])
 - `spectrogram`: Whether to use the log-mel-Spectrogram features
   - `sample_rate`: Sample rate of the original audio
   - `win_length`: Window length to use for MelSpectrogram extraction
-  - `hop_legtn`: Hop length for the window of MelSpectrogram extraction 
+  - `hop_length`: Hop length for the window of MelSpectrogram extraction 
   - `n_mels`: Amount of mel filterbanks to use for MelSpectrogram
   - `f_min`: Minimum frequency
   - `f_max`: Maximum frequency
@@ -167,7 +195,7 @@ only support some of the parameters, check [the source](panns/models/models.py))
   - `embedding_size`: Amount of nodes connecting the last two layers of the 
     model
 
-Below is the 'conversion table' between models in the original and current 
+Below is the 'conversion table' between models in the original and current
 implementations (note that in all cases parameters for Spectrogram are renamed):
 
 | Original                   | Current                                                                                                                                                                                                            |
@@ -266,7 +294,7 @@ The script accepts following parameters:
 - `hdf5_files_path`: location of the `hdf5` compression of the dataset
 - `target_weak_path`: location of the weak target numpy array for the dataset
 - `audio_names_path`: location of the audio_names numpy array (generated 
-  with [panns.utils.metadata_utils](panns/utils/metadata_utils.py))
+  with [panns.utils.metadata_utils](panns/data/metadata.py))
 - `output_path`: filename to save the detected events
 - `checkpoint_path`: location of the checkpoint of the model to use
 - `logs_dir`: directory to write logs into (optional)
