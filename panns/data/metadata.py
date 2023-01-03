@@ -95,7 +95,7 @@ def get_weak_target(data_path, class_ids):
         target[video_ix][class_ix] = 1.0
     file.close()
 
-    target = np.array(target, dtype=np.float32)
+    target = np.array(target, dtype=np.bool)
 
     return audio_names, target
 
@@ -143,7 +143,7 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
         target[video_ix][class_ix][onset:offset] = [1.0]*(offset-onset)
     file.close()
 
-    target = np.array(target, dtype=np.float32)
+    target = np.array(target, dtype=np.bool)
     target = np.transpose(target, (0, 2, 1))
 
     return audio_names, target

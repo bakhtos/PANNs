@@ -28,6 +28,6 @@ class AudioSetDataset(Dataset):
 
     def __getitem__(self, i):
         waveform = self._hdf5_data['waveform'][i]
-        target = self._target[i, :]
+        target = self._target[i, :].astype(np.float32)
 
         return waveform, target
