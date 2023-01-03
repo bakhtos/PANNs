@@ -1,9 +1,8 @@
 import argparse
 import copy
 import math
-import pickle
 
-import torch
+import numpy as np
 
 __all__ = ['get_class_labels',
            'get_weak_target',
@@ -65,7 +64,7 @@ def get_weak_target(data_path, class_ids):
         audio_names, target
             -List of all files from data_path, index in this list corresponds
             to the index in the target array.
-            -Target tensor of weak labels with shape (videos, classes).
+            -Target array of weak labels with shape (videos, classes).
     """
 
     class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
@@ -95,7 +94,7 @@ def get_weak_target(data_path, class_ids):
         target[video_ix][class_ix] = 1.0
     file.close()
 
-    return audio_names, torch.tensor(target)
+    return np.array(audio_names), np.array(target)
 
 
 def get_strong_target(data_path, class_ids, sample_rate, hop_length,
@@ -141,7 +140,7 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
         target[video_ix][onset:offset][class_ix] = 1.0
     file.close()
 
-    return audio_names, torch.tensor(target)
+    return np.array(audio_names), np.array(target)
 
 
 if __name__ == '__main__':
@@ -168,13 +167,12 @@ if __name__ == '__main__':
     parser.add_argument('--clip_length', type=int, default=None, required=False,
                         help="Length (in ms) of audio clips used in the "
                              "dataset")
-    parser.add_argument('--audio_names_path', type=str,
-                        default='audio_names.pickle',
-                        help="Path to pickle the audio_names list"
-                             " (defaults to 'audio_names.pickle' in CWD)")
-    parser.add_argument('--target_path', type=str, default='target.pt',
-                        help="Path to save the target tensor"
-                             " (defaults to 'target.pt' in CWD)")
+    parser.add_argument('--audio_names_path', type=str, default='audio_names.npy',
+                        help="Path to save the audio_names numpy array"
+                             " (defaults to 'audio_names.npy' in CWD)")
+    parser.add_argument('--target_path', type=str, default='target.npy',
+                        help="Path to save the target numpy array"
+                             " (defaults to 'target.npy' in CWD)")
     args = parser.parse_args()
 
     ids, _ = get_class_labels(args.class_labels_path, args.selected_classes_path)
@@ -195,6 +193,5 @@ if __name__ == '__main__':
                                                 args.clip_length)
     else:
         audio_names, target = get_weak_target(args.data_path, ids)
-    with open(args.audio_names_path, 'wb') as f:
-        pickle.dump(audio_names, f)
-    torch.save(target, args.target_path)
+    np.save(args.audio_names_path, audio_names)
+    np.save(args.target_path, target)

@@ -122,9 +122,10 @@ if __name__ == '__main__':
     files.add_argument('--hdf5_files_path', type=str, required=True,
                        help="Path to hdf5 file of the eval split")
     files.add_argument('--target_weak_path', type=str, required=True,
-                       help="Path to the weak target tensor of the eval split")
+                       help="Path to the weak target array of the eval split")
     files.add_argument('--audio_names_path', type=str, required=True,
-                       help='Path to the pickle file to load audio filenames')
+                       help='Path to .npy file to load audio filenames '
+                            'to be packed in this order')
     files.add_argument('--output_path', type=str, default='events.txt',
                        help="File to save detected events")
     files.add_argument('--checkpoint_path', type=str, required=True,
