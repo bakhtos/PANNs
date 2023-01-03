@@ -104,7 +104,7 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
                       clip_length):
 
     hop_length_seconds = hop_length/sample_rate
-    frames_num = int((clip_length/1000)/hop_length_seconds)+1
+    frames_num = int((clip_length/1000)/hop_length_seconds)
 
     class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
     zero_vector = [[0.0] * frames_num] * len(class_ids)
