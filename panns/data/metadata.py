@@ -1,7 +1,6 @@
 import argparse
 import copy
 import math
-import pickle
 
 import numpy as np
 
@@ -62,16 +61,12 @@ def get_weak_target(data_path, class_ids):
             in the target array.
 
     Returns:
-        audio_names, target
-            -List of all files from data_path, index in this list corresponds
-            to the index in the target array.
-            -Target array of weak labels with shape (videos, classes).
+        target : Target array of weak labels with shape (videos, classes).
     """
 
     class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
     zero_vector = [0.0] * len(class_ids)
     target = []
-    audio_names = []
     count = 0
     video_id_to_ix = dict()
     file = open(data_path, 'r')
@@ -87,7 +82,6 @@ def get_weak_target(data_path, class_ids):
             video_id_to_ix[video_id] = count
             count += 1
             target.append(copy.deepcopy(zero_vector))
-            audio_names.append(video_id)
 
         video_ix = video_id_to_ix[video_id]
         class_ix = class_id_to_ix[label]
@@ -97,7 +91,7 @@ def get_weak_target(data_path, class_ids):
 
     target = np.array(target, dtype=np.bool)
 
-    return audio_names, target
+    return target
 
 
 def get_strong_target(data_path, class_ids, sample_rate, hop_length,
@@ -109,7 +103,6 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
     class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
     zero_vector = [[0.0] * frames_num] * len(class_ids)
     target = []
-    audio_names = []
     count = 0
     video_id_to_ix = dict()
     file = open(data_path, 'r')
@@ -135,7 +128,6 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
             video_id_to_ix[video_id] = count
             count += 1
             target.append(copy.deepcopy(zero_vector))
-            audio_names.append(video_id)
 
         video_ix = video_id_to_ix[video_id]
         class_ix = class_id_to_ix[label]
@@ -146,7 +138,7 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
     target = np.array(target, dtype=np.bool)
     target = np.transpose(target, (0, 2, 1))
 
-    return audio_names, target
+    return target
 
 
 if __name__ == '__main__':
@@ -173,9 +165,6 @@ if __name__ == '__main__':
     parser.add_argument('--clip_length', type=int, default=None, required=False,
                         help="Length (in ms) of audio clips used in the "
                              "dataset")
-    parser.add_argument('--audio_names_path', type=str, default='audio_names.npy',
-                        help="Path to save the audio_names numpy array"
-                             " (defaults to 'audio_names.pickle' in CWD)")
     parser.add_argument('--target_path', type=str, default='target.npy',
                         help="Path to save the target numpy array"
                              " (defaults to 'target.npy' in CWD)")
@@ -193,13 +182,11 @@ if __name__ == '__main__':
         if args.clip_length is None:
             raise AttributeError("Strong label target was requested, but no"
                                  "clip_length given")
-        audio_names, target = get_strong_target(args.data_path, ids,
-                                                args.sample_rate,
-                                                args.hop_length,
-                                                args.clip_length)
+        target = get_strong_target(args.data_path, ids,
+                                   args.sample_rate,
+                                   args.hop_length,
+                                   args.clip_length)
     else:
-        audio_names, target = get_weak_target(args.data_path, ids)
-    with open(args.audio_names_path, 'wb') as f:
-        pickle.dump(audio_names, f)
+        target = get_weak_target(args.data_path, ids)
 
     np.save(args.target_path, target)
