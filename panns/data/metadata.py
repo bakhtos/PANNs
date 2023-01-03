@@ -1,6 +1,7 @@
 import argparse
 import copy
 import math
+import pickle
 
 import numpy as np
 
@@ -94,7 +95,9 @@ def get_weak_target(data_path, class_ids):
         target[video_ix][class_ix] = 1.0
     file.close()
 
-    return np.array(audio_names), np.array(target)
+    target = np.array(target)
+
+    return audio_names, target
 
 
 def get_strong_target(data_path, class_ids, sample_rate, hop_length,
@@ -104,7 +107,7 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
     frames_num = int((clip_length/1000)/hop_length_seconds)+1
 
     class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
-    zero_vector = [[0.0] * len(class_ids)]*frames_num
+    zero_vector = [[0.0] * frames_num] * len(class_ids)
     target = []
     audio_names = []
     count = 0
@@ -137,10 +140,13 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
         video_ix = video_id_to_ix[video_id]
         class_ix = class_id_to_ix[label]
 
-        target[video_ix][onset:offset][class_ix] = 1.0
+        target[video_ix][class_ix][onset:offset] = [1.0]*(offset-onset)
     file.close()
 
-    return np.array(audio_names), np.array(target)
+    target = np.array(target)
+    target = np.transpose(target, (0, 2, 1))
+
+    return audio_names, target
 
 
 if __name__ == '__main__':
@@ -169,7 +175,7 @@ if __name__ == '__main__':
                              "dataset")
     parser.add_argument('--audio_names_path', type=str, default='audio_names.npy',
                         help="Path to save the audio_names numpy array"
-                             " (defaults to 'audio_names.npy' in CWD)")
+                             " (defaults to 'audio_names.pickle' in CWD)")
     parser.add_argument('--target_path', type=str, default='target.npy',
                         help="Path to save the target numpy array"
                              " (defaults to 'target.npy' in CWD)")
@@ -193,5 +199,7 @@ if __name__ == '__main__':
                                                 args.clip_length)
     else:
         audio_names, target = get_weak_target(args.data_path, ids)
-    np.save(args.audio_names_path, audio_names)
+    with open(args.audio_names_path, 'wb') as f:
+        pickle.dump(audio_names, f)
+
     np.save(args.target_path, target)

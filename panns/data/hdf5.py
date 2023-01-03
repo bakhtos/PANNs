@@ -1,8 +1,10 @@
-import numpy as np
 import argparse
 import os
 import time
 import logging
+import pickle
+
+import numpy as np
 import h5py
 import librosa
 
@@ -22,8 +24,9 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
                 Path to the directory containing files to be packed
             hdf5_path: str,
                 Path to save the hdf5-packed file
-            audio_names: numpy.ndarray,
-                Array of file names in the dataset, in the same order as in target
+            audio_names: list[str],
+                List of file names in the dataset, in the same order as in
+                target
             logs_dir: str, Directory to save logs into,
                 if None creates a directory 'logs' in CWD (default None)
             clip_length: int, Length (in ms) of audio clips used in the dataset
@@ -85,8 +88,8 @@ if __name__ == '__main__':
     parser.add_argument('--audios_dir', type=str, required=True,
                         help="Directory with the downloaded audio")
     parser.add_argument('--audio_names_path', type=str, required=True,
-                        help="Path to .npy file to load audio filenames to be "
-                             "packed in this order")
+                        help="Path to pickle file to load audio filenames to "
+                             "be packed in this order")
     parser.add_argument('--hdf5_path', type=str, required=True,
                         help="Path to save packed hdf5")
     parser.add_argument('--sample_rate', type=int, default=32000,
@@ -101,7 +104,8 @@ if __name__ == '__main__':
                              "(defaults to 'logs' in CWD)")
     args = parser.parse_args()
 
-    audio_names = np.load(args.audio_names_path)
+    with open(args.audio_names_path, 'rb') as f:
+        audio_names = pickle.load(f)
 
     wav_to_hdf5(audios_dir=args.audios_dir,
                 hdf5_path=args.hdf5_path,
