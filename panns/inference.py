@@ -2,12 +2,12 @@ import argparse
 import os
 import logging
 
+import pandas as pd
 import torch.utils.data
 import numpy as np
 
 from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
-from panns.data.metadata import get_class_labels
 from panns.logging import create_logging
 from panns.models.loader import load_model, model_parser
 
@@ -123,21 +123,14 @@ if __name__ == '__main__':
                        help="Path to hdf5 file of the eval split")
     files.add_argument('--target_weak_path', type=str, required=True,
                        help="Path to the weak target array of the eval split")
-    files.add_argument('--audio_names_path', type=str, required=True,
-                       help='Path to .npy file to load audio filenames '
-                            'to be packed in this order')
+    files.add_argument('--dataset_path', type=str, required=True,
+                       help="Path to the dataset tsv file")
     files.add_argument('--output_path', type=str, default='events.txt',
                        help="File to save detected events")
     files.add_argument('--checkpoint_path', type=str, required=True,
                        help="File to load the NN checkpoint from")
     files.add_argument('--logs_dir', type=str, help="Directory to save the "
                                                     "logs into")
-    files.add_argument('--selected_classes_path', type=str, required=True,
-                       help="Dataset class labels in tsv format (as in "
-                            "'Reformatted' dataset)")
-    files.add_argument('--class_labels_path', type=str, required=True,
-                       help="List of selected classes that were used in "
-                            "training are used in the model, one per line")
     training = parser.add_argument_group("Training", "Parameters to customize "
                                                      "training")
     training.add_argument('--batch_size', type=int, default=32,
@@ -210,9 +203,10 @@ if __name__ == '__main__':
     _, _, framewise_output, _ = forward(model, eval_loader)
 
     framewise_output = framewise_output.cpu().numpy()
-    audio_names = np.load(args.audio_names_path)
 
-    ids, _ = get_class_labels(args.class_labels_path, args.selected_classes_path)
+    dataset = pd.read_csv(args.dataset_path, delimiter='\t')
+    audio_names = dataset['filename'].unique()
+    ids = dataset['event_label'].unique()
 
     detect_events(frame_probabilities=framewise_output,
                   label_id_list=ids,
