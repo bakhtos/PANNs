@@ -4,50 +4,8 @@ import math
 import numpy as np
 import pandas as pd
 
-__all__ = ['get_class_labels',
-           'get_weak_target',
+__all__ = ['get_weak_target',
            'get_strong_target']
-
-
-def get_class_labels(class_labels_path, selected_classes_path):
-
-    """ Map selected labels from label to id and index and vice versa.
-
-    Args:
-        class_labels_path : str,
-            Dataset labels in tsv format (in 'Reformatted' format).
-        selected_classes_path : str,
-            List of class ids selected for training, one per line.
-
-    Returns:
-        ids, labels
-            -List of all selected classes' ids,
-            in the order they were given in 'selected_classes_path'.
-            -List of all selected classes' labels,
-            in the order they were given in 'selected_classes_path'.
-    """
-
-    selected_classes_file = open(selected_classes_path, 'r')
-    selected_classes = set()
-    for line in selected_classes_file:
-        if line.endswith('\n'):
-            line = line[:-1]
-        selected_classes.add(line)  # TODO - change to .removesuffix() when Python 3.9 is supported
-    selected_classes_file.close()
-
-    class_labels_file = open(class_labels_path, 'r')
-    labels = []
-    ids = []  # Each label has a unique id such as "/m/068hy"
-    for line in class_labels_file:
-        id_, label = line.split('\t')
-        if id_ in selected_classes:
-            if label.endswith('\n'):
-                label = label[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
-            ids.append(id_)
-            labels.append(label)
-    class_labels_file.close()
-
-    return ids, labels
 
 
 def get_weak_target(data_path):
