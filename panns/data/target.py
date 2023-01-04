@@ -118,11 +118,11 @@ if __name__ == '__main__':
         if args.clip_length is None:
             raise AttributeError("Strong label target was requested, but no"
                                  "clip_length given")
-        target = get_strong_target(args.data_path,
+        target = get_strong_target(args.dataset_path,
                                    sample_rate=args.sample_rate,
                                    hop_length=args.hop_length,
                                    clip_length=args.clip_length)
     else:
-        target = get_weak_target(args.data_path)
+        target = get_weak_target(args.dataset_path)
 
     np.save(args.target_path, target)
