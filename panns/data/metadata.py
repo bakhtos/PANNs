@@ -149,20 +149,16 @@ def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--class_labels_path', type=str, required=True,
-                        help="Dataset labels in tsv format (in 'Reformatted' "
-                             "format)")
-    parser.add_argument('--selected_classes_path', type=str, required=True,
-                        help="List of class ids selected for training, "
-                             "one per line")
-    parser.add_argument('--data_path', type=str, required=True,
-                        help="Dataset file to create weak target from (in "
-                             "'Reformatted' format)")
+    parser.add_argument('--dataset_path', type=str, required=True,
+                        help="Path to the dataset tsv file")
     parser.add_argument('--target_type', type=str, required=False, choices=[
                         'weak', 'strong'], default='weak',
                         help='Whether to create a weak or '
                         'strong label tensor (strong also requires '
                         'sample_rate, hop_length and clip-length parameters)')
+    parser.add_argument('--target_path', type=str, default='target.npy',
+                        help="Path to save the target numpy array"
+                             " (defaults to 'target.npy' in CWD)")
     parser.add_argument('--hop_length', type=int, default=None, required=False,
                         help="Hop size of filter to be used in training")
     parser.add_argument('--sample_rate', type=int, default=None, required=False,
@@ -170,12 +166,7 @@ if __name__ == '__main__':
     parser.add_argument('--clip_length', type=int, default=None, required=False,
                         help="Length (in ms) of audio clips used in the "
                              "dataset")
-    parser.add_argument('--target_path', type=str, default='target.npy',
-                        help="Path to save the target numpy array"
-                             " (defaults to 'target.npy' in CWD)")
     args = parser.parse_args()
-
-    ids, _ = get_class_labels(args.class_labels_path, args.selected_classes_path)
 
     if args.target_type == 'strong':
         if args.sample_rate is None:
