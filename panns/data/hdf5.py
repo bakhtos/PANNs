@@ -2,7 +2,6 @@ import argparse
 import os
 import time
 import logging
-import pickle
 
 import numpy as np
 import h5py
@@ -14,7 +13,7 @@ __all__ = ['wav_to_hdf5']
 
 
 def wav_to_hdf5(*, audios_dir, hdf5_path,
-                audio_names, logs_dir=None,
+                dataset_path, logs_dir=None,
                 clip_length=10000, sample_rate=32000,
                 mini_data=0):
     """Pack waveform of several audio clips to a single hdf5 file.
@@ -24,9 +23,9 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
                 Path to the directory containing files to be packed
             hdf5_path: str,
                 Path to save the hdf5-packed file
-            audio_names: list[str],
-                List of file names in the dataset, in the same order as in
-                target
+            dataset_path: str,
+                Path to the dataset tsv file, audios will be packed in the
+                order of first appearance in the dataset
             logs_dir: str, Directory to save logs into,
                 if None creates a directory 'logs' in CWD (default None)
             clip_length: int, Length (in ms) of audio clips used in the dataset
@@ -44,6 +43,16 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
         logs_dir = os.path.join(os.getcwd(), 'logs')
     create_logging(logs_dir, filemode='w')
     logging.info('Write logs to {}'.format(logs_dir))
+
+    audio_names = []
+    f = open(dataset_path, 'r')
+    for line in f:
+        parts = line.split('\t')
+        filename = parts[0]
+        if filename == 'filename': continue
+        if len(audio_names) != 0 and audio_names[-1] == filename: continue
+        audio_names.append(filename)
+    f.close()
 
     if mini_data > 0:
         audio_names = audio_names[0:mini_data]
@@ -87,9 +96,10 @@ if __name__ == '__main__':
 
     parser.add_argument('--audios_dir', type=str, required=True,
                         help="Directory with the downloaded audio")
-    parser.add_argument('--audio_names_path', type=str, required=True,
-                        help="Path to pickle file to load audio filenames to "
-                             "be packed in this order")
+    parser.add_argument('--dataset_path', type=str, required=True,
+                        help="Path to the dataset tsv file, audios will be "
+                             "packed in the order of first appearance in the "
+                             "file")
     parser.add_argument('--hdf5_path', type=str, required=True,
                         help="Path to save packed hdf5")
     parser.add_argument('--sample_rate', type=int, default=32000,
@@ -104,12 +114,9 @@ if __name__ == '__main__':
                              "(defaults to 'logs' in CWD)")
     args = parser.parse_args()
 
-    with open(args.audio_names_path, 'rb') as f:
-        audio_names = pickle.load(f)
-
     wav_to_hdf5(audios_dir=args.audios_dir,
                 hdf5_path=args.hdf5_path,
-                audio_names=audio_names,
+                dataset_path=args.dataset_path,
                 clip_length=args.clip_length,
                 sample_rate=args.sample_rate,
                 mini_data=args.mini_data,
