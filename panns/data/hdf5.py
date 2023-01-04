@@ -6,6 +6,7 @@ import logging
 import numpy as np
 import h5py
 import librosa
+import pandas as pd
 
 from panns.logging import create_logging
 
@@ -44,20 +45,13 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
     create_logging(logs_dir, filemode='w')
     logging.info('Write logs to {}'.format(logs_dir))
 
-    audio_names = []
-    f = open(dataset_path, 'r')
-    for line in f:
-        parts = line.split('\t')
-        filename = parts[0]
-        if filename == 'filename': continue
-        if len(audio_names) != 0 and audio_names[-1] == filename: continue
-        audio_names.append(filename)
-    f.close()
+    audios = pd.read_csv(dataset_path, delimiter='\t')
+    audio_names = audios['filename'].unique()
 
     if mini_data > 0:
         audio_names = audio_names[0:mini_data]
 
-    audios_num = len(audio_names)
+    audios_num = audio_names.size()
 
     # Pack waveform to hdf5
     start_time = time.time()
