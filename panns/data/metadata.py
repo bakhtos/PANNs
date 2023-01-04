@@ -50,46 +50,50 @@ def get_class_labels(class_labels_path, selected_classes_path):
     return ids, labels
 
 
-def get_weak_target(data_path, class_ids):
+def get_weak_target(data_path):
     """ Create weak labels target numpy array.
 
     Args:
         data_path : str,
             Dataset file to create weak target from (in 'Reformatted' format).
-        class_ids : list[str],
-            List of class ids, index in the list will correspond to the index
-            in the target array.
 
     Returns:
         target : Target array of weak labels with shape (videos, classes).
     """
 
-    class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
-    zero_vector = [0.0] * len(class_ids)
-    target = []
-    count = 0
-    video_id_to_ix = dict()
+    target = np.zeros((0, 0), dtype=bool)
+    file_count = 0
+    file_id_to_ix = dict()
+    class_count = 0
+    class_id_to_ix = dict()
     file = open(data_path, 'r')
     for line in file:
         parts = line.split('\t')
-        video_id = parts[0]
-        if video_id == 'filename': continue
-        label = parts[1]
-        if label.endswith('\n'):
-            label = label[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
+        file_id = parts[0]
+        if file_id == 'filename': continue
+        class_id = parts[1]
+        if class_id.endswith('\n'):
+            class_id = class_id[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
 
-        if video_id not in video_id_to_ix:
-            video_id_to_ix[video_id] = count
-            count += 1
-            target.append(copy.deepcopy(zero_vector))
+        if file_id not in file_id_to_ix:
+            file_id_to_ix[file_id] = file_count
+            file_count += 1
+            # target.append(copy.deepcopy(zero_vector))
+            target = np.concatenate((target, np.zeros((1, target.shape[1]),
+                                                      dtype=bool)), axis=0)
 
-        video_ix = video_id_to_ix[video_id]
-        class_ix = class_id_to_ix[label]
+        if class_id not in class_id_to_ix:
+            class_id_to_ix[class_id] = class_count
+            class_count += 1
+            target = np.concatenate((target, np.zeros((target.shape[0], 1),
+                                                      dtype=bool)), axis=1)
 
-        target[video_ix][class_ix] = 1.0
+        file_ix = file_id_to_ix[file_id]
+        class_ix = class_id_to_ix[class_id]
+
+        target[file_ix][class_ix] = True
+
     file.close()
-
-    target = np.array(target, dtype=np.bool)
 
     return target
 
@@ -187,6 +191,6 @@ if __name__ == '__main__':
                                    args.hop_length,
                                    args.clip_length)
     else:
-        target = get_weak_target(args.data_path, ids)
+        target = get_weak_target(args.data_path)
 
     np.save(args.target_path, target)
