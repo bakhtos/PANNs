@@ -1,5 +1,4 @@
 import argparse
-import copy
 import math
 
 import numpy as np
@@ -58,7 +57,7 @@ def get_weak_target(data_path):
             Dataset file to create weak target from (in 'Reformatted' format).
 
     Returns:
-        target : Target array of weak labels with shape (videos, classes).
+        target : Target array of weak labels with shape (files, classes).
     """
 
     target = np.zeros((0, 0), dtype=bool)
@@ -98,29 +97,24 @@ def get_weak_target(data_path):
     return target
 
 
-def get_strong_target(data_path, class_ids, sample_rate, hop_length,
-                      clip_length):
+def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
 
     hop_length_seconds = hop_length/sample_rate
     frames_num = int((clip_length/1000)/hop_length_seconds)
 
-    class_id_to_ix = {id_: ix for ix, id_ in enumerate(class_ids)}
-    zero_vector = [[0.0] * frames_num] * len(class_ids)
-    target = []
-    count = 0
-    video_id_to_ix = dict()
+    target = np.zeros((0, frames_num, 0), dtype=bool)
+    file_count = 0
+    file_id_to_ix = {}
+    class_count = 0
+    class_id_to_ix = {}
     file = open(data_path, 'r')
     for line in file:
         parts = line.split('\t')
-        video_id = parts[0]
-        if video_id == 'filename': continue
-        label = parts[1]
+        file_id = parts[0]
+        if file_id == 'filename': continue
+        class_id = parts[1]
         onset = parts[2]
         offset = parts[3]
-        if label.endswith('\n'):
-            label = label[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
-        if onset.endswith('\n'):
-            onset = onset[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
         if offset.endswith('\n'):
             offset = offset[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
         onset = float(onset)
@@ -128,19 +122,26 @@ def get_strong_target(data_path, class_ids, sample_rate, hop_length,
         offset = float(offset)
         offset = math.ceil(offset/hop_length_seconds)
 
-        if video_id not in video_id_to_ix:
-            video_id_to_ix[video_id] = count
-            count += 1
-            target.append(copy.deepcopy(zero_vector))
+        if file_id not in file_id_to_ix:
+            file_id_to_ix[file_id] = file_count
+            file_count += 1
+            target = np.concatenate((target, np.zeros((1, frames_num,
+                                                       target.shape[2]),
+                                                      dtype=bool)), axis=0)
+        if class_id not in class_id_to_ix:
+            class_id_to_ix[class_id] = class_count
+            class_count += 1
+            target = np.concatenate((target, np.zeros((target.shape[0],
+                                                       frames_num, 1),
+                                                      dtype=bool)), axis=2)
 
-        video_ix = video_id_to_ix[video_id]
-        class_ix = class_id_to_ix[label]
+        file_ix = file_id_to_ix[file_id]
+        class_ix = class_id_to_ix[class_id]
 
-        target[video_ix][class_ix][onset:offset] = [1.0]*(offset-onset)
+        target[file_ix][onset:offset][class_ix] = True
     file.close()
 
     target = np.array(target, dtype=np.bool)
-    target = np.transpose(target, (0, 2, 1))
 
     return target
 
@@ -186,10 +187,10 @@ if __name__ == '__main__':
         if args.clip_length is None:
             raise AttributeError("Strong label target was requested, but no"
                                  "clip_length given")
-        target = get_strong_target(args.data_path, ids,
-                                   args.sample_rate,
-                                   args.hop_length,
-                                   args.clip_length)
+        target = get_strong_target(args.data_path,
+                                   sample_rate=args.sample_rate,
+                                   hop_length=args.hop_length,
+                                   clip_length=args.clip_length)
     else:
         target = get_weak_target(args.data_path)
 
