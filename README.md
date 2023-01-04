@@ -24,18 +24,14 @@ training and evaluation splits, respectively.
 
 Metadata files storing class labels for audios should be provided as 
 tab-separated files, 
-as in [Google's AudioSet: Reformatted](https://github.com/bakhtos/GoogleAudioSetReformatted) dataset,
-as well as a file (`class_labels.tsv`) listing all class labels and their ids.
+as in [Google's AudioSet: Reformatted](https://github.com/bakhtos/GoogleAudioSetReformatted) dataset.
 Columns should be in order `filename`-`event_label`-`onset`-`offset`.
 
 ***NOTE:*** `filename` fields should not contain the prefix "Y" or the extension ".wav", these
 are added by the scripts.
 
 These metadata files should only mention audio files that were actually downloaded,
-and only the classes that were selected for the model. A file 
-`selected_classes.txt` listing all classes selected for training line by line
-should be provided.
-
+and only the classes that were selected for the model.
 
 You can check the [dataset](dataset) folder to verify the format of all files.
 
@@ -47,9 +43,8 @@ AUDIOS_DIR_TRAIN # Location of the training split of files
 AUDIOS_DIR_EVAL # Location of the evaluation split of files
 DATASET_PATH_TRAIN # Path to the tsv file containing strong labels for the train split
 DATASET_PATH_EVAL # Path to the tsv file containing strong labels for the eval split
-LOGS_DIR # Location to store logs
 CLASS_LABELS_PATH # Path to the tsv file mapping class ids to labels
-SELECTED_CLASSES_PATH # Path to the txt file containing list of selected class ids, one on each line
+LOGS_DIR # Location to store logs
 ```
 
 ### Create target arrays
@@ -75,32 +70,24 @@ And then call the module as follows:
 ```shell
 # Weak target
 # Train split
-python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
-                              --selected_classes_path=$SELECTED_CLASSES_PATH\
-                              --data_path=$DATASET_PATH_TRAIN\
+python -m panns.data.metadata --data_path=$DATASET_PATH_TRAIN\
                               --target_type=weak\
                               --target_path=$TARGET_WEAK_PATH_TRAIN
 # Eval split
-python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
-                              --selected_classes_path=$SELECTED_CLASSES_PATH\
-                              --data_path=$DATASET_PATH_EVAL\
+python -m panns.data.metadata --data_path=$DATASET_PATH_EVAL\
                               --target_type=weak\
                               --target_path=$TARGET_WEAK_PATH_EVAL
                               
 # Strong target
 # Train split
-python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
-                              --selected_classes_path=$SELECTED_CLASSES_PATH\
-                              --data_path=$DATASET_PATH_TRAIN\
+python -m panns.data.metadata --data_path=$DATASET_PATH_TRAIN\
                               --target_type=strong\
                               --target_path=$TARGET_STRONG_PATH_TRAIN\
                               --sample_rate=32000\
                               --hop_length=320\
                               --clip_length=10000
 # Eval split
-python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
-                              --selected_classes_path=$SELECTED_CLASSES_PATH\
-                              --data_path=$DATASET_PATH_EVAL\
+python -m panns.data.metadata --data_path=$DATASET_PATH_EVAL\
                               --target_type=strong\
                               --target_path=$TARGET_STRONG_PATH_EVAL\
                               --sample_rate=32000\
@@ -127,7 +114,7 @@ And make the calls:
 ```shell
 # Train split
 python -m panns.data.hdf5  --audios_dir=$AUDIOS_DIR_TRAIN\
-                           --audio_names_path=$AUDIO_NAMES_PATH_TRAIN\
+                           --dataset_path=$DATASET_PATH_TRAIN\
                            --hdf5_path=$HDF5_FILES_PATH_TRAIN\
                            --logs_dir=$LOGS_DIR
                            --sample_rate=32000\
@@ -135,14 +122,15 @@ python -m panns.data.hdf5  --audios_dir=$AUDIOS_DIR_TRAIN\
                            
 # Eval split
 python -m panns.data.hdf5  --audios_dir=$AUDIOS_DIR_EVAL\
-                           --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
+                           --dataset_path=$DATASET_PATH_EVAL\
                            --hdf5_path=$HDF5_FILES_PATH_EVAL\
                            --logs_dir=$LOGS_DIR
                            --sample_rate=32000\
                            --clip_length=10000
 ```
 
-***NOTE*** Optionally `--mini_data` parameter can be specified, which only packs the given amount of files.
+***NOTE*** Optionally `--mini_data` parameter can be specified, which only packs
+the given amount of files.
 
 ## Models
 The models are defined in [panns/models/models.py](panns/models/models.py),
