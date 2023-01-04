@@ -102,7 +102,7 @@ def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
     hop_length_seconds = hop_length/sample_rate
     frames_num = int((clip_length/1000)/hop_length_seconds)
 
-    target = np.zeros((0, frames_num, 0), dtype=bool)
+    target = np.zeros((0, 0, frames_num), dtype=bool)
     file_count = 0
     file_id_to_ix = {}
     class_count = 0
@@ -125,23 +125,24 @@ def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
         if file_id not in file_id_to_ix:
             file_id_to_ix[file_id] = file_count
             file_count += 1
-            target = np.concatenate((target, np.zeros((1, frames_num,
-                                                       target.shape[2]),
+            target = np.concatenate((target, np.zeros((1, target.shape[1],
+                                                       frames_num),
                                                       dtype=bool)), axis=0)
         if class_id not in class_id_to_ix:
             class_id_to_ix[class_id] = class_count
             class_count += 1
             target = np.concatenate((target, np.zeros((target.shape[0],
-                                                       frames_num, 1),
-                                                      dtype=bool)), axis=2)
+                                                       1, frames_num),
+                                                      dtype=bool)), axis=1)
 
         file_ix = file_id_to_ix[file_id]
         class_ix = class_id_to_ix[class_id]
 
-        target[file_ix][onset:offset][class_ix] = True
+        target[file_ix][class_ix][onset:offset] = True
     file.close()
 
     target = np.array(target, dtype=np.bool)
+    target = np.transpose(target, (0, 2, 1))
 
     return target
 
