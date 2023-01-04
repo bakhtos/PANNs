@@ -49,7 +49,7 @@ LOGS_DIR # Location to store logs
 
 ### Create target arrays
 
-Use the `panns.data.metadata` module from the command line to save the 
+Use the `panns.data.target` module from the command line to save the 
 target array for train and eval splits.
 Weak target array will have the shape `(audios_num, classes_num)`,
 strong target array - `(audios_num, frames_num, classes_num)`.
@@ -70,29 +70,29 @@ And then call the module as follows:
 ```shell
 # Weak target
 # Train split
-python -m panns.data.metadata --data_path=$DATASET_PATH_TRAIN\
-                              --target_type=weak\
-                              --target_path=$TARGET_WEAK_PATH_TRAIN
+python -m panns.data.target --dataset_path=$DATASET_PATH_TRAIN\
+                            --target_type=weak\
+                            --target_path=$TARGET_WEAK_PATH_TRAIN
 # Eval split
-python -m panns.data.metadata --data_path=$DATASET_PATH_EVAL\
-                              --target_type=weak\
-                              --target_path=$TARGET_WEAK_PATH_EVAL
+python -m panns.data.target --dataset_path=$DATASET_PATH_EVAL\
+                            --target_type=weak\
+                            --target_path=$TARGET_WEAK_PATH_EVAL
                               
 # Strong target
 # Train split
-python -m panns.data.metadata --data_path=$DATASET_PATH_TRAIN\
-                              --target_type=strong\
-                              --target_path=$TARGET_STRONG_PATH_TRAIN\
-                              --sample_rate=32000\
-                              --hop_length=320\
-                              --clip_length=10000
+python -m panns.data.target --dataset_path=$DATASET_PATH_TRAIN\
+                            --target_type=strong\
+                            --target_path=$TARGET_STRONG_PATH_TRAIN\
+                            --sample_rate=32000\
+                            --hop_length=320\
+                            --clip_length=10000
 # Eval split
-python -m panns.data.metadata --data_path=$DATASET_PATH_EVAL\
-                              --target_type=strong\
-                              --target_path=$TARGET_STRONG_PATH_EVAL\
-                              --sample_rate=32000\
-                              --hop_length=320\
-                              --clip_length=10000
+python -m panns.data.target --dataset_path=$DATASET_PATH_EVAL\
+                            --target_type=strong\
+                            --target_path=$TARGET_STRONG_PATH_EVAL\
+                            --sample_rate=32000\
+                            --hop_length=320\
+                            --clip_length=10000
 ```
 
 ### Pack waveforms into hdf5 files
@@ -276,7 +276,7 @@ The script accepts following parameters:
 - `hdf5_files_path`: location of the `hdf5` compression of the dataset
 - `target_weak_path`: location of the weak target numpy array for the dataset
 - `audio_names_path`: location of the audio_names numpy array (generated 
-  with [panns.utils.metadata_utils](panns/data/metadata.py))
+  with [panns.data.target](panns/data/target.py))
 - `output_path`: filename to save the detected events
 - `checkpoint_path`: location of the checkpoint of the model to use
 - `logs_dir`: directory to write logs into (optional)
