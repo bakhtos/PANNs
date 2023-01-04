@@ -2,6 +2,7 @@ import argparse
 import math
 
 import numpy as np
+import pandas as pd
 
 __all__ = ['get_class_labels',
            'get_weak_target',
@@ -63,14 +64,10 @@ def get_weak_target(data_path):
     target = np.zeros((0, 0), dtype=bool)
     file_id_to_ix = dict()
     class_id_to_ix = dict()
-    file = open(data_path, 'r')
-    for line in file:
-        parts = line.split('\t')
-        file_id = parts[0]
-        if file_id == 'filename': continue
-        class_id = parts[1]
-        if class_id.endswith('\n'):
-            class_id = class_id[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
+    data = pd.read_csv(data_path, delimiter='\t')
+    for line in data.itertuples(index=False):
+        file_id = line.filename
+        class_id = line.event_label
 
         if file_id not in file_id_to_ix:
             file_id_to_ix[file_id] = len(file_id_to_ix)
@@ -86,8 +83,6 @@ def get_weak_target(data_path):
         class_ix = class_id_to_ix[class_id]
 
         target[file_ix][class_ix] = True
-
-    file.close()
 
     return target
 
