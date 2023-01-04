@@ -52,21 +52,18 @@ CLASS_LABELS_PATH # Path to the tsv file mapping class ids to labels
 SELECTED_CLASSES_PATH # Path to the txt file containing list of selected class ids, one on each line
 ```
 
-### Create audio indexing list and target arrays
+### Create target arrays
 
 Use the `panns.data.metadata` module from the command line to save the 
-lists of files as well as the target tensors for train and eval splits.
+target array for train and eval splits.
 Weak target array will have the shape `(audios_num, classes_num)`,
 strong target array - `(audios_num, frames_num, classes_num)`.
-Index of an audio name in the audio names list is the same as in target array(s).
 Weak target can be computed once for a dataset, Strong target depends on 
 sample rate, hop length (in samples) and clip length (in ms).
 
 Use the following environment variables:
 
 ```shell
-AUDIO_NAMES_PATH_TRAIN # Path to save the train audio names array
-AUDIO_NAMES_PATH_EVAL # Path to save the eval audio names array
 TARGET_WEAK_PATH_TRAIN # Path to save the weak target array for train files
 TARGET_WEAK_PATH_EVAL # Path to save the weak target array for eval files
 TARGET_STRONG_PATH_TRAIN # Path to save the strong target array for train files
@@ -81,14 +78,12 @@ And then call the module as follows:
 python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
                               --selected_classes_path=$SELECTED_CLASSES_PATH\
                               --data_path=$DATASET_PATH_TRAIN\
-                              --audio_names_path=$AUDIO_NAMES_PATH_TRAIN\
                               --target_type=weak\
                               --target_path=$TARGET_WEAK_PATH_TRAIN
 # Eval split
 python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
                               --selected_classes_path=$SELECTED_CLASSES_PATH\
                               --data_path=$DATASET_PATH_EVAL\
-                              --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
                               --target_type=weak\
                               --target_path=$TARGET_WEAK_PATH_EVAL
                               
@@ -97,7 +92,6 @@ python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
 python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
                               --selected_classes_path=$SELECTED_CLASSES_PATH\
                               --data_path=$DATASET_PATH_TRAIN\
-                              --audio_names_path=$AUDIO_NAMES_PATH_TRAIN\
                               --target_type=strong\
                               --target_path=$TARGET_STRONG_PATH_TRAIN\
                               --sample_rate=32000\
@@ -107,9 +101,8 @@ python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
 python -m panns.data.metadata --class_labels_path=$CLASS_LABELS_PATH\
                               --selected_classes_path=$SELECTED_CLASSES_PATH\
                               --data_path=$DATASET_PATH_EVAL\
-                              --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
                               --target_type=strong\
-                              --target_path=$TARGET_STRONG_PATH_EVAL
+                              --target_path=$TARGET_STRONG_PATH_EVAL\
                               --sample_rate=32000\
                               --hop_length=320\
                               --clip_length=10000
