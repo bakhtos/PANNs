@@ -95,16 +95,13 @@ def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
     target = np.zeros((0, 0, frames_num), dtype=bool)
     file_id_to_ix = {}
     class_id_to_ix = {}
-    file = open(data_path, 'r')
-    for line in file:
-        parts = line.split('\t')
-        file_id = parts[0]
-        if file_id == 'filename': continue
-        class_id = parts[1]
-        onset = parts[2]
-        offset = parts[3]
-        if offset.endswith('\n'):
-            offset = offset[:-1]  # TODO - change to .removesuffix() when Python 3.9 is supported
+    data = pd.read_csv(data_path, delimiter='\t')
+    for line in data.itertuples(index=False):
+        file_id = line.filename
+        class_id = line.event_label
+        onset = line.onset
+        offset = line.offset
+
         onset = float(onset)
         onset = math.floor(onset/hop_length_seconds)
         offset = float(offset)
@@ -125,7 +122,6 @@ def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
         class_ix = class_id_to_ix[class_id]
 
         target[file_ix][class_ix][onset:offset] = True
-    file.close()
 
     target = np.transpose(target, (0, 2, 1))
 
