@@ -141,7 +141,6 @@ def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
         target[file_ix][class_ix][onset:offset] = True
     file.close()
 
-    target = np.array(target, dtype=np.bool)
     target = np.transpose(target, (0, 2, 1))
 
     return target
