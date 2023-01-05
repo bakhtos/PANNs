@@ -16,10 +16,8 @@ from panns.evaluate import evaluate
 from panns.data.dataset import AudioSetDataset
 
 
-def train(*, hdf5_files_path_train,
-          target_path_train,
-          hdf5_files_path_eval,
-          target_path_eval,
+def train(*, train_dataset,
+          eval_dataset,
           model,
           checkpoints_dir=None,
           statistics_dir=None,
@@ -30,18 +28,12 @@ def train(*, hdf5_files_path_train,
     """Train AudioSet tagging model. 
 
     Args:
-        hdf5_files_path_train : str,
-            Path to hdf5 compression of the train split of the dataset
-        target_path_train : str,
-            Path to the .npy file containing target array of the
-            train split of the dataset
-        hdf5_files_path_eval : str,
-            Path to hdf5 compression of the evaluation split of the dataset
-        target_path_eval : str,
-            Path to the .npy file containing target array of the
-            evaluation split of the dataset
         model : torch.nn.Module,
             Model to train (one of the model classes defined in panns.models.models)
+        train_dataset : torch.utils.data.Dataset,
+            Dataset object which provides (data, target) batches for train split
+        eval_dataset : torch.utils.data.Dataset,
+            Dataset object which provides (data, target) batches for eval split
         checkpoints_dir : str,
             Directory to save model's checkpoints into (will be created if doesn't exist);
             if None a directory 'checkpoints' will be created in CWD (default None)
@@ -82,9 +74,6 @@ def train(*, hdf5_files_path_train,
         logging.info(f'--- Iteration: {iteration}, Statistics saved to'
                      f' {statistics_path}')
 
-    # Dataset
-    train_dataset = AudioSetDataset(hdf5_files_path_train, target_path_train)
-    eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_path_eval)
 
     # TODO add parameter pin_memory_device when torch 1.13 is supported
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
@@ -237,10 +226,13 @@ if __name__ == '__main__':
         args.logs_dir = os.path.join(os.getcwd(), 'logs')
     create_logging(args.logs_dir, filemode='w')
 
-    train(hdf5_files_path_train=args.hdf5_files_path_train,
-          target_path_train=args.target_path_train,
-          hdf5_files_path_eval=args.hdf5_files_path_eval,
-          target_path_eval=args.target_path_eval,
+    train_dataset = AudioSetDataset(args.hdf5_files_path_train,
+                                    args.target_path_train)
+    eval_dataset = AudioSetDataset(args.hdf5_files_path_eval,
+                                   args.target_path_eval)
+
+    train(train_dataset=train_dataset,
+          eval_dataset=eval_dataset,
           model=model,
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
