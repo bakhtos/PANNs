@@ -19,7 +19,6 @@ __all__ = ['Cnn6',
            'LeeNet11',
            'LeeNet24',
            'DaiNet19',
-           'TransferModel'
            ]
 
 
