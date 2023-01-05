@@ -76,17 +76,14 @@ def train(*, hdf5_files_path_train,
         logs_dir = os.path.join(workspace, 'logs')
     create_logging(logs_dir, filemode='w')
 
-    def save_model(model, statistics, iteration,
-                   checkpoints_dir=checkpoints_dir,
-                   statistics_dir=statistics_dir):
-        # Save model
+    def save_model(model, iteration, checkpoints_dir):
         checkpoint_name = f"checkpoint_iteration={iteration}.pth"
         checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
         torch.save(model.module.state_dict(), checkpoint_path)
         logging.info(f'--- Iteration: {iteration}, Model saved to'
                      f' {checkpoint_path}')
 
-        # Save statistics
+    def save_statistics(statistics, iteration, statistics_dir):
         statistics_name = f"statistics_iteration={iteration}.pickle"
         statistics_path = os.path.join(statistics_dir, statistics_name)
         pickle.dump(statistics, open(statistics_path, 'wb'))
@@ -129,7 +126,6 @@ def train(*, hdf5_files_path_train,
         logging.info('Using CPU. Set --cuda flag to use GPU.')
 
     iteration = 0
-    statistics = {}
 
     for data, target in train_loader:
         # Data augmentation
@@ -159,19 +155,20 @@ def train(*, hdf5_files_path_train,
             eval_average_precision, eval_auc = evaluate(model, eval_loader)
             validate_time = time.time() - val_begin_time
 
-            statistics[iteration] = (eval_average_precision, eval_auc)
-
             logging.info(
                 f'--- Iteration: {iteration}, validate time:'
                 f' {validate_time:.3f} s, validate mAP: '
                 f'{np.mean(eval_average_precision):.3f}')
 
+            save_statistics((eval_average_precision, eval_auc), iteration,
+                            statistics_dir)
+
         # Save model/Stop training
         if iteration == iter_max:
-            save_model(model, statistics, iteration)
+            save_model(model, iteration, checkpoints_dir)
             break
         elif iteration % 100000 == 0:
-            save_model(model, statistics, iteration)
+            save_model(model, iteration, checkpoints_dir)
 
         iteration += 1
         
