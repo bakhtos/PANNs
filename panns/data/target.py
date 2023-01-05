@@ -20,22 +20,21 @@ def get_weak_target(data):
         target : Target array of weak labels with shape (files, classes).
     """
 
-    target = np.zeros((0, 0), dtype=bool)
-    file_id_to_ix = dict()
-    class_id_to_ix = dict()
+    file_ids = data['filename'].unique()
+    class_ids = data['event_label'].unique()
+
+    target = np.zeros((file_ids.size, class_ids.size), dtype=bool)
+
+    file_id_to_ix = {}
+    for i in range(file_ids.size):
+        file_id_to_ix[file_ids[i]] = i
+    class_id_to_ix = {}
+    for i in range(class_ids.size):
+        class_id_to_ix[class_ids[i]] = i
+
     for line in data.itertuples(index=False):
         file_id = line.filename
         class_id = line.event_label
-
-        if file_id not in file_id_to_ix:
-            file_id_to_ix[file_id] = len(file_id_to_ix)
-            target = np.concatenate((target, np.zeros((1, target.shape[1]),
-                                                      dtype=bool)), axis=0)
-
-        if class_id not in class_id_to_ix:
-            class_id_to_ix[class_id] = len(class_id_to_ix)
-            target = np.concatenate((target, np.zeros((target.shape[0], 1),
-                                                      dtype=bool)), axis=1)
 
         file_ix = file_id_to_ix[file_id]
         class_ix = class_id_to_ix[class_id]
