@@ -192,7 +192,7 @@ if __name__ == '__main__':
     else:
         logging.info('Using CPU.')
 
-    dataset = AudioSetDataset(args.hdf5_files_path, args.target_weak_path)
+    dataset = AudioSetDataset(args.hdf5_files_path)
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,
                                               batch_size=args.batch_size,
                                               shuffle=False,
