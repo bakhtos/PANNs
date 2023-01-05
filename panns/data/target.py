@@ -64,10 +64,18 @@ def get_strong_target(data, *, sample_rate, hop_length, clip_length):
 
     hop_length_seconds = hop_length/sample_rate
     frames_num = int((clip_length/1000)/hop_length_seconds)
+    file_ids = data['filename'].unique()
+    class_ids = data['event_label'].unique()
 
-    target = np.zeros((0, 0, frames_num), dtype=bool)
+    target = np.zeros((file_ids.size, class_ids.size, frames_num), dtype=bool)
+
     file_id_to_ix = {}
+    for i in range(file_ids.size):
+        file_id_to_ix[file_ids[i]] = i
     class_id_to_ix = {}
+    for i in range(class_ids.size):
+        class_id_to_ix[class_ids[i]] = i
+
     for line in data.itertuples(index=False):
         file_id = line.filename
         class_id = line.event_label
@@ -78,17 +86,6 @@ def get_strong_target(data, *, sample_rate, hop_length, clip_length):
         onset = math.floor(onset/hop_length_seconds)
         offset = float(offset)
         offset = math.ceil(offset/hop_length_seconds)
-
-        if file_id not in file_id_to_ix:
-            file_id_to_ix[file_id] = len(file_id_to_ix)
-            target = np.concatenate((target, np.zeros((1, target.shape[1],
-                                                       frames_num),
-                                                      dtype=bool)), axis=0)
-        if class_id not in class_id_to_ix:
-            class_id_to_ix[class_id] = len(class_id_to_ix)
-            target = np.concatenate((target, np.zeros((target.shape[0],
-                                                       1, frames_num),
-                                                      dtype=bool)), axis=1)
 
         file_ix = file_id_to_ix[file_id]
         class_ix = class_id_to_ix[class_id]
