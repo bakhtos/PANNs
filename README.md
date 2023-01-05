@@ -25,7 +25,6 @@ training and evaluation splits, respectively.
 Metadata files storing class labels for audios should be provided as 
 tab-separated files, 
 as in [Google's AudioSet: Reformatted](https://github.com/bakhtos/GoogleAudioSetReformatted) dataset.
-Columns should be in order `filename`-`event_label`-`onset`-`offset`.
 
 ***NOTE:*** `filename` fields should not contain the prefix "Y" or the extension ".wav", these
 are added by the scripts.
@@ -43,7 +42,6 @@ AUDIOS_DIR_TRAIN # Location of the training split of files
 AUDIOS_DIR_EVAL # Location of the evaluation split of files
 DATASET_PATH_TRAIN # Path to the tsv file containing strong labels for the train split
 DATASET_PATH_EVAL # Path to the tsv file containing strong labels for the eval split
-CLASS_LABELS_PATH # Path to the tsv file mapping class ids to labels
 LOGS_DIR # Location to store logs
 ```
 
@@ -51,8 +49,8 @@ LOGS_DIR # Location to store logs
 
 Use the `panns.data.target` module from the command line to save the 
 target array for train and eval splits.
-Weak target array will have the shape `(audios_num, classes_num)`,
-strong target array - `(audios_num, frames_num, classes_num)`.
+Weak target array will have the shape `(files, classes)`,
+strong target array - `(files, frames, classes)`.
 Weak target can be computed once for a dataset, Strong target depends on 
 sample rate, hop length (in samples) and clip length (in ms).
 

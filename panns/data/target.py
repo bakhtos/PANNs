@@ -46,6 +46,21 @@ def get_weak_target(data_path):
 
 
 def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
+    """
+
+    Args:
+        data_path: str,
+            Dataset file to create weak target from (in 'Reformatted' format).
+        sample_rate: int,
+            Sample rate of the used audios.
+        hop_length: int,
+            Hop length of the window used during Spectorgam extraction.
+        clip_length: int,
+            Length of used audios (in ms).
+
+    Returns:
+        target : Target array of weak labels with shape (files, frames, classes).
+    """
 
     hop_length_seconds = hop_length/sample_rate
     frames_num = int((clip_length/1000)/hop_length_seconds)
