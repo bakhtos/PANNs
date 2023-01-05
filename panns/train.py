@@ -21,7 +21,6 @@ def train(*, hdf5_files_path_train,
           hdf5_files_path_eval,
           target_path_eval,
           model,
-          logs_dir=None,
           checkpoints_dir=None,
           statistics_dir=None,
           label_type='weak',
@@ -43,9 +42,6 @@ def train(*, hdf5_files_path_train,
             evaluation split of the dataset
         model : torch.nn.Module,
             Model to train (one of the model classes defined in panns.models.models)
-        logs_dir : str,
-            Directory to save the logs into (will be created if doesn't exist);
-            if None, a directory 'logs' will be created in CWD (default None)
         checkpoints_dir : str,
             Directory to save model's checkpoints into (will be created if doesn't exist);
             if None a directory 'checkpoints' will be created in CWD (default None)
@@ -71,10 +67,6 @@ def train(*, hdf5_files_path_train,
     if statistics_dir is None:
         statistics_dir = os.path.join(workspace, 'statistics')
     os.makedirs(statistics_dir, exist_ok=True)
-
-    if logs_dir is None:
-        logs_dir = os.path.join(workspace, 'logs')
-    create_logging(logs_dir, filemode='w')
 
     def save_model(model, iteration, checkpoints_dir):
         checkpoint_name = f"checkpoint_iteration={iteration}.pth"
@@ -241,12 +233,15 @@ if __name__ == '__main__':
                        embedding_size=args.embedding_size,
                        classes_num=args.classes_num)
 
+    if args.logs_dir is None:
+        args.logs_dir = os.path.join(os.getcwd(), 'logs')
+    create_logging(args.logs_dir, filemode='w')
+
     train(hdf5_files_path_train=args.hdf5_files_path_train,
           target_path_train=args.target_path_train,
           hdf5_files_path_eval=args.hdf5_files_path_eval,
           target_path_eval=args.target_path_eval,
           model=model,
-          logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
           label_type=args.label_type,
