@@ -11,7 +11,6 @@ import torch.optim as optim
 import torch.utils.data
  
 from panns.logging import create_logging
-from panns.data.mixup import mixup_coefficients, mixup
 from panns.models import load_model, model_parser, TransferModel
 from panns.evaluate import evaluate
 from panns.data.dataset import AudioSetDataset
@@ -25,7 +24,6 @@ def train(*, hdf5_files_path_train,
           logs_dir=None,
           checkpoints_dir=None,
           statistics_dir=None,
-          mixup_alpha=None,
           label_type='weak',
           batch_size=32, learning_rate=1e-3,
           iter_max=1000000,
@@ -56,8 +54,6 @@ def train(*, hdf5_files_path_train,
             if None a directory 'statistics' will be created in CWD (default None)
         label_type: str, Either 'weak' or 'strong' - which labels are used
                          to calculate loss
-        mixup_alpha : float, Alpha parameter for Mixup;
-            if None, mixup not used (default None)
         batch_size : int, Batch size to use for training/evaluation (default 32)
         learning_rate : float, Learning rate to use in training (default 1e-3)
         iter_max : bool, Train until this iteration (default 100000)
@@ -65,9 +61,6 @@ def train(*, hdf5_files_path_train,
         num_workers : int, Amount of workers to pass to
             torch.utils.data.DataLoader() (default 32)
     """
-
-    # Augmentation
-    aug = mixup_alpha is not None
 
     # Paths
     workspace = os.getcwd()
@@ -119,9 +112,6 @@ def train(*, hdf5_files_path_train,
                                               persistent_workers=True,
                                               pin_memory=True)
 
-    mixup_augmenter = mixup_coefficients(mixup_alpha=mixup_alpha,
-                                         batch_size=batch_size) if aug else None
-    
     # Optimizer
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, 
                            betas=(0.9, 0.999), eps=1e-08, weight_decay=0.,
@@ -143,8 +133,6 @@ def train(*, hdf5_files_path_train,
 
     for data, target in train_loader:
         # Data augmentation
-        mixup_lambda = next(mixup_augmenter) if aug else None
-        target = mixup(target, mixup_lambda) if aug else target
         target = torch.tensor(target, device=device)
 
         train_bgn_time = time.time()
@@ -152,7 +140,7 @@ def train(*, hdf5_files_path_train,
         # Train
         model.train()
         clipwise_output, segmentwise_output, framewise_output, embedding = \
-            model(data, mixup_lambda)
+            model(data)
 
         loss = F.binary_cross_entropy(clipwise_output, target) if label_type \
                == 'weak' else F.binary_cross_entropy(framewise_output, target)
@@ -214,9 +202,6 @@ if __name__ == '__main__':
     training.add_argument('--label_type', choices=['weak', 'strong'],
                           default='weak', help='Use weak/strong labels to '
                                                'calculate loss')
-    training.add_argument('--mixup_alpha', type=float, default=None,
-                          help="If using augmentation, use this as alpha "
-                               "parameter for Mixup (default 1.0)")
     training.add_argument('--batch_size', type=int, default=32,
                           help="Batch size to use for training/evaluation ("
                                "default 32)")
@@ -308,7 +293,6 @@ if __name__ == '__main__':
           checkpoints_dir=args.checkpoints_dir,
           statistics_dir=args.statistics_dir,
           label_type=args.label_type,
-          mixup_alpha=args.mixup_alpha,
           batch_size=args.batch_size,
           learning_rate=args.learning_rate,
           iter_max=args.iter_max,

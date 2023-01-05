@@ -217,9 +217,6 @@ Training is performed using [panns/train.py](panns/train.py).
 Training is controlled by the following parameters:
 - `model_type`: One of the classes in [panns/models/models.py](panns/models/models.py) (the model used)
 - Parameters for the model (see [Models](#Models))
-- Augmentation (mixup): training can be set up to use Mixup with a given alpha parameter,
-  which needs to be provided (```mixup_alpha```), if not provided than Mixup
-  not used
 - Batch size (```batch_size```): amount of files used in one training loop
 - Maximum iteration (```iter_max```): amount of iterations performed (an 
   'iteration' is processing
