@@ -17,9 +17,9 @@ from panns.data.dataset import AudioSetDataset
 
 
 def train(*, hdf5_files_path_train,
-          target_weak_path_train,
+          target_path_train,
           hdf5_files_path_eval,
-          target_weak_path_eval,
+          target_path_eval,
           model,
           logs_dir=None,
           checkpoints_dir=None,
@@ -33,13 +33,13 @@ def train(*, hdf5_files_path_train,
     Args:
         hdf5_files_path_train : str,
             Path to hdf5 compression of the train split of the dataset
-        target_weak_path_train : str,
-            Path to the .npy file containing weak target array of the
+        target_path_train : str,
+            Path to the .npy file containing target array of the
             train split of the dataset
         hdf5_files_path_eval : str,
             Path to hdf5 compression of the evaluation split of the dataset
-        target_weak_path_eval : str,
-            Path to the .npy file containing weak target array of the
+        target_path_eval : str,
+            Path to the .npy file containing target array of the
             evaluation split of the dataset
         model : torch.nn.Module,
             Model to train (one of the model classes defined in panns.models.models)
@@ -94,8 +94,8 @@ def train(*, hdf5_files_path_train,
                      f' {statistics_path}')
 
     # Dataset
-    train_dataset = AudioSetDataset(hdf5_files_path_train, target_weak_path_train)
-    eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_weak_path_eval)
+    train_dataset = AudioSetDataset(hdf5_files_path_train, target_path_train)
+    eval_dataset = AudioSetDataset(hdf5_files_path_eval, target_path_eval)
 
     # TODO add parameter pin_memory_device when torch 1.13 is supported
     train_loader = torch.utils.data.DataLoader(dataset=train_dataset,
@@ -285,9 +285,9 @@ if __name__ == '__main__':
                               embedding_size=args.embedding_size)
 
     train(hdf5_files_path_train=args.hdf5_files_path_train,
-          target_weak_path_train=args.target_weak_path_train,
+          target_path_train=args.target_path_train,
           hdf5_files_path_eval=args.hdf5_files_path_eval,
-          target_weak_path_eval=args.target_weak_path_eval,
+          target_path_eval=args.target_path_eval,
           model=model,
           logs_dir=args.logs_dir,
           checkpoints_dir=args.checkpoints_dir,
