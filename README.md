@@ -280,7 +280,8 @@ python -m panns.train --hdf5_files_path_train=$HDF5_FILES_PATH_TRAIN\
 ```
 ## Inference
 
-It is possible to produce a file with events for a given dataset inferred 
+It is possible to produce a file with strong labels for a given dataset 
+inferred 
 from the trained model in the same format as files in [dataset](dataset)
 using [panns.inference](panns/inference.py).
 For that a checkpoint of the trained model is needed
@@ -288,49 +289,52 @@ as well as an `hdf5` compression of the evaluation set.
 
 The script accepts following parameters:
 
-- `hdf5_files_path`: location of the `hdf5` compression of the dataset
-- `target_weak_path`: location of the weak target numpy array for the dataset
-- `audio_names_path`: location of the audio_names numpy array (generated 
-  with [panns.data.target](panns/data/target.py))
-- `output_path`: filename to save the detected events
-- `checkpoint_path`: location of the checkpoint of the model to use
-- `logs_dir`: directory to write logs into (optional)
-- `selected_classes_path`: same as defined for SELECTED_CLASSES_PATH 
-  variable above
-- `class_labels_path`: same as defined for CLASS_LABELS_PATH variable above
-- `threshold`: This threshold is applied to the output of the model only values 
-  greater are considered as 'event detected'
-- `minimum_event_gap`: In seconds, minimum gap between two consecutive 
-  events so that they are considered separate events; events closer than 
-  this are merged together by filling the small gap
-- `minimum_event_length`: In seconds, events shorter than this are ignored 
-  (first gaps are closed, than short events removed)
-- `batch_size`, `cuda`, `num_workers`: Control passing data to the model 
+- File parameters
+  - `hdf5_files_path`: location of the `hdf5` compression of the dataset
+  - `dataset_path`: location of the dataset tsv file
+  - `output_path`: filename to save the detected events
+  - `checkpoint_path`: location of the checkpoint of the model to use
+  - `logs_dir`: directory to write logs into (optional)
+- Model parameters: same as during [Training phase](#Training)
+- `batch_size`, `cuda`, `num_workers`: Control passing data to the model
   similarly to training phase
-- `model_type`, `classes_num`, `sample_rate`, `n_mels`, `f_min`, `f_max`, 
-  `win_length`, `hop_length`: Parameters for the model
+- Inference parameters:
+  - `threshold`: This threshold is applied to the output of the model only 
+    values greater are considered as 'event detected'
+  - `minimum_event_gap`: In seconds, minimum gap between two consecutive 
+    events so that they are considered separate events; events closer than 
+    this are merged together by filling the small gap
+  - `minimum_event_length`: In seconds, events shorter than this are ignored 
+    (first gaps are closed, than short events removed)
 
 Example of inference:
 ```shell
 python -m panns.inference --hdf5_files_path=$HDF5_FILES_PATH_EVAL\
-                          --target_weak_path=$TARGET_WEAK_PATH_EVAL\
-                          --audio_names_path=$AUDIO_NAMES_PATH_EVAL\
-                          --checkpoint_path=\  #Path to checkpoint in $CHECKPOINTS_DIR
-                          --selected_classes_path=$SELECTED_CLASSES_PATH\
-                          --class_labels_path=$CLASS_LABELS_PATH\
+                          --dataset_path=$DATASET_PATH_EVAL\
+                          --checkpoint_path=\  # Path to checkpoint in $CHECKPOINTS_DIR
+                          --output_path='inference.tsv'\
+                          --logs_dir=$LOGS_DIR\
+                          --batch_size=32\
+                          --num_workers=8\
+                          --cuda\
                           --threshold=0.5\
                           --minimum_event_gap=0.1\
                           --minimum_event_length=0.1\
-                          --model_type='Cnn14_DecisionLevelMax'\
-                          --sample_rate=32000\
+                          --model_type='Cnn14'\
+                          --classes_num=110\
+                          --decision_level='max'\
+                          --spectrogram\
                           --win_length=1024\
                           --hop_length=320\
-                          --n_mels=64\
+                          --sample_rate=32000\
                           --f_min=50\
                           --f_max=14000\
-                          --batch_size=32\
-                          --classes_num=110\
-                          --num_workers=8
+                          --n_mels=64\
+                          --spec_aug\
+                          --no_mixup_time\
+                          --no_mixup_freq\
+                          --dropout\
+                          --no_wavegram
 ```
 
 ## Cite
