@@ -51,7 +51,7 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
     if mini_data > 0:
         audio_names = audio_names[0:mini_data]
 
-    audios_num = audio_names.size()
+    audios_num = audio_names.size
 
     # Pack waveform to hdf5
     start_time = time.time()
