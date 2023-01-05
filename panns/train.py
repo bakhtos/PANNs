@@ -183,11 +183,11 @@ if __name__ == '__main__':
                                                'to necessary files')
     files.add_argument('--hdf5_files_path_train', type=str, required=True,
                        help="Path to hdf5 file of the train split")
-    files.add_argument('--target_weak_path_train', type=str, required=True,
+    files.add_argument('--target_path_train', type=str, required=True,
                        help="Path to the weak target array of the train split")
     files.add_argument('--hdf5_files_path_eval', type=str, required=True,
                        help="Path to hdf5 file of the eval split")
-    files.add_argument('--target_weak_path_eval', type=str, required=True,
+    files.add_argument('--target_path_eval', type=str, required=True,
                        help="Path to the weak target array of the eval split")
     files.add_argument('--logs_dir', type=str, help="Directory to save the "
                                                     "logs into")
@@ -226,7 +226,10 @@ if __name__ == '__main__':
     transfer.add_argument('--interpolate_ratio', type=int, default=32,
                           required=False, help='Ratio to interpolate '
                                                'framewise_output')
-    freeze = transfer.add_mutually_exclusive_group()
+    transfer.add_argument('--clip_length', type=int, default=10000,
+                          required=False, help='Length (in ms) of clips used in'
+                                               'the dataset')
+    freeze = parser.add_mutually_exclusive_group()
     freeze.add_argument('--freeze_base', action='store_true', required=False,
                         help='If set, freeze the parameters of base model '
                              'during fine-tuning')
@@ -234,9 +237,6 @@ if __name__ == '__main__':
                         required=False, help='If set, do not freeze '
                                              'parameters of the base model '
                                              'during fine-tuning')
-    freeze.add_argument('--clip_length', type=int, default=10000,
-                        required=False, help='Length (in ms) of clips used in'
-                                             'the dataset')
     args = parser.parse_args()
 
     spec_aug = args.spec_aug or args.no_spec_aug
