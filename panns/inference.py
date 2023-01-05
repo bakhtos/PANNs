@@ -200,9 +200,9 @@ if __name__ == '__main__':
                                               persistent_workers=True,
                                               pin_memory=True)
 
-    _, _, framewise_output, _ = forward(model, eval_loader)
+    forward_output = forward(model, eval_loader)
 
-    framewise_output = framewise_output.cpu().numpy()
+    framewise_output = forward_output.framewise_output.cpu().numpy()
 
     dataset = pd.read_csv(args.dataset_path, delimiter='\t')
     audio_names = dataset['filename'].unique()

@@ -17,12 +17,11 @@ def evaluate(model, data_loader):
     """
 
     # Forward
-    clipwise_output, _, _, _, _, target = forward(model=model,
-                                                  data_loader=data_loader,
-                                                  return_target=True)
+    forward_output = forward(model=model, data_loader=data_loader,
+                             return_target=True)
     # TODO Change to .numpy(force=True) when torch 1.11 is supported
-    clipwise_output = clipwise_output.cpu().numpy()
-    target = target.cpu().numpy()
+    clipwise_output = forward_output.clipwise_output.cpu().numpy()
+    target = forward_output.target.cpu().numpy()
 
     average_precision = average_precision_score(target, clipwise_output,
                                                 average=None)
