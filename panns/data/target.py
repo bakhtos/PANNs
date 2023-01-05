@@ -4,70 +4,43 @@ import math
 import numpy as np
 import pandas as pd
 
-__all__ = ['get_weak_target',
-           'get_strong_target']
+__all__ = ['get_target']
 
 
-def get_weak_target(data):
-    """ Create weak labels target numpy array.
-
-    Args:
-        data: str,
-            Dataframe representing the loaded dataset (loaded from
-            'Reformatted'-like tsv file)
-
-    Returns:
-        target : Target array of weak labels with shape (files, classes).
-    """
-
-    file_ids = data['filename'].unique()
-    class_ids = data['event_label'].unique()
-
-    target = np.zeros((file_ids.size, class_ids.size), dtype=bool)
-
-    file_id_to_ix = {}
-    for i in range(file_ids.size):
-        file_id_to_ix[file_ids[i]] = i
-    class_id_to_ix = {}
-    for i in range(class_ids.size):
-        class_id_to_ix[class_ids[i]] = i
-
-    for line in data.itertuples(index=False):
-        file_id = line.filename
-        class_id = line.event_label
-
-        file_ix = file_id_to_ix[file_id]
-        class_ix = class_id_to_ix[class_id]
-
-        target[file_ix][class_ix] = True
-
-    return target
-
-
-def get_strong_target(data, *, sample_rate, hop_length, clip_length):
+def get_target(data, target_type, *, sample_rate=None, hop_length=None,
+               clip_length=None):
     """
 
     Args:
         data: pandas.DataFrame,
             Dataframe representing the loaded dataset (loaded from
             'Reformatted'-like tsv file)
+        target_type: str,
+            Whether to create a 'weak' or 'strong' target array.
         sample_rate: int,
-            Sample rate of the used audios.
+            Sample rate of the used audios (for strong target, default None)
         hop_length: int,
-            Hop length of the window used during Spectrogram extraction.
+            Hop length of the window used during Spectrogram extraction (for
+            strong target, default None)
         clip_length: int,
-            Length of used audios (in ms).
+            Length of used audios in ms (for strong target, default None)
 
     Returns:
-        target : Target array of weak labels with shape (files, frames, classes).
+        target : Target array of either weak labels with shape (files, classes)
+                 or strong labels with shape (files, frames, classes)
     """
 
-    hop_length_seconds = hop_length/sample_rate
-    frames_num = int((clip_length/1000)/hop_length_seconds)
+    assert target_type in ['strong', 'weak']
+
     file_ids = data['filename'].unique()
     class_ids = data['event_label'].unique()
 
-    target = np.zeros((file_ids.size, class_ids.size, frames_num), dtype=bool)
+    if target_type == 'strong':
+        hop_length_seconds = hop_length/sample_rate
+        frames_num = int((clip_length/1000)/hop_length_seconds)
+        target = np.zeros((file_ids.size, class_ids.size, frames_num), dtype=bool)
+    else:
+        target = np.zeros((file_ids.size, class_ids.size), dtype=bool)
 
     file_id_to_ix = {}
     for i in range(file_ids.size):
@@ -79,20 +52,20 @@ def get_strong_target(data, *, sample_rate, hop_length, clip_length):
     for line in data.itertuples(index=False):
         file_id = line.filename
         class_id = line.event_label
-        onset = line.onset
-        offset = line.offset
-
-        onset = float(onset)
-        onset = math.floor(onset/hop_length_seconds)
-        offset = float(offset)
-        offset = math.ceil(offset/hop_length_seconds)
-
         file_ix = file_id_to_ix[file_id]
         class_ix = class_id_to_ix[class_id]
 
-        target[file_ix][class_ix][onset:offset] = True
+        if target_type == 'strong':
+            onset = float(line.onset)
+            onset = math.floor(onset/hop_length_seconds)
+            offset = float(line.offset)
+            offset = math.ceil(offset/hop_length_seconds)
+            target[file_ix][class_ix][onset:offset] = True
+        else:
+            target[file_ix][class_ix] = True
 
-    target = np.transpose(target, (0, 2, 1))
+    if target_type == 'strong':
+        target = np.transpose(target, (0, 2, 1))
 
     return target
 
@@ -129,13 +102,10 @@ if __name__ == '__main__':
         if args.clip_length is None:
             raise AttributeError("Strong label target was requested, but no"
                                  "clip_length given")
-        data = pd.read_csv(args.dataset_path, delimiter='\t')
-        target = get_strong_target(data,
-                                   sample_rate=args.sample_rate,
-                                   hop_length=args.hop_length,
-                                   clip_length=args.clip_length)
-    else:
-        data = pd.read_csv(args.dataset_path, delimiter='\t')
-        target = get_weak_target(data)
+    data = pd.read_csv(args.dataset_path, delimiter='\t')
+    target = get_target(data, target_type=args.target_type,
+                        sample_rate=args.sample_rate,
+                        hop_length=args.hop_length,
+                        clip_length=args.clip_length)
 
     np.save(args.target_path, target)
