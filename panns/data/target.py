@@ -8,12 +8,13 @@ __all__ = ['get_weak_target',
            'get_strong_target']
 
 
-def get_weak_target(data_path):
+def get_weak_target(data):
     """ Create weak labels target numpy array.
 
     Args:
-        data_path : str,
-            Dataset file to create weak target from (in 'Reformatted' format).
+        data: str,
+            Dataframe representing the loaded dataset (loaded from
+            'Reformatted'-like tsv file)
 
     Returns:
         target : Target array of weak labels with shape (files, classes).
@@ -22,7 +23,6 @@ def get_weak_target(data_path):
     target = np.zeros((0, 0), dtype=bool)
     file_id_to_ix = dict()
     class_id_to_ix = dict()
-    data = pd.read_csv(data_path, delimiter='\t')
     for line in data.itertuples(index=False):
         file_id = line.filename
         class_id = line.event_label
@@ -45,16 +45,17 @@ def get_weak_target(data_path):
     return target
 
 
-def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
+def get_strong_target(data, *, sample_rate, hop_length, clip_length):
     """
 
     Args:
-        data_path: str,
-            Dataset file to create weak target from (in 'Reformatted' format).
+        data: pandas.DataFrame,
+            Dataframe representing the loaded dataset (loaded from
+            'Reformatted'-like tsv file)
         sample_rate: int,
             Sample rate of the used audios.
         hop_length: int,
-            Hop length of the window used during Spectorgam extraction.
+            Hop length of the window used during Spectrogram extraction.
         clip_length: int,
             Length of used audios (in ms).
 
@@ -68,7 +69,6 @@ def get_strong_target(data_path, *, sample_rate, hop_length, clip_length):
     target = np.zeros((0, 0, frames_num), dtype=bool)
     file_id_to_ix = {}
     class_id_to_ix = {}
-    data = pd.read_csv(data_path, delimiter='\t')
     for line in data.itertuples(index=False):
         file_id = line.filename
         class_id = line.event_label
@@ -133,11 +133,13 @@ if __name__ == '__main__':
         if args.clip_length is None:
             raise AttributeError("Strong label target was requested, but no"
                                  "clip_length given")
-        target = get_strong_target(args.dataset_path,
+        data = pd.read_csv(args.dataset_path, delimiter='\t')
+        target = get_strong_target(data,
                                    sample_rate=args.sample_rate,
                                    hop_length=args.hop_length,
                                    clip_length=args.clip_length)
     else:
-        target = get_weak_target(args.dataset_path)
+        data = pd.read_csv(args.dataset_path, delimiter='\t')
+        target = get_weak_target(data)
 
     np.save(args.target_path, target)
