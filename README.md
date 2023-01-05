@@ -215,46 +215,66 @@ implementations (note that in all cases parameters for Spectrogram are renamed):
 
 Training is performed using [panns/train.py](panns/train.py). 
 Training is controlled by the following parameters:
-- `model_type`: One of the classes in [panns/models/models.py](panns/models/models.py) (the model used)
-- Parameters for the model (see [Models](#Models))
-- Batch size (```batch_size```): amount of files used in one training loop
-- Maximum iteration (```iter_max```): amount of iterations performed (an 
-  'iteration' is processing
-        of one batch, we do not use epochs in this pipeline)
-- Learning rate (```learning_rate```): learning rate parameter for the optimizer
-- Number of workers (```num_workers```) to use if training on GPU
-
-Also, directories for storing checkpoints, evaluation statistics and logs
-can be provided (defined above in environment variables); by default
-respectively named folders are created in the current working directory.
-
-In addition, it is possible to load an existing (previously trained) checkpoint
-and continue training from that interation, when also ```resume_checkpoint_path```
-need to be given.
-
-It is also recommended to create environment variables for the parameters.
+- Model configuration:
+  - `model_type`: One of the classes in [panns/models/models.py](panns/models/models.py) (the model used)
+  - Parameters for the model (see [Models](#Models)):
+    - `classes_num`, `sample_rate`, `win_length`, `hop_length`, `f_min`, 
+      `f_max`, `n_mels`, `decision_level`, `pad_mode`, `top_db`, 
+      `num_features`, `embedding_size`: Passed directly to model constructor,
+      see [Models](#Models)
+    - `spec_aug/no_spec_aug`, `mixup_time/no_mixup_time`, 
+      `mixup_freq/no_mixup_freq`, `dropout/no_dropout`, 
+      `wavegram/no_wavegram`, `spectrogram/no_spectrogram`, 
+      `center/no_center`: Set the corresponding model parameter to 
+      `True/False` respectively
+- Files locations:
+  - `hdf5_files_path_train`, `hdf5_file_path_eval`: Location of the HDF5 
+    files, see [HDF5](#Pack waveforms into hdf5 files)
+  - `target_path_train`, `target_path_eval`: Location of the target arrays 
+    for train/eval split, either weak or strong
+  - `logs_dir`: Folder to store logs (default `logs` in CWD)
+  - `checkpoints_dir`: Folder to store checkpoints every 100000 iterations 
+    (default `checkpoints` in CWD)
+  - `statistics_dir`: Folder to save evaluation results every 2000 
+    iterations (default `statistics` in CWD)
+  - `resume_checkpoint_path`: Location to load a trained model checkpoint from
+- Control training loop:
+  - `label_type`: Whether to use weak or strong label output from the model 
+    to calculate BCE loss, must be the same as dataset target given and 
+    `strong` can only be used with compatible models (ones that have
+    `decision_level` parameter)
+  - `batch_size`: amount of files used in one training iteration
+  - `learning_rate`: learning rate for the optimizer
+  - `iter_max`: Amount of training iterations to perform (an 'iteration' is 
+    processing of one batch, we do not use epochs in this pipeline)
+  - `num_workers`: Amount of workers to pass to the DataLoader
+  - `cuda`: Whether to use GPU (flag)
 
 Example of initiating training:
 ```shell
 python -m panns.train --hdf5_files_path_train=$HDF5_FILES_PATH_TRAIN\
                       --hdf5_files_path_eval=$HDF5_FILES_PATH_EVAL\
-                      --target_weak_path_train=$TARGET_WEAK_PATH_TRAIN\
-                      --target_weak_path_eval=$TARGET_WEAK_PATH_EVAL\
-                      --model_type='Cnn14_DecisionLevelMax'\
-                      --logs_dir=$LOGS_DIR\
-                      --checkpoints_dir=$CHECKPOINTS_DIR\
-                      --statistics_dir=$STATISTICS_DIR\
+                      --target_path_train=$TARGET_WEAK_PATH_TRAIN\
+                      --target_path_eval=$TARGET_WEAK_PATH_EVAL\
+                      --label_type='weak'\
+                      --model_type='Cnn14'\
+                      --classes_num=110\
+                      --decision_level='max'\
+                      --spectrogram\
                       --win_length=1024\
                       --hop_length=320\
-                      --sample_rate=$SAMPLE_RATE\
-                      --clip_length=10000\
+                      --sample_rate=32000\
                       --f_min=50\
                       --f_max=14000\
                       --n_mels=64\
+                      --spec_aug\
+                      --no_mixup_time\
+                      --no_mixup_freq\
+                      --dropout\
+                      --no_wavegram\
                       --batch_size=32\
                       --learning_rate=1e-3\
                       --iter_max=600000\
-                      --classes_num=$CLASSES_NUM\
                       --num_workers=8
                       --cuda
 ```
