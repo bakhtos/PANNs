@@ -1,5 +1,6 @@
 import argparse
 import math
+import os
 
 import numpy as np
 import pandas as pd
@@ -107,5 +108,9 @@ if __name__ == '__main__':
                         sample_rate=args.sample_rate,
                         hop_length=args.hop_length,
                         clip_length=args.clip_length)
+
+    dir_name = os.path.dirname(args.target_path)
+    if dir_name != '':
+        os.makedirs(dir_name, exist_ok=True)
 
     np.save(args.target_path, target)
