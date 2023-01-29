@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -20,6 +22,10 @@ __all__ = ['Cnn6',
            'LeeNet24',
            'DaiNet19',
            ]
+
+ModelOutput = namedtuple('ModelOutput', ['clipwise_output',
+                                         'segmentwise_output',
+                                         'framewise_output', 'embedding'])
 
 
 class Cnn6(nn.Module):
