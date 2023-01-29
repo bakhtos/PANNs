@@ -721,7 +721,7 @@ class _DaiNetResBlock(nn.Module):
 
 
 class _SpecAugmentation(nn.Module):
-    def __init__(self, stripes_num, mask_param, axis, mask_value=0.0, p=1.0):
+    def __init__(self, stripes_num, mask_param, axis, mask_value=0.0):
         """ Spectrogram augmentation.
 
         Masks will be applied from indices ``[v_0, v_0 + v)``,
@@ -743,8 +743,6 @@ class _SpecAugmentation(nn.Module):
             axis: int, Axis to apply masking on (2 -> frequency, 3 -> time)
             mask_value: float, Value to assign to the masked columns
                 (default 0.0)
-            p: float, maximum proportion of columns that can be masked
-                (default 1.0)
         """
 
         super().__init__()
@@ -753,12 +751,11 @@ class _SpecAugmentation(nn.Module):
         self.mask_param = mask_param
         self.axis = axis
         self.mask_value = mask_value
-        self.p = p
 
     def forward(self, specgrams):
         for i in range(self.stripes_num):
             specgrams = mask_along_axis_iid(specgrams, self.mask_param,
-                                            self.mask_value, self.axis, self.p)
+                                            self.mask_value, self.axis)
         return specgrams
 
 
