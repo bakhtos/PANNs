@@ -215,6 +215,7 @@ if __name__ == '__main__':
                        mixup_freq=mixup_freq, dropout=dropout,
                        wavegram=wavegram, spectrogram=spectrogram,
                        decision_level=args.decision_level, center=center,
+                       sample_rate=args.sample_rate,
                        win_length=args.win_length, hop_length=args.hop_length,
                        n_mels=args.n_mels, f_min=args.f_min, f_max=args.f_max,
                        pad_mode=args.pad_mode, top_db=args.top_db,
