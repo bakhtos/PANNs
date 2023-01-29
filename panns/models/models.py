@@ -163,6 +163,9 @@ class Cnn6(nn.Module):
 
             x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
             x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
+
+            frames_num = x.shape[2]
+
             x = self.bn0(x)
 
             x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
@@ -181,8 +184,6 @@ class Cnn6(nn.Module):
             x = torch.cat((x, wave), dim=1)
         elif self.wavegram:
             x = wave
-
-        frames_num = x.shape[2]
 
         F.dropout(x, p=0.2, inplace=True, training=(self.training and
                                                     self.dropout))
@@ -385,6 +386,9 @@ class Cnn10(nn.Module):
 
             x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
             x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
+
+            frames_num = x.shape[2]
+
             x = self.bn0(x)
 
             x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
@@ -403,8 +407,6 @@ class Cnn10(nn.Module):
             x = torch.cat((x, wave), dim=1)
         elif self.wavegram:
             x = wave
-
-        frames_num = x.shape[2]
 
         F.dropout(x, p=0.2, inplace=True, training=(self.training and
                                                     self.dropout))
@@ -609,6 +611,9 @@ class Cnn14(nn.Module):
 
             x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
             x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
+
+            frames_num = x.shape[2]
+
             x = self.bn0(x)
 
             x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
@@ -627,8 +632,6 @@ class Cnn14(nn.Module):
             x = torch.cat((x, wave), dim=1)
         elif self.wavegram:
             x = wave
-
-        frames_num = x.shape[2]
 
         F.dropout(x, p=0.2, inplace=True, training=(self.training and
                                                     self.dropout))
