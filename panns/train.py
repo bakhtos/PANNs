@@ -110,7 +110,8 @@ def train(*, train_dataset,
 
     for data, target in train_loader:
         # Data augmentation
-        target = torch.tensor(target, device=device)
+        data = data.to(device)
+        target = target.to(device)
 
         train_bgn_time = time.time()
 
