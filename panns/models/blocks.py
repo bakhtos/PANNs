@@ -146,6 +146,8 @@ class _AttBlock(nn.Module):
 
         super().__init__()
 
+        assert activation in ['linear', 'sigmoid']
+
         self.activation = activation
         self.temperature = temperature
         self.att = nn.Conv1d(in_channels=n_in, out_channels=n_out,
@@ -162,8 +164,8 @@ class _AttBlock(nn.Module):
     def forward(self, x):
         # x: (n_samples, n_in, n_time)
         norm_att = torch.softmax(torch.clamp(self.att(x), -10, 10), dim=-1)
-        cla = torch.sigmoid(x) if self.activation == 'sigmoid'\
-            else x
+        cla = self.cla(x)
+        if self.activation == 'sigmoid': cla = torch.sigmoid(cla)
         x = torch.sum(norm_att * cla, dim=2)
         return x, norm_att, cla
 
