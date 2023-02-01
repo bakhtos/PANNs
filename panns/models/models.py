@@ -469,6 +469,14 @@ class Cnn10(nn.Module):
 
 
 class Cnn14(nn.Module):
+    __slots__ = ('spec_aug', 'mixup_time', 'mixup_freq', 'dropout', 'wavegram',
+                 'spectrogram', 'decision_level', 'interpolate_ratio',
+                 'pre_conv0', 'pre_bn0', 'pre_block1', 'pre_block2',
+                 'pre_block3', 'pre_block4', 'mel_spectrogram',
+                 'amplitude_to_db', 'spec_aug_time', 'spec_aug_freq', 'bn0',
+                 'conv_block1', 'conv_block2', 'conv_block3', 'conv_block4',
+                 'conv_block5', 'conv_block6', 'fc1', 'audioset_layer')
+
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
                  f_max, classes_num, spec_aug=True, mixup_time=False,
                  mixup_freq=True, dropout=True, wavegram=False,
