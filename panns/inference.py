@@ -198,6 +198,8 @@ if __name__ == '__main__':
 
     forward_output = forward(model, eval_loader)
 
+    del dataset
+
     framewise_output = forward_output.framewise_output.cpu().numpy()
 
     dataset = pd.read_csv(args.dataset_path, delimiter='\t')

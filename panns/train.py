@@ -243,3 +243,6 @@ if __name__ == '__main__':
           iter_max=args.iter_max,
           cuda=args.cuda,
           num_workers=args.num_workers)
+
+    del train_dataset
+    del eval_dataset
