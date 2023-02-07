@@ -106,9 +106,13 @@ def train(*, train_dataset,
         device = torch.device('cpu')
         logging.info('Using CPU. Set --cuda flag to use GPU.')
 
-    iteration = 0
-
-    for data, target in train_loader:
+    train_iter = iter(train_loader)
+    for iteration in range(iter_max+1):
+        try:
+            data, target = next(train_iter)
+        except StopIteration:
+            train_iter = iter(train_loader)
+            data, target = next(train_iter)
         # Data augmentation
         data = data.to(device)
         target = target.to(device)
@@ -152,8 +156,6 @@ def train(*, train_dataset,
         elif iteration % 100000 == 0:
             save_model(model, iteration, checkpoints_dir)
 
-        iteration += 1
-        
 
 if __name__ == '__main__':
 
