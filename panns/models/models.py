@@ -517,6 +517,7 @@ class Cnn14(nn.Module):
         embedding_size = kwargs.get('embedding_size', 2048)
 
         if self.wavegram:
+            print('Creating wavegram layers')
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
                                        kernel_size=11, stride=5, padding=5,
                                        bias=False)
@@ -529,6 +530,7 @@ class Cnn14(nn.Module):
             init_bn(self.pre_bn0)
 
         if self.spectrogram:
+            print('Creating spectrogram layers')
             # Spectrogram extractor
             self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                                   n_fft=win_length,
@@ -544,6 +546,7 @@ class Cnn14(nn.Module):
 
             # Spec augmenter
             if spec_aug:
+                print("Creating SpecAug")
                 self.spec_aug_time = _SpecAugmentation(mask_param=64,
                                                        stripes_num=2,
                                                        axis=2)
@@ -593,6 +596,7 @@ class Cnn14(nn.Module):
 
         if self.wavegram:
             # Wavegram
+            print("Creating wavegram features")
             wave = F.relu_(self.pre_bn0(self.pre_conv0(batch[:, None, :])))
             wave = self.pre_block1(wave, pool_size=4)
             wave = self.pre_block2(wave, pool_size=4)
@@ -605,6 +609,7 @@ class Cnn14(nn.Module):
                 wave = mixup(wave, mixup_lambda)
 
         if self.spectrogram:
+            print("Creating spectrogram features")
             x = batch[:, None, :]        # (batch_size, 1, time)
             x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
             x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
@@ -620,6 +625,7 @@ class Cnn14(nn.Module):
 
             if self.training:
                 if self.spec_aug:
+                    print("Performing spectrogram augmentation")
                     x = self.spec_aug_time(x)
                     x = self.spec_aug_freq(x)
                 # Mixup on spectrogram
@@ -656,6 +662,7 @@ class Cnn14(nn.Module):
         segmentwise_output = None
         framewise_output = None
         if self.decision_level is None:  # Weak labels
+            print("Decicison level not given")
             (x1, _) = torch.max(x, dim=2)
             x2 = torch.mean(x, dim=2)
             x = x1 + x2
@@ -674,14 +681,17 @@ class Cnn14(nn.Module):
             embedding = x
 
             if self.decision_level == 'att':
+                print("Decision level is att")
                 x = x.transpose(1, 2)
                 (clipwise_output, _, segmentwise_output) = self.audioset_layer(x)
                 segmentwise_output = segmentwise_output.transpose(1, 2)
             else:
                 segmentwise_output = torch.sigmoid(self.audioset_layer(x))
                 if self.decision_level == 'max':
+                    print("Decision level is max")
                     (clipwise_output, _) = torch.max(segmentwise_output, dim=1)
                 elif self.decision_level == 'avg':
+                    print("Decision level is avg")
                     clipwise_output = torch.mean(segmentwise_output, dim=1)
 
             # Get framewise output
