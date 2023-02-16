@@ -1,4 +1,5 @@
 import logging
+from collections import namedtuple
 
 import torch
 import torch.nn as nn
@@ -22,6 +23,10 @@ __all__ = ['Cnn6',
            'LeeNet24',
            'DaiNet19',
            ]
+
+ModelOutput = namedtuple('ModelOutput', ['clipwise_output',
+                                         'segmentwise_output',
+                                         'framewise_output', 'embedding'])
 
 
 class Cnn6(nn.Module):
@@ -277,7 +282,8 @@ class Cnn6(nn.Module):
             framewise_output = _pad_framewise_output(framewise_output,
                                                      frames_num)
 
-        return clipwise_output, segmentwise_output, framewise_output, embedding
+        return ModelOutput(clipwise_output, segmentwise_output,
+                           framewise_output, embedding)
 
 
 class Cnn10(nn.Module):
@@ -534,7 +540,8 @@ class Cnn10(nn.Module):
             framewise_output = _pad_framewise_output(framewise_output,
                                                      frames_num)
 
-        return clipwise_output, segmentwise_output, framewise_output, embedding
+        return ModelOutput(clipwise_output, segmentwise_output,
+                           framewise_output, embedding)
 
 
 class Cnn14(nn.Module):
@@ -602,7 +609,6 @@ class Cnn14(nn.Module):
                      f"{embedding_size}.")
 
         if self.wavegram:
-            print('Creating wavegram layers')
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
                                        kernel_size=11, stride=5, padding=5,
                                        bias=False)
@@ -615,7 +621,6 @@ class Cnn14(nn.Module):
             init_bn(self.pre_bn0)
 
         if self.spectrogram:
-            print('Creating spectrogram layers')
             # Spectrogram extractor
             logging.info(f"Cnn14 Spectrogram - parameter 'sample_rate' is: "
                          f"{sample_rate}.")
@@ -649,7 +654,6 @@ class Cnn14(nn.Module):
 
             # Spec augmenter
             if spec_aug:
-                print("Creating SpecAug")
                 self.spec_aug_time = _SpecAugmentation(mask_param=64,
                                                        stripes_num=2,
                                                        axis=2)
@@ -699,7 +703,6 @@ class Cnn14(nn.Module):
 
         if self.wavegram:
             # Wavegram
-            print("Creating wavegram features")
             wave = F.relu_(self.pre_bn0(self.pre_conv0(batch[:, None, :])))
             wave = self.pre_block1(wave, pool_size=4)
             wave = self.pre_block2(wave, pool_size=4)
@@ -712,7 +715,6 @@ class Cnn14(nn.Module):
                 wave = mixup(wave, mixup_lambda)
 
         if self.spectrogram:
-            print("Creating spectrogram features")
             x = batch[:, None, :]        # (batch_size, 1, time)
             x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
             x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
@@ -728,7 +730,6 @@ class Cnn14(nn.Module):
 
             if self.training:
                 if self.spec_aug:
-                    print("Performing spectrogram augmentation")
                     x = self.spec_aug_time(x)
                     x = self.spec_aug_freq(x)
                 # Mixup on spectrogram
@@ -765,7 +766,6 @@ class Cnn14(nn.Module):
         segmentwise_output = None
         framewise_output = None
         if self.decision_level is None:  # Weak labels
-            print("Decicison level not given")
             (x1, _) = torch.max(x, dim=2)
             x2 = torch.mean(x, dim=2)
             x = x1 + x2
@@ -784,17 +784,14 @@ class Cnn14(nn.Module):
             embedding = x
 
             if self.decision_level == 'att':
-                print("Decision level is att")
                 x = x.transpose(1, 2)
                 (clipwise_output, _, segmentwise_output) = self.audioset_layer(x)
                 segmentwise_output = segmentwise_output.transpose(1, 2)
             else:
                 segmentwise_output = torch.sigmoid(self.audioset_layer(x))
                 if self.decision_level == 'max':
-                    print("Decision level is max")
                     (clipwise_output, _) = torch.max(segmentwise_output, dim=1)
                 elif self.decision_level == 'avg':
-                    print("Decision level is avg")
                     clipwise_output = torch.mean(segmentwise_output, dim=1)
 
             # Get framewise output
@@ -803,7 +800,8 @@ class Cnn14(nn.Module):
             framewise_output = _pad_framewise_output(framewise_output,
                                                      frames_num)
 
-        return clipwise_output, segmentwise_output, framewise_output, embedding
+        return ModelOutput(clipwise_output, segmentwise_output,
+                           framewise_output, embedding)
 
 
 class ResNet22(nn.Module):
@@ -939,7 +937,7 @@ class ResNet22(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class ResNet38(nn.Module):
@@ -1076,7 +1074,7 @@ class ResNet38(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class ResNet54(nn.Module):
@@ -1213,7 +1211,7 @@ class ResNet54(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class Res1dNet31(nn.Module):
@@ -1281,7 +1279,7 @@ class Res1dNet31(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class Res1dNet51(nn.Module):
@@ -1349,7 +1347,7 @@ class Res1dNet51(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class MobileNetV1(nn.Module):
@@ -1492,7 +1490,7 @@ class MobileNetV1(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class MobileNetV2(nn.Module):
@@ -1655,7 +1653,7 @@ class MobileNetV2(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class LeeNet11(nn.Module):
@@ -1724,7 +1722,7 @@ class LeeNet11(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class LeeNet24(nn.Module):
@@ -1815,7 +1813,7 @@ class LeeNet24(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class DaiNet19(nn.Module):
@@ -1890,4 +1888,4 @@ class DaiNet19(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
