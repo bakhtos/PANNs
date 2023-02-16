@@ -248,7 +248,8 @@ class Cnn6(nn.Module):
             framewise_output = _pad_framewise_output(framewise_output,
                                                      frames_num)
 
-        return clipwise_output, segmentwise_output, framewise_output, embedding
+        return ModelOutput(clipwise_output, segmentwise_output,
+                           framewise_output, embedding)
 
 
 class Cnn10(nn.Module):
@@ -471,7 +472,8 @@ class Cnn10(nn.Module):
             framewise_output = _pad_framewise_output(framewise_output,
                                                      frames_num)
 
-        return clipwise_output, segmentwise_output, framewise_output, embedding
+        return ModelOutput(clipwise_output, segmentwise_output,
+                           framewise_output, embedding)
 
 
 class Cnn14(nn.Module):
@@ -696,7 +698,8 @@ class Cnn14(nn.Module):
             framewise_output = _pad_framewise_output(framewise_output,
                                                      frames_num)
 
-        return clipwise_output, segmentwise_output, framewise_output, embedding
+        return ModelOutput(clipwise_output, segmentwise_output,
+                           framewise_output, embedding)
 
 
 class ResNet22(nn.Module):
@@ -810,7 +813,7 @@ class ResNet22(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class ResNet38(nn.Module):
@@ -924,7 +927,7 @@ class ResNet38(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class ResNet54(nn.Module):
@@ -1038,7 +1041,7 @@ class ResNet54(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class Res1dNet31(nn.Module):
@@ -1101,7 +1104,7 @@ class Res1dNet31(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class Res1dNet51(nn.Module):
@@ -1164,7 +1167,7 @@ class Res1dNet51(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class MobileNetV1(nn.Module):
@@ -1282,7 +1285,7 @@ class MobileNetV1(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class MobileNetV2(nn.Module):
@@ -1420,7 +1423,7 @@ class MobileNetV2(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class LeeNet11(nn.Module):
@@ -1489,7 +1492,7 @@ class LeeNet11(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class LeeNet24(nn.Module):
@@ -1576,7 +1579,7 @@ class LeeNet24(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, None, None, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
 
 
 class DaiNet19(nn.Module):
@@ -1645,4 +1648,4 @@ class DaiNet19(nn.Module):
         embedding = F.dropout(x, p=0.5, training=self.training)
         clipwise_output = torch.sigmoid(self.fc_audioset(x))
 
-        return clipwise_output, embedding
+        return ModelOutput(clipwise_output, None, None, embedding)
