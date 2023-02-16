@@ -106,6 +106,7 @@ def train(*, train_dataset,
         device = torch.device('cpu')
         logging.info('Using CPU. Set --cuda flag to use GPU.')
 
+    model.train()
     train_iter = iter(train_loader)
     for iteration in range(iter_max+1):
         try:
@@ -117,10 +118,8 @@ def train(*, train_dataset,
         data = data.to(device)
         target = target.to(device)
 
-        train_bgn_time = time.time()
-
         # Train
-        model.train()
+        train_bgn_time = time.time()
         clipwise_output, segmentwise_output, framewise_output, embedding = \
             model(data)
 
@@ -137,6 +136,7 @@ def train(*, train_dataset,
 
         # Evaluate
         if iteration > 0 and iteration % 2000 == 0:
+            model.eval()
             val_begin_time = time.time()
             eval_average_precision, eval_auc = evaluate(model, eval_loader)
             validate_time = time.time() - val_begin_time
@@ -148,6 +148,7 @@ def train(*, train_dataset,
 
             save_statistics((eval_average_precision, eval_auc), iteration,
                             statistics_dir)
+            model.train()
 
         # Save model/Stop training
         if iteration == iter_max:
