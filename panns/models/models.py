@@ -1,3 +1,5 @@
+import logging
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -55,20 +57,36 @@ class Cnn6(nn.Module):
 
         super().__init__()
 
-        self.spec_aug = spec_aug
-        self.mixup_time = mixup_time
-        self.mixup_freq = mixup_freq
-        self.dropout = dropout
+        logging.info("Initializing model Cnn6.")
+        logging.info(f"Cnn6 - parameter 'classes_num' is: {classes_num}.")
         self.wavegram = wavegram
+        logging.info(f"Cnn6 - parameter 'wavegram' is: {wavegram}.")
         self.spectrogram = spectrogram
+        logging.info(f"Cnn6 - parameter 'spectrogram' is: {spectrogram}.")
+        self.spec_aug = spec_aug
+        logging.info(f"Cnn6 - parameter 'spec_aug' is: {spec_aug}.")
+        if spectrogram is False and spec_aug is True:
+            logging.warning("Cnn6 - 'spectrogram is False but spec_aug is "
+                            "'True' - spec_aug is ignored.")
+        self.mixup_time = mixup_time
+        logging.info(f"Cnn6 - parameter 'mixup_time' is: {mixup_time}")
+        self.mixup_freq = mixup_freq
+        logging.info(f"Cnn6 - parameter 'mixup_freq' is: {mixup_freq}.")
+        self.dropout = dropout
+        logging.info(f"Cnn6 - parameter 'dropout' is: {dropout}.")
         self.decision_level = decision_level
+        logging.info(f"Cnn6 - parameter 'decision_level' is: "
+                     f"{decision_level}.")
         self.interpolate_ratio = 32
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"Cnn6 - parameter 'num_features' is: {num_features}.")
         embedding_size = kwargs.get('embedding_size', 512)
+        logging.info(f"Cnn6 - parameter 'embedding_size' is: "
+                     f"{embedding_size}.")
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -84,6 +102,23 @@ class Cnn6(nn.Module):
 
         if self.spectrogram:
             # Spectrogram extractor
+            logging.info(f"Cnn6 Spectrogram - parameter 'sample_rate' is: "
+                         f"{sample_rate}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'win_length' is: "
+                         f"{win_length}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'hop_length' is: "
+                         f"{hop_length}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'f_min' is: "
+                         f"{f_min}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'f_max' is: "
+                         f"{f_max}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'n_mels' is: "
+                         f"{n_mels}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'center' is:"
+                         f" {center}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'pad_mode' is:"
+                         f" {pad_mode}.")
+            logging.info(f"Cnn6 Spectrogram - parameter 'top_db' is: {top_db}.")
             self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                                   n_fft=win_length,
                                                   win_length=win_length,
@@ -278,20 +313,36 @@ class Cnn10(nn.Module):
 
         super().__init__()
 
-        self.spec_aug = spec_aug
-        self.mixup_time = mixup_time
-        self.mixup_freq = mixup_freq
-        self.dropout = dropout
+        logging.info("Initializing model Cnn10.")
+        logging.info(f"Cnn10 - parameter 'classes_num' is: {classes_num}.")
         self.wavegram = wavegram
+        logging.info(f"Cnn10 - parameter 'wavegram' is: {wavegram}.")
         self.spectrogram = spectrogram
+        logging.info(f"Cnn10 - parameter 'spectrogram' is: {spectrogram}.")
+        self.spec_aug = spec_aug
+        logging.info(f"Cnn10 - parameter 'spec_aug' is: {spec_aug}.")
+        if spectrogram is False and spec_aug is True:
+            logging.warning("Cnn10 - 'spectrogram is False but spec_aug is "
+                            "'True' - spec_aug is ignored.")
+        self.mixup_time = mixup_time
+        logging.info(f"Cnn10 - parameter 'mixup_time' is: {mixup_time}")
+        self.mixup_freq = mixup_freq
+        logging.info(f"Cnn10 - parameter 'mixup_freq' is: {mixup_freq}.")
+        self.dropout = dropout
+        logging.info(f"Cnn10 - parameter 'dropout' is: {dropout}.")
         self.decision_level = decision_level
+        logging.info(f"Cnn10 - parameter 'decision_level' is: "
+                     f"{decision_level}.")
         self.interpolate_ratio = 32
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"Cnn10 - parameter 'num_features' is: {num_features}.")
         embedding_size = kwargs.get('embedding_size', 512)
+        logging.info(f"Cnn10 - parameter 'embedding_size' is: "
+                     f"{embedding_size}.")
 
         if self.wavegram:
             self.pre_conv0 = nn.Conv1d(in_channels=1, out_channels=64,
@@ -307,6 +358,24 @@ class Cnn10(nn.Module):
 
         if self.spectrogram:
             # Spectrogram extractor
+            logging.info(f"Cnn10 Spectrogram - parameter 'sample_rate' is: "
+                         f"{sample_rate}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'win_length' is: "
+                         f"{win_length}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'hop_length' is: "
+                         f"{hop_length}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'f_min' is: "
+                         f"{f_min}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'f_max' is: "
+                         f"{f_max}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'n_mels' is: "
+                         f"{n_mels}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'center' is:"
+                         f" {center}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'pad_mode' is:"
+                         f" {pad_mode}.")
+            logging.info(f"Cnn10 Spectrogram - parameter 'top_db' is:"
+                         f" {top_db}.")
             self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                                   n_fft=win_length,
                                                   win_length=win_length,
@@ -501,20 +570,36 @@ class Cnn14(nn.Module):
 
         super().__init__()
 
-        self.spec_aug = spec_aug
-        self.mixup_time = mixup_time
-        self.mixup_freq = mixup_freq
-        self.dropout = dropout
+        logging.info("Initializing model Cnn14.")
+        logging.info(f"Cnn14 - parameter 'classes_num' is: {classes_num}.")
         self.wavegram = wavegram
+        logging.info(f"Cnn14 - parameter 'wavegram' is: {wavegram}.")
         self.spectrogram = spectrogram
+        logging.info(f"Cnn14 - parameter 'spectrogram' is: {spectrogram}.")
+        self.spec_aug = spec_aug
+        logging.info(f"Cnn14 - parameter 'spec_aug' is: {spec_aug}.")
+        if spectrogram is False and spec_aug is True:
+            logging.warning("Cnn14 - 'spectrogram is False but spec_aug is "
+                            "'True' - spec_aug is ignored.")
+        self.mixup_time = mixup_time
+        logging.info(f"Cnn14 - parameter 'mixup_time' is: {mixup_time}")
+        self.mixup_freq = mixup_freq
+        logging.info(f"Cnn14 - parameter 'mixup_freq' is: {mixup_freq}.")
+        self.dropout = dropout
+        logging.info(f"Cnn14 - parameter 'dropout' is: {dropout}.")
         self.decision_level = decision_level
+        logging.info(f"Cnn14 - parameter 'decision_level' is: "
+                     f"{decision_level}.")
         self.interpolate_ratio = 32
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"Cnn14 - parameter 'num_features' is: {num_features}.")
         embedding_size = kwargs.get('embedding_size', 2048)
+        logging.info(f"Cnn14 - parameter 'embedding_size' is: "
+                     f"{embedding_size}.")
 
         if self.wavegram:
             print('Creating wavegram layers')
@@ -532,6 +617,24 @@ class Cnn14(nn.Module):
         if self.spectrogram:
             print('Creating spectrogram layers')
             # Spectrogram extractor
+            logging.info(f"Cnn14 Spectrogram - parameter 'sample_rate' is: "
+                         f"{sample_rate}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'win_length' is: "
+                         f"{win_length}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'hop_length' is: "
+                         f"{hop_length}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'f_min' is: "
+                         f"{f_min}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'f_max' is: "
+                         f"{f_max}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'n_mels' is: "
+                         f"{n_mels}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'center' is:"
+                         f" {center}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'pad_mode' is:"
+                         f" {pad_mode}.")
+            logging.info(f"Cnn14 Spectrogram - parameter 'top_db' is:"
+                         f" {top_db}.")
             self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                                   n_fft=win_length,
                                                   win_length=win_length,
@@ -725,15 +828,37 @@ class ResNet22(nn.Module):
         """
 
         super().__init__()
-
+        logging.info("Initializing model ResNet22.")
+        logging.info(f"ResNet22 - parameter 'classes_num' is {classes_num}.")
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"ResNet22 - parameter 'num_features is: {num_features}.")
         embedding_size = kwargs.get('embedding_size', 2048)
+        logging.info(f"ResNet22 - parameter 'embedding_size is:"
+                     f" {embedding_size}.")
 
         # Spectrogram extractor
+        logging.info(f"ResNet22 Spectrogram - parameter 'sample_rate' is: "
+                     f"{sample_rate}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'win_length' is: "
+                     f"{win_length}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'hop_length' is: "
+                     f"{hop_length}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'f_min' is: "
+                     f"{f_min}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'f_max' is: "
+                     f"{f_max}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'n_mels' is: "
+                     f"{n_mels}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'center' is:"
+                     f" {center}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'pad_mode' is:"
+                     f" {pad_mode}.")
+        logging.info(f"ResNet22 Spectrogram - parameter 'top_db' is:"
+                     f" {top_db}.")
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
                                               win_length=win_length,
@@ -840,14 +965,37 @@ class ResNet38(nn.Module):
 
         super().__init__()
 
+        logging.info("Initializing model ResNet38.")
+        logging.info(f"ResNet38 - parameter 'classes_num' is: {classes_num}.")
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"ResNet38 - parameter 'num_features' is: {num_features}.")
         embedding_size = kwargs.get('embedding_size', 2048)
+        logging.info(f"ResNet38 - parameter 'embedding_size' is:"
+                     f" {embedding_size}.")
 
         # Spectrogram extractor
+        logging.info(f"ResNet38 Spectrogram - parameter 'sample_rate' is: "
+                     f"{sample_rate}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'win_length' is: "
+                     f"{win_length}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'hop_length' is: "
+                     f"{hop_length}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'f_min' is: "
+                     f"{f_min}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'f_max' is: "
+                     f"{f_max}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'n_mels' is: "
+                     f"{n_mels}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'center' is:"
+                     f" {center}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'pad_mode' is:"
+                     f" {pad_mode}.")
+        logging.info(f"ResNet38 Spectrogram - parameter 'top_db' is:"
+                     f" {top_db}.")
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
                                               win_length=win_length,
@@ -954,14 +1102,37 @@ class ResNet54(nn.Module):
 
         super().__init__()
 
+        logging.info("Initializing model ResNet54.")
+        logging.info(f"ResNet54 - parameter 'classes_num' is: {classes_num}.")
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"ResNet54 - parameter 'num_features' is: {num_features}.")
         embedding_size = kwargs.get('embedding_size', 2048)
+        logging.info(f"ResNet54 - parameter 'embedding_size' is:"
+                     f" {embedding_size}.")
 
         # Spectrogram extractor
+        logging.info(f"ResNet54 Spectrogram - parameter 'sample_rate' is: "
+                     f"{sample_rate}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'win_length' is: "
+                     f"{win_length}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'hop_length' is: "
+                     f"{hop_length}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'f_min' is: "
+                     f"{f_min}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'f_max' is: "
+                     f"{f_max}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'n_mels' is: "
+                     f"{n_mels}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'center' is:"
+                     f" {center}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'pad_mode' is:"
+                     f" {pad_mode}.")
+        logging.info(f"ResNet54 Spectrogram - parameter 'top_db' is:"
+                     f" {top_db}.")
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
                                               win_length=win_length,
@@ -1058,8 +1229,13 @@ class Res1dNet31(nn.Module):
 
         super().__init__()
 
+        logging.info("Initializing model Res1dNet31.")
+        logging.info(f"Res1dNet31 - parameter 'classes_num' is {classes_num}.")
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"Res1dNet31 - parameter 'num_features' is {num_features}.")
         embedding_size = kwargs.get('embedding_size', 2048)
+        logging.info(f"Res1dNet31 - parameter 'embedding_size' is"
+                     f" {embedding_size}.")
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
@@ -1121,8 +1297,13 @@ class Res1dNet51(nn.Module):
 
         super().__init__()
 
+        logging.info("Initializing model Res1dNet51.")
+        logging.info(f"Res1dNet51 - parameter 'classes_num' is {classes_num}.")
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"Res1dNet51 - parameter 'num_features' is {num_features}.")
         embedding_size = kwargs.get('embedding_size', 2048)
+        logging.info(f"Res1dNet51 - parameter 'embedding_size' is"
+                     f" {embedding_size}.")
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=11,
                                stride=5, padding=5, bias=False)
@@ -1194,14 +1375,39 @@ class MobileNetV1(nn.Module):
 
         super().__init__()
 
+        logging.info("Initializing model MobileNetV1.")
+        logging.info(f"MobileNetV1 - parameter 'classes_num' is: "
+                     f"{classes_num}.")
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"MobileNetV1 - parameter 'num_features' is: "
+                     f"{num_features}.")
         embedding_size = kwargs.get('embedding_size', 1024)
+        logging.info(f"MobileNetV1 - parameter 'embedding_size' is: "
+                     f"{embedding_size}.")
 
         # Spectrogram extractor
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'sample_rate' is: "
+                     f"{sample_rate}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'win_length' is: "
+                     f"{win_length}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'hop_length' is: "
+                     f"{hop_length}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'f_min' is: "
+                     f"{f_min}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'f_max' is: "
+                     f"{f_max}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'n_mels' is: "
+                     f"{n_mels}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'center' is:"
+                     f" {center}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'pad_mode' is:"
+                     f" {pad_mode}.")
+        logging.info(f"MobileNetV1 Spectrogram - parameter 'top_db' is:"
+                     f" {top_db}.")
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
                                               win_length=win_length,
@@ -1312,14 +1518,39 @@ class MobileNetV2(nn.Module):
 
         super().__init__()
 
+        logging.info("Initializing model MobileNetV2.")
+        logging.info(f"MobileNetV2 - parameter 'classes_num' is: "
+                     f"{classes_num}.")
         window_fn = kwargs.get('window_fn', torch.hann_window)
         center = kwargs.get('center', True)
         pad_mode = kwargs.get('pad_mode', 'reflect')
         top_db = kwargs.get('top_db', None)
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"MobileNetV2 - parameter 'num_features' is: "
+                     f"{num_features}.")
         embedding_size = kwargs.get('embedding_size', 1024)
+        logging.info(f"MobileNetV2 - parameter 'embedding_size' is: "
+                     f"{embedding_size}.")
 
         # Spectrogram extractor
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'sample_rate' is: "
+                     f"{sample_rate}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'win_length' is: "
+                     f"{win_length}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'hop_length' is: "
+                     f"{hop_length}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'f_min' is: "
+                     f"{f_min}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'f_max' is: "
+                     f"{f_max}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'n_mels' is: "
+                     f"{n_mels}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'center' is:"
+                     f" {center}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'pad_mode' is:"
+                     f" {pad_mode}.")
+        logging.info(f"MobileNetV2 Spectrogram - parameter 'top_db' is:"
+                     f" {top_db}.")
         self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
                                               n_fft=win_length,
                                               win_length=win_length,
@@ -1508,9 +1739,13 @@ class LeeNet24(nn.Module):
         """
         super().__init__()
 
-        embedding_size = kwargs.get('embedding_size', 1024)
-
+        logging.info("Initializing model LeeNet24.")
+        logging.info(f"LeeNet24 - parameter 'classes_num' is {classes_num}.")
         self.dropout = dropout
+        logging.info(f"LeeNet24 - parameter 'dropout' is {dropout}.")
+
+        embedding_size = kwargs.get('embedding_size', 1024)
+        logging.info(f"LeeNet24 - parameter 'embedding_size' is {embedding_size}.")
 
         self.conv_block1 = _LeeNetConvBlock2(1, 64, 3, 3)
         self.conv_block2 = _LeeNetConvBlock2(64, 96, 3, 1)
@@ -1595,8 +1830,14 @@ class DaiNet19(nn.Module):
 
         super().__init__()
 
+        logging.info("Initializing model DaiNet19.")
+        logging.info(f"DaiNet19 - parameter 'classes_num' is {classes_num}.")
         num_features = kwargs.get('num_features', 64)
+        logging.info(f"DaiNet19 - parameter 'num_features' is"
+                     f" {num_features}.")
         embedding_size = kwargs.get('embedding_size', 512)
+        logging.info(f"DaiNet19 - parameter 'embedding_size' is"
+                     f" {embedding_size}.")
 
         self.conv0 = nn.Conv1d(in_channels=1, out_channels=64, kernel_size=80,
                                stride=4, padding=0, bias=False)
