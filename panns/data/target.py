@@ -33,21 +33,21 @@ def get_target(data, target_type, *, sample_rate=None, hop_length=None,
 
     assert target_type in ['strong', 'weak']
 
-    file_ids = data['filename'].unique()
-    class_ids = data['event_label'].unique()
+    file_ids = sorted(data['filename'].unique())
+    class_ids = sorted(data['event_label'].unique())
 
     if target_type == 'strong':
         hop_length_seconds = hop_length/sample_rate
         frames_num = int((clip_length/1000)/hop_length_seconds)
-        target = np.zeros((file_ids.size, class_ids.size, frames_num), dtype=bool)
+        target = np.zeros((len(file_ids), len(class_ids), frames_num), dtype=bool)
     else:
-        target = np.zeros((file_ids.size, class_ids.size), dtype=bool)
+        target = np.zeros((len(file_ids), len(class_ids)), dtype=bool)
 
     file_id_to_ix = {}
-    for i in range(file_ids.size):
+    for i in range(len(file_ids)):
         file_id_to_ix[file_ids[i]] = i
     class_id_to_ix = {}
-    for i in range(class_ids.size):
+    for i in range(len(class_ids)):
         class_id_to_ix[class_ids[i]] = i
 
     for line in data.itertuples(index=False):
