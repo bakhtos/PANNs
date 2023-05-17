@@ -51,6 +51,7 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
     # Pack waveform to hdf5
     start_time = time.time()
+    HDF5_LOGGER.info("Packing hdf5")
 
     with h5py.File(hdf5_path, 'w') as hf:
         hf.create_dataset('waveform', shape=(audios_num, clip_samples),
@@ -71,13 +72,12 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
                 hf['waveform'][n] = audio2
                 fin_time_file = time.time()
-                HDF5_LOGGER.info(f'{n} - {audio_path} packed in '
-                             f'{fin_time_file-start_time_file:.3f} s')
+                HDF5_LOGGER.info(f'{audio_path} packed; time: {fin_time_file-start_time_file:.3f} s')
             else:
-                HDF5_LOGGER.warning(f'{n} - File does not exist: {audio_path}, skipped')
+                HDF5_LOGGER.warning(f'File does not exist: {audio_path}; skipped')
 
     fin_time = time.time()
-    HDF5_LOGGER.info(f'Written to {hdf5_path}; Pack time: {fin_time - start_time:.3f}')
+    HDF5_LOGGER.info(f'HDF5 packed to {hdf5_path}; time: {fin_time - start_time:.3f} s')
 
 
 if __name__ == '__main__':
