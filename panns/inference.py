@@ -17,7 +17,6 @@ __all__ = ['detect_events']
 def detect_events(*, frame_probabilities,
                   label_id_list,
                   filenames,
-                  output='events.txt',
                   threshold=0.5,
                   minimum_event_length=0.1,
                   minimum_event_gap=0.1,
@@ -33,7 +32,6 @@ def detect_events(*, frame_probabilities,
             frame_probabilities tensor
         filenames: numpy.ndarray, Name of the audio clip to which the
             frame_probabilities correspond.
-        output: str, Filename to write detected events into (default 'events.txt')
         threshold: float, Threshold used to binarize the frame_probabilities.
             Values higher than the threshold are considered as 'event detected'
             (default 0.5)
@@ -48,7 +46,8 @@ def detect_events(*, frame_probabilities,
             (default 320)
 
     Returns:
-        Writes detected events for each file into output file.
+        events: pandas.DataFrame with columns 'filename', 'event_label',
+        'onset', 'offset' with detected events.
     """
 
     logging.info(f"Detecting events with parameters threshold={threshold}, "
@@ -56,9 +55,9 @@ def detect_events(*, frame_probabilities,
                  f"minimum_event_gap={minimum_event_gap}i, hop_length="
                  f"{hop_length}, sample_rate={sample_rate}.")
 
-    event_file = open(output, 'w')
-    event_file.write('filename\tevent_label\tonset\toffset\n')
-    logging.info(f"Created file {output}.")
+    events = pd.DataFrame(columns=['filename', 'event_label', 'onset',
+                                   'offset'])
+    logging.info("Created dataframe.")
 
     hop_length_seconds = hop_length / sample_rate
     activity_array = frame_probabilities >= threshold
@@ -102,17 +101,18 @@ def detect_events(*, frame_probabilities,
                     offset_write = event[1]
                 if need_write and (minimum_event_length is None or
                                    offset_write - onset_write > minimum_event_length):
-                    event_file.write(
-                            f'{filename}\t{event_id}\t{onset_write}\t{offset_write}\n')
+                    events.loc[len(events)] = [filename, event_id,
+                                               onset_write, offset_write]
 
             if (minimum_event_gap is not None and event_activity.size != 0
                     and (minimum_event_length is None or current_offset - current_onset >
                          minimum_event_length)):
-                event_file.write(f'{filename}\t{event_id}\t{current_onset}'
-                                 f'\t{current_offset}\n')
+                events.loc[len(events)] = [filename, event_id,
+                                           onset_write, offset_write]
 
     logging.info("Detection finished.")
-    event_file.close()
+
+    return events
 
 
 if __name__ == '__main__':
@@ -206,12 +206,12 @@ if __name__ == '__main__':
     audio_names = dataset['filename'].unique()
     ids = dataset['event_label'].unique()
 
-    detect_events(frame_probabilities=framewise_output,
-                  label_id_list=ids,
-                  filenames=audio_names,
-                  threshold=args.threshold,
-                  output=args.output_path,
-                  minimum_event_length=args.minimum_event_length,
-                  minimum_event_gap=args.minimum_event_gap,
-                  sample_rate=args.sample_rate,
-                  hop_length=args.hop_length)
+    events = detect_events(frame_probabilities=framewise_output,
+                           label_id_list=ids,
+                           filenames=audio_names,
+                           threshold=args.threshold,
+                           minimum_event_length=args.minimum_event_length,
+                           minimum_event_gap=args.minimum_event_gap,
+                           sample_rate=args.sample_rate,
+                           hop_length=args.hop_length)
+    events.to_csv(args.output_path, header=True, index=False, sep='\t')
