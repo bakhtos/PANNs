@@ -1,5 +1,4 @@
 import argparse
-import os
 import logging
 
 import pandas as pd
@@ -8,8 +7,9 @@ import numpy as np
 
 from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
-from panns.logging import create_logging
 from panns.models.loader import load_model, model_parser
+import panns.base_logging
+INFERENCE_LOGGER = logging.getLogger("panns.inference")
 
 __all__ = ['detect_events']
 
@@ -50,14 +50,14 @@ def detect_events(*, frame_probabilities,
         'onset', 'offset' with detected events.
     """
 
-    logging.info(f"Detecting events with parameters threshold={threshold}, "
-                 f"minimum_event_length={minimum_event_length}, "
-                 f"minimum_event_gap={minimum_event_gap}i, hop_length="
-                 f"{hop_length}, sample_rate={sample_rate}.")
+    INFERENCE_LOGGER.info(f"Detecting events with parameters threshold={threshold}, "
+                          f"minimum_event_length={minimum_event_length}, "
+                          f"minimum_event_gap={minimum_event_gap}i, hop_length="
+                          f"{hop_length}, sample_rate={sample_rate}")
 
     events = pd.DataFrame(columns=['filename', 'event_label', 'onset',
                                    'offset'])
-    logging.info("Created dataframe.")
+    INFERENCE_LOGGER.info("Created dataframe")
 
     hop_length_seconds = hop_length / sample_rate
     activity_array = frame_probabilities >= threshold
@@ -66,9 +66,9 @@ def detect_events(*, frame_probabilities,
 
     for file_ix in range(frame_probabilities.shape[0]):
         filename = filenames[file_ix]
-        logging.info(f"Processing file {filename}...")
+        INFERENCE_LOGGER.info(f"Processing file {filename}...")
         for event_ix, event_id in enumerate(label_id_list):
-            logging.info(f"Processing event {event_id}...")
+            INFERENCE_LOGGER.info(f"Processing event {event_id}...")
             event_activity = change_indices[file_ix, :, event_ix].nonzero()[
                                  0] + 1
 
@@ -110,7 +110,7 @@ def detect_events(*, frame_probabilities,
                 events.loc[len(events)] = [filename, event_id,
                                            onset_write, offset_write]
 
-    logging.info("Detection finished.")
+    INFERENCE_LOGGER.info("Detection finished")
 
     return events
 
@@ -151,10 +151,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    logs_dir = args.logs_dir
-    if logs_dir is None:
-        logs_dir = os.path.join(os.getcwd(), 'logs')
-    create_logging(logs_dir, filemode='w')
 
     spec_aug = args.spec_aug or args.no_spec_aug
     mixup_time = args.mixup_time or args.no_mixup_time
@@ -182,11 +178,11 @@ if __name__ == '__main__':
 
     # Parallel
     if device.type == 'cuda':
-        logging.info(f'Using GPU. GPU number: {torch.cuda.device_count()}')
+        INFERENCE_LOGGER.info(f'Using GPU. GPU number: {torch.cuda.device_count()}')
         model.to(device)
         model = torch.nn.DataParallel(model)
     else:
-        logging.info('Using CPU.')
+        INFERENCE_LOGGER.info('Using CPU.')
 
     dataset = AudioSetDataset(args.hdf5_files_path)
     eval_loader = torch.utils.data.DataLoader(dataset=dataset,

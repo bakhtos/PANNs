@@ -8,13 +8,14 @@ import h5py
 import librosa
 import pandas as pd
 
-from panns.logging import create_logging
+import panns.base_logging
+HDF5_LOGGER = logging.getLogger('panns.hdf5')
 
 __all__ = ['wav_to_hdf5']
 
 
 def wav_to_hdf5(*, audios_dir, hdf5_path,
-                dataset_path, logs_dir=None,
+                dataset_path,
                 clip_length=10000, sample_rate=32000,
                 mini_data=0):
     """Pack waveform of several audio clips to a single hdf5 file.
@@ -27,8 +28,6 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
             dataset_path: str,
                 Path to the dataset tsv file, audios will be packed in the
                 order of first appearance in the dataset
-            logs_dir: str, Directory to save logs into,
-                if None creates a directory 'logs' in CWD (default None)
             clip_length: int, Length (in ms) of audio clips used in the dataset
                 (default 10000)
             sample_rate: int, Sample rate of packed audios (default 32000)
@@ -41,11 +40,6 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
     dir_name = os.path.dirname(hdf5_path)
     if dir_name != '':
         os.makedirs(dir_name, exist_ok=True)
-
-    if logs_dir is None:
-        logs_dir = os.path.join(os.getcwd(), 'logs')
-    create_logging(logs_dir, filemode='w')
-    logging.info('Write logs to {}'.format(logs_dir))
 
     audios = pd.read_csv(dataset_path, delimiter='\t')
     audio_names = audios['filename'].unique()
@@ -77,14 +71,13 @@ def wav_to_hdf5(*, audios_dir, hdf5_path,
 
                 hf['waveform'][n] = audio2
                 fin_time_file = time.time()
-                logging.info(f'{n} - {audio_path} packed in '
+                HDF5_LOGGER.info(f'{n} - {audio_path} packed in '
                              f'{fin_time_file-start_time_file:.3f} s')
             else:
-                logging.info(f'{n} - File does not exist: {audio_path}')
+                HDF5_LOGGER.warning(f'{n} - File does not exist: {audio_path}, skipped')
 
     fin_time = time.time()
-    logging.info(f'Written to {hdf5_path}')
-    logging.info(f'Pack time: {fin_time - start_time:.3f}')
+    HDF5_LOGGER.info(f'Written to {hdf5_path}; Pack time: {fin_time - start_time:.3f}')
 
 
 if __name__ == '__main__':
@@ -105,9 +98,6 @@ if __name__ == '__main__':
     parser.add_argument('--clip_length', type=int, default=10000,
                         help="Length (in ms) of audio clips used in the "
                              "dataset (default 10000)")
-    parser.add_argument('--logs_dir', type=str, default=None,
-                        help="Directory to save logs into "
-                             "(defaults to 'logs' in CWD)")
     args = parser.parse_args()
 
     wav_to_hdf5(audios_dir=args.audios_dir,
@@ -115,5 +105,4 @@ if __name__ == '__main__':
                 dataset_path=args.dataset_path,
                 clip_length=args.clip_length,
                 sample_rate=args.sample_rate,
-                mini_data=args.mini_data,
-                logs_dir=args.logs_dir)
+                mini_data=args.mini_data)
