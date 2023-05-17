@@ -65,14 +65,13 @@ def train(*, train_dataset,
         checkpoint_name = f"checkpoint_iteration={iteration}.pth"
         checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
         torch.save(model.module.state_dict(), checkpoint_path)
-        TRAIN_LOGGER.info(f'--- Iteration: {iteration}, Model saved to'
-                     f' {checkpoint_path}')
+        TRAIN_LOGGER.info(f'Iteration: {iteration}; model saved to {checkpoint_path}')
 
     def save_statistics(statistics, iteration, statistics_dir):
         statistics_name = f"statistics_iteration={iteration}.pickle"
         statistics_path = os.path.join(statistics_dir, statistics_name)
         pickle.dump(statistics, open(statistics_path, 'wb'))
-        TRAIN_LOGGER.info(f'--- Iteration: {iteration}, Statistics saved to'
+        TRAIN_LOGGER.info(f'Iteration: {iteration}; statistics saved to'
                      f' {statistics_path}')
 
 
@@ -99,8 +98,7 @@ def train(*, train_dataset,
     # Device
     if cuda:
         device = torch.device('cuda')
-        TRAIN_LOGGER.info('Using GPU.')
-        TRAIN_LOGGER.info('GPU number: {}'.format(torch.cuda.device_count()))
+        TRAIN_LOGGER.info('Using GPU; GPU number: {}'.format(torch.cuda.device_count()))
         model = torch.nn.DataParallel(model)
         model.to(device)
     else:
@@ -132,8 +130,8 @@ def train(*, train_dataset,
         optimizer.zero_grad()
         
         train_time = time.time() - train_bgn_time
-        TRAIN_LOGGER.info(f'--- Iteration: {iteration}, training time: '
-                     f'{train_time:.3f} s, training loss: {loss.item()}')
+        TRAIN_LOGGER.info(f'Iteration: {iteration}; training time: '
+                     f'{train_time:.3f} s; training loss: {loss.item()}')
 
         # Evaluate
         if iteration > 0 and iteration % 2000 == 0:
@@ -143,8 +141,8 @@ def train(*, train_dataset,
             validate_time = time.time() - val_begin_time
 
             TRAIN_LOGGER.info(
-                f'--- Iteration: {iteration}, validate time:'
-                f' {validate_time:.3f} s, validate mAP: '
+                f'Iteration: {iteration}; validate time:'
+                f' {validate_time:.3f} s; validate mAP: '
                 f'{np.mean(eval_average_precision):.3f}')
 
             save_statistics((eval_average_precision, eval_auc), iteration,
