@@ -1,5 +1,6 @@
 import argparse
 import logging
+import time
 
 import pandas as pd
 import torch.utils.data
@@ -57,8 +58,7 @@ def detect_events(*, frame_probabilities,
 
     events = pd.DataFrame(columns=['filename', 'event_label', 'onset',
                                    'offset'])
-    INFERENCE_LOGGER.info("Created dataframe")
-
+    start_time = time.time()
     hop_length_seconds = hop_length / sample_rate
     activity_array = frame_probabilities >= threshold
     change_indices = np.logical_xor(activity_array[:, 1:, :],
@@ -110,7 +110,8 @@ def detect_events(*, frame_probabilities,
                 events.loc[len(events)] = [filename, event_id,
                                            onset_write, offset_write]
 
-    INFERENCE_LOGGER.info("Detection finished")
+    fin_time = time.time()
+    INFERENCE_LOGGER.info(f"Detection finished; time: {fin_time-start_time:.3f}")
 
     return events
 
