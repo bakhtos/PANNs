@@ -9,7 +9,7 @@ import librosa
 import pandas as pd
 
 import panns.base_logging
-HDF5_LOGGER = logging.getLogger('panns.hdf5')
+HDF5_LOGGER = logging.getLogger('panns')
 
 __all__ = ['wav_to_hdf5']
 

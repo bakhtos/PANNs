@@ -14,7 +14,7 @@ from panns.models import load_model, model_parser
 from panns.evaluate import evaluate
 from panns.data.dataset import AudioSetDataset
 import panns.base_logging
-TRAIN_LOGGER = logging.getLogger('panns.train')
+TRAIN_LOGGER = logging.getLogger('panns')
 
 
 def train(*, train_dataset,

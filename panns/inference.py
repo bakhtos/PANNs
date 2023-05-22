@@ -10,7 +10,7 @@ from panns.data.dataset import AudioSetDataset
 from panns.forward import forward
 from panns.models.loader import load_model, model_parser
 import panns.base_logging
-INFERENCE_LOGGER = logging.getLogger("panns.inference")
+INFERENCE_LOGGER = logging.getLogger("panns")
 
 __all__ = ['detect_events']
 
