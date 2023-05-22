@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 
 import panns.base_logging
-TARGET_LOGGER = logging.getLogger('panns')
+TARGET_LOGGER = logging.getLogger('panns.target')
 
 __all__ = ['get_target']
 
