@@ -65,13 +65,13 @@ def train(*, train_dataset,
         checkpoint_name = f"checkpoint_iteration={iteration}.pth"
         checkpoint_path = os.path.join(checkpoints_dir, checkpoint_name)
         torch.save(model.module.state_dict(), checkpoint_path)
-        logging.info(f'Iteration: {iteration}; model saved to {checkpoint_path}')
+        TRAIN_LOGGER.info(f'Iteration: {iteration}; model saved to {checkpoint_path}')
 
     def save_statistics(statistics, iteration, statistics_dir):
         statistics_name = f"statistics_iteration={iteration}.pickle"
         statistics_path = os.path.join(statistics_dir, statistics_name)
         pickle.dump(statistics, open(statistics_path, 'wb'))
-        logging.info(f'Iteration: {iteration}; statistics saved to'
+        TRAIN_LOGGER.info(f'Iteration: {iteration}; statistics saved to'
                      f' {statistics_path}')
 
 
@@ -98,12 +98,12 @@ def train(*, train_dataset,
     # Device
     if cuda:
         device = torch.device('cuda')
-        logging.info('Using GPU; GPU number: {}'.format(torch.cuda.device_count()))
+        TRAIN_LOGGER.info('Using GPU; GPU number: {}'.format(torch.cuda.device_count()))
         model = torch.nn.DataParallel(model)
         model.to(device)
     else:
         device = torch.device('cpu')
-        logging.info('Using CPU. Set --cuda flag to use GPU.')
+        TRAIN_LOGGER.info('Using CPU. Set --cuda flag to use GPU.')
 
     model.train()
     train_iter = iter(train_loader)
@@ -130,7 +130,7 @@ def train(*, train_dataset,
         optimizer.zero_grad()
         
         train_time = time.time() - train_bgn_time
-        logging.info(f'Iteration: {iteration}; training time: '
+        TRAIN_LOGGER.info(f'Iteration: {iteration}; training time: '
                      f'{train_time:.3f} s; training loss: {loss.item()}')
 
         # Evaluate
@@ -140,7 +140,7 @@ def train(*, train_dataset,
             eval_average_precision, eval_auc = evaluate(model, eval_loader)
             validate_time = time.time() - val_begin_time
 
-            logging.info(
+            TRAIN_LOGGER.info(
                 f'Iteration: {iteration}; validate time:'
                 f' {validate_time:.3f} s; validate mAP: '
                 f'{np.mean(eval_average_precision):.3f}')
