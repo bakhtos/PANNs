@@ -1,9 +1,14 @@
 import argparse
 import math
 import os
+import time
+import logging
 
 import numpy as np
 import pandas as pd
+
+import panns.base_logging
+TARGET_LOGGER = logging.getLogger('panns.target')
 
 __all__ = ['get_target']
 
@@ -33,6 +38,8 @@ def get_target(data, target_type, *, sample_rate=None, hop_length=None,
 
     assert target_type in ['strong', 'weak']
 
+    TARGET_LOGGER.info("Constructing target tensor")
+    start_time = time.time()
     file_ids = sorted(data['filename'].unique())
     class_ids = sorted(data['event_label'].unique())
 
@@ -58,15 +65,20 @@ def get_target(data, target_type, *, sample_rate=None, hop_length=None,
 
         if target_type == 'strong':
             onset = float(line.onset)
-            onset = math.floor(onset/hop_length_seconds)
             offset = float(line.offset)
+            TARGET_LOGGER.info(f"{file_id} - {class_id} - {onset}:{offset}")
+            onset = math.floor(onset/hop_length_seconds)
             offset = math.ceil(offset/hop_length_seconds)
             target[file_ix][class_ix][onset:offset] = True
         else:
+            TARGET_LOGGER.info(f"{file_id} - {class_id}")
             target[file_ix][class_ix] = True
 
     if target_type == 'strong':
         target = np.transpose(target, (0, 2, 1))
+
+    fin_time = time.time()
+    TARGET_LOGGER.info(f"Target tensor construction finished; time: {fin_time-start_time:.3f} s")
 
     return target
 
