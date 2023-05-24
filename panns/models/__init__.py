@@ -5,6 +5,7 @@ from .loader import *
 __all__ = ['Cnn6',
            'Cnn10',
            'Cnn14',
+           'Cnn14DecisionLevelMax',
            'ResNet22',
            'ResNet38',
            'ResNet54',
