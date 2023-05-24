@@ -804,6 +804,162 @@ class Cnn14(nn.Module):
                            framewise_output, embedding)
 
 
+class Cnn14DecisionLevelMax(nn.Module):
+    def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
+                 f_max, classes_num, spec_aug=True, mixup_time=False,
+                 mixup_freq=True, dropout=True, **kwargs):
+        """
+
+        Args:
+            sample_rate: Sample rate of audio signal.
+            win_length: Window size for MelSpectrogram.
+            hop_length: Length of hop between STFT windows in MelSpectrogram.
+            n_mels: Number of mel filterbanks in MelSpectrogram.
+            f_min: Minimum frequency for MelSpectrogram.
+            f_max: Maximum frequency for MelSpectrogram.
+            classes_num: Amount of classes used for training.
+            spec_aug: If True, apply Spectrogram Augmentation (default True).
+            mixup_time: If True, apply mixup in time domain (default False).
+            mixup_freq: If True, apply mixup in frequency domain (default True).
+            dropout: If True, apply dropout in dropout layers during training.
+            **kwargs: 'window_fn', 'center', 'pad_mode' for MelSpectrogram
+                      (defaults 'hann', 'center', 'reflect'),
+                      'top_db' for AmplitudeToDB (default None),
+                      'num_features' for BatchNorm2d (default 64),
+                      'embedding_size' for the amount of neurons connecting the
+                       last two fully connected layers (default 2048)
+        """
+
+        super().__init__()
+
+        self.spec_aug = spec_aug
+        self.mixup_time = mixup_time
+        self.mixup_freq = mixup_freq
+        self.dropout = dropout
+        self.interpolate_ratio = 32
+        window_fn = kwargs.get('window_fn', torch.hann_window)
+        center = kwargs.get('center', True)
+        pad_mode = kwargs.get('pad_mode', 'reflect')
+        top_db = kwargs.get('top_db', None)
+        num_features = kwargs.get('num_features', 64)
+        embedding_size = kwargs.get('embedding_size', 2048)
+
+        self.mel_spectrogram = MelSpectrogram(sample_rate=sample_rate,
+                                              n_fft=win_length,
+                                              win_length=win_length,
+                                              hop_length=hop_length,
+                                              f_min=f_min, f_max=f_max,
+                                              n_mels=n_mels,
+                                              window_fn=window_fn,
+                                              power=2, onesided=True,
+                                              center=center,
+                                              pad_mode=pad_mode)
+        self.amplitude_to_db = AmplitudeToDB(stype="power", top_db=top_db)
+
+        # Spec augmenter
+        if spec_aug:
+            self.spec_aug_time = _SpecAugmentation(mask_param=64,
+                                                   stripes_num=2,
+                                                   axis=2)
+            self.spec_aug_freq = _SpecAugmentation(mask_param=8,
+                                                   stripes_num=2,
+                                                   axis=3)
+
+        self.bn0 = nn.BatchNorm2d(num_features)
+        init_bn(self.bn0)
+
+        self.conv_block1 = _ConvBlock(in_channels=1, out_channels=64)
+        self.conv_block2 = _ConvBlock(in_channels=64, out_channels=128)
+        self.conv_block3 = _ConvBlock(in_channels=128, out_channels=256)
+        self.conv_block4 = _ConvBlock(in_channels=256, out_channels=512)
+        self.conv_block5 = _ConvBlock(in_channels=512, out_channels=1024)
+        self.conv_block6 = _ConvBlock(in_channels=1024, out_channels=2048)
+
+        self.fc1 = nn.Linear(2048, embedding_size, bias=True)
+        init_layer(self.fc1)
+
+        self.audioset_layer = nn.Linear(embedding_size, classes_num,
+                                        bias=True)
+        init_layer(self.audioset_layer)
+
+    def forward(self, batch, mixup_lambda=None):
+        """
+
+        Args:
+            batch: Input tensor of shape (batch_size, time).
+            mixup_lambda: If not None, apply mixup with given coefficients
+                          (default None).
+
+        Returns: clipwise_output, segmentwise_output, framewise_output,
+                 embedding
+        """
+
+        # Mixup in time domain
+        if self.mixup_time and self.training and mixup_lambda is not None:
+            batch = mixup(batch, mixup_lambda)
+
+        x = batch[:, None, :]        # (batch_size, 1, time)
+        x = self.mel_spectrogram(x)  # (batch_size, 1, n_mels, time)
+        x = self.amplitude_to_db(x)  # (batch_size, 1, n_mels, time)
+
+        x = torch.transpose(x, 1, 2)        # (batch_size, n_mels, 1, time)
+        x = torch.transpose(x, 2, 3)        # (batch_size, n_mels, time, 1)
+
+        frames_num = x.shape[2]
+
+        x = self.bn0(x)
+
+        x = torch.transpose(x, 1, 3)        # (batch_size, 1, time, n_mels)
+
+        if self.training:
+            if self.spec_aug:
+                x = self.spec_aug_time(x)
+                x = self.spec_aug_freq(x)
+            # Mixup on spectrogram
+            if self.mixup_freq and mixup_lambda is not None:
+                x = mixup(x, mixup_lambda)
+
+        x = self.conv_block1(x, pool_size=(2, 2), pool_type='avg')
+
+        x = F.dropout(x, p=0.2, training=(self.training and
+                                          self.dropout))
+        x = self.conv_block2(x, pool_size=(2, 2), pool_type='avg')
+        x = F.dropout(x, p=0.2, training=(self.training and
+                                          self.dropout))
+        x = self.conv_block3(x, pool_size=(2, 2), pool_type='avg')
+        x = F.dropout(x, p=0.2, training=(self.training and
+                                          self.dropout))
+        x = self.conv_block4(x, pool_size=(2, 2), pool_type='avg')
+        x = F.dropout(x, p=0.2, training=(self.training and
+                                          self.dropout))
+        x = self.conv_block5(x, pool_size=(2, 2), pool_type='avg')
+        x = F.dropout(x, p=0.2, training=(self.training and
+                                          self.dropout))
+        x = self.conv_block6(x, pool_size=(1, 1), pool_type='avg')
+        x = F.dropout(x, p=0.2, training=(self.training and
+                                          self.dropout))
+        x = torch.mean(x, dim=3)
+
+        x1 = F.max_pool1d(x, kernel_size=3, stride=1, padding=1)
+        x2 = F.avg_pool1d(x, kernel_size=3, stride=1, padding=1)
+        x = x1 + x2
+        x = F.dropout(x, p=0.5, training=self.training)
+        x = x.transpose(1, 2)
+        x = F.relu_(self.fc1(x))
+        x = F.dropout(x, p=0.5, training=self.training)
+        embedding = x
+        segmentwise_output = torch.sigmoid(self.audioset_layer(x))
+        (clipwise_output, _) = torch.max(segmentwise_output, dim=1)
+
+        # Get framewise output
+        framewise_output = _interpolate(segmentwise_output,
+                                        self.interpolate_ratio)
+        framewise_output = _pad_framewise_output(framewise_output, frames_num)
+
+        return ModelOutput(clipwise_output, segmentwise_output,
+                           framewise_output, embedding)
+
+
 class ResNet22(nn.Module):
     def __init__(self, *, sample_rate, win_length, hop_length, n_mels, f_min,
                  f_max, classes_num, **kwargs):
